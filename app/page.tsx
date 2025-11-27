@@ -652,7 +652,7 @@ export default function Timeline() {
           <div className="flex items-center justify-between gap-8">
             <div className="flex items-center gap-8">
               {/* Left: Logo and description */}
-              <div className="flex-shrink-0 flex flex-col justify-center gap-0">
+              <div className="flex-shrink-0 flex flex-col justify-center gap-3">
                 <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
                   <Logo className="cursor-pointer" />
                 </Link>
