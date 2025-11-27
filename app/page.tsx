@@ -650,11 +650,11 @@ export default function Timeline() {
       {/* Header */}
       <div className="sticky top-0 bg-[#0A0A0A] z-50 py-4 px-8 border-b border-white/5">
           <div className="flex items-start justify-between gap-8">
-            <div className="flex-1">
-              <Link href="/" className="inline-block mt-6 hover:opacity-80 transition-opacity">
+            <div className="flex-1 flex flex-col justify-center gap-0">
+              <Link href="/" className="inline-block mt-3 hover:opacity-80 transition-opacity">
                 <Logo className="cursor-pointer" />
               </Link>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 mb-2">
                 Major AI model releases since ChatGPT (November 30, 2022)
               </p>
             </div>
@@ -692,7 +692,7 @@ export default function Timeline() {
       </div>
 
       {/* Sticky month header - outside scroll container */}
-      <div className="flex sticky top-[112px] z-40 bg-[#0A0A0A] border-b border-white/5">
+      <div className="flex sticky top-[104px] z-40 bg-[#0A0A0A] border-b border-white/5">
           {/* Left spacer to align with company labels */}
           <div className="flex-shrink-0 w-[180px]" />
 
@@ -761,12 +761,13 @@ export default function Timeline() {
                 const baseHeight = maxRow >= 0 ? (rowHeights[maxRow] || 0) + 48 : 0;
                 // Ensure consistent minimum height - higher for single-row companies to match multi-row spacing
                 const minHeight = maxRow === 0 ? 128 : 112;
-                const rowHeight = Math.max(baseHeight + 16, minHeight);
+                // Add py-8 padding (64px) for even rows
+                const rowHeight = Math.max(baseHeight + 16, minHeight) + (isEvenRow ? 64 : 0);
 
                 return (
                   <div
                     key={item.company}
-                    className={`relative flex items-start py-2 ${isEvenRow ? 'bg-white/[0.015]' : ''} ${isCompanyHovered ? 'z-[100]' : 'z-auto'}`}
+                    className={`relative flex items-start ${isEvenRow ? 'bg-white/[0.015] py-8' : ''} ${isCompanyHovered ? 'z-[100]' : 'z-auto'}`}
                     style={{ height: `${rowHeight}px`, width: '100%' }}
                   >
                     <div
@@ -877,7 +878,8 @@ export default function Timeline() {
               {/* Calculate total height of all company rows for dotted lines */}
               {(() => {
                 const companyHeights: number[] = [];
-                for (const item of filteredData) {
+                filteredData.forEach((item, companyIndex) => {
+                  const isEvenRow = companyIndex % 2 === 0;
                   const releasesWithRows = assignReleasesToRows(item.releases, totalMonths);
                   const maxRow = Math.max(...releasesWithRows.map(r => r.row), 0);
                   const rowHeights: number[] = [0];
@@ -899,9 +901,10 @@ export default function Timeline() {
                   const baseHeight = maxRow >= 0 ? (rowHeights[maxRow] || 0) + 48 : 0;
                   // Ensure consistent minimum height - higher for single-row companies to match multi-row spacing
                   const minHeight = maxRow === 0 ? 128 : 112;
-                  const totalHeight = Math.max(baseHeight + 16, minHeight);
+                  // Add py-8 padding (64px) for even rows
+                  const totalHeight = Math.max(baseHeight + 16, minHeight) + (isEvenRow ? 64 : 0);
                   companyHeights.push(totalHeight);
-                }
+                });
                 // Sum all company heights + spacing between them (space-y-8 = 32px between each)
                 const totalCompanyHeight = companyHeights.reduce((sum, h) => sum + h, 0) + (filteredData.length - 1) * 32;
                 const totalTimelineHeight = totalCompanyHeight + 64; // 64px for mt-16 spacing
@@ -962,12 +965,13 @@ export default function Timeline() {
                   const baseHeight = maxRow >= 0 ? (rowHeights[maxRow] || 0) + 48 : 0;
                   // Ensure consistent minimum height - higher for single-row companies to match multi-row spacing
                   const minHeight = maxRow === 0 ? 128 : 112;
-                  const totalHeight = Math.max(baseHeight + 16, minHeight);
+                  // Add py-8 padding (64px) for even rows
+                  const totalHeight = Math.max(baseHeight + 16, minHeight) + (isEvenRow ? 64 : 0);
 
                   return (
                     <div
                       key={item.company}
-                      className={`relative py-2 ${isEvenRow ? 'bg-white/[0.015]' : ''}`}
+                      className={`relative ${isEvenRow ? 'bg-white/[0.015] py-8' : ''}`}
                       style={{ height: `${totalHeight}px`, minWidth: `${totalMonths * 120}px` }}
                     >
                       {/* Timeline releases */}
