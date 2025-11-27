@@ -717,7 +717,7 @@ export default function Timeline() {
                         {/* Stats panel on hover */}
                         {isCompanyHovered && stats && (
                           <div
-                            className="absolute top-full left-0 mt-2 bg-[#151515] border border-white/10 rounded-lg p-4 shadow-xl min-w-[320px] max-h-[500px] overflow-y-auto"
+                            className="absolute top-full left-8 mt-2 bg-[#151515] border border-white/10 rounded-lg p-4 shadow-xl min-w-[320px] max-h-[500px] overflow-y-auto"
                             style={{
                               zIndex: 99999,
                               animation: 'fadeInSlideUp 0.2s ease-out forwards'
