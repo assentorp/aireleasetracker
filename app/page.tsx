@@ -792,9 +792,23 @@ export default function Timeline() {
                       <div className="relative z-50 h-full flex items-center justify-start px-4">
                         <div className="flex items-center gap-2 cursor-pointer">
                           <div className={`w-2 h-2 rounded-full ${companyInfo.dotColor}`} />
-                          <span className="text-gray-400 text-sm md:text-base font-medium hover:text-gray-300 transition-colors">
+                          <span className="text-white text-sm md:text-base font-medium hover:text-gray-200 transition-colors">
                             {companyInfo.name}
                           </span>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="text-gray-600"
+                          >
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                          </svg>
                         </div>
 
                         {/* Stats panel on hover */}
