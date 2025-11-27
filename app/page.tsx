@@ -324,12 +324,27 @@ export default function Timeline() {
       };
     });
 
+    // Calculate expected next release date
+    const expectedNextReleaseDate = new Date(lastReleaseDate);
+    expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
+    const daysUntilExpected = Math.floor((expectedNextReleaseDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+    // Format expected date
+    const formatExpectedDate = (date: Date) => {
+      const month = date.toLocaleString('default', { month: 'short' });
+      const day = date.getDate();
+      const year = date.getFullYear();
+      return `${month} ${day}, ${year}`;
+    };
+
     return {
       daysSinceLastRelease,
       avgDaysBetweenReleases,
       totalReleases: releases.length,
       lastRelease: lastRelease.name,
       recentReleases,
+      expectedNextReleaseDate: formatExpectedDate(expectedNextReleaseDate),
+      daysUntilExpected,
     };
   };
 
@@ -393,7 +408,7 @@ export default function Timeline() {
         {/* Header */}
         <div className="mb-12 sticky top-0 bg-[#0A0A0A] z-50 py-4">
           <h1 className="text-2xl font-semibold text-white mb-2">
-            AI Model Timeline
+            AI Release Tracker
           </h1>
           <p className="text-sm text-gray-500">
             Major AI model releases since ChatGPT (November 30, 2022)
@@ -470,7 +485,7 @@ export default function Timeline() {
                               <div>
                                 <div className="text-xs text-gray-500 mb-1">Days since last release</div>
                                 <div className="flex items-center justify-between gap-3">
-                                  <div className="text-xl font-semibold text-emerald-400">
+                                  <div className="text-xl font-semibold text-white">
                                     {stats.daysSinceLastRelease}
                                   </div>
                                   <div className="text-xs text-gray-600 text-right truncate">
@@ -479,7 +494,7 @@ export default function Timeline() {
                                 </div>
                                 <div className="mt-2 h-1.5 bg-white/5 rounded-full overflow-hidden">
                                   <div
-                                    className="h-full bg-emerald-500 rounded-full transition-all"
+                                    className="h-full bg-white rounded-full transition-all"
                                     style={{
                                       width: `${Math.min((stats.daysSinceLastRelease / stats.avgDaysBetweenReleases) * 100, 100)}%`
                                     }}
@@ -491,6 +506,21 @@ export default function Timeline() {
                                 <div className="text-xs text-gray-500 mb-1">Average</div>
                                 <div className="text-lg font-semibold text-gray-300">
                                   {stats.avgDaysBetweenReleases} days
+                                </div>
+                              </div>
+
+                              <div className="pt-3 border-t border-white/5">
+                                <div className="text-xs text-gray-500 mb-1">Expected next release</div>
+                                <div className="flex items-center justify-between gap-3">
+                                  <div className="text-lg font-semibold text-gray-400">
+                                    {stats.expectedNextReleaseDate}
+                                  </div>
+                                  <div className={`text-xs font-medium ${stats.daysUntilExpected < 0 ? 'text-gray-500' : stats.daysUntilExpected < 30 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                                    {stats.daysUntilExpected < 0
+                                      ? `${Math.abs(stats.daysUntilExpected)} days ago`
+                                      : `${stats.daysUntilExpected} days`
+                                    }
+                                  </div>
                                 </div>
                               </div>
 
