@@ -10,10 +10,27 @@ export default function Timeline() {
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const hasScrolledOnLoadRef = useRef(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Scroll to end of timeline smoothly on initial page load
+  useEffect(() => {
+    if (mounted && scrollContainerRef.current && !hasScrolledOnLoadRef.current) {
+      // Small delay to ensure DOM is fully rendered
+      setTimeout(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTo({
+            left: scrollContainerRef.current.scrollWidth,
+            behavior: 'smooth'
+          });
+          hasScrolledOnLoadRef.current = true;
+        }
+      }, 100);
+    }
+  }, [mounted]);
 
   // Drag/pan handlers
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -375,27 +392,80 @@ export default function Timeline() {
     return new Date();
   };
 
-  // Group overlapping releases (within 0.3 months of each other)
-  const groupOverlappingReleases = (releases: any[]) => {
-    const groups: any[][] = [];
-    const sorted = [...releases].sort((a, b) => a.position - b.position);
+  // Type for release items
+  type ReleaseItem = { date: string; name: string; position: number };
+  type ReleaseWithRow = ReleaseItem & { row: number; alignedPosition: number };
 
-    sorted.forEach((release) => {
-      let added = false;
-      for (const group of groups) {
-        const lastInGroup = group[group.length - 1];
-        if (Math.abs(lastInGroup.position - release.position) < 0.3) {
-          group.push(release);
-          added = true;
+  // Assign releases to rows to prevent horizontal overlap
+  // Releases on the same date are grouped together and stacked vertically
+  const assignReleasesToRows = (releases: ReleaseItem[], totalMonths: number): ReleaseWithRow[] => {
+    const sorted = [...releases].sort((a, b) => a.position - b.position);
+    const itemWidthInMonths = 250 / 120; // Approximately 2.08 months
+
+    // First, group releases by the same date string (not position)
+    const dateGroups: { [dateStr: string]: ReleaseItem[] } = {};
+    sorted.forEach(release => {
+      const dateKey = release.date; // Use the actual date string as the key
+      if (!dateGroups[dateKey]) {
+        dateGroups[dateKey] = [];
+      }
+      dateGroups[dateKey].push(release);
+    });
+
+    // Process date groups: same-date releases stack vertically, different dates check for overlap
+    const rows: ReleaseWithRow[] = [];
+    const rowOccupancies: Array<{ start: number; end: number }[]> = [];
+
+    // Sort date groups by the minimum position in each group
+    const sortedDateGroups = Object.entries(dateGroups).sort((a, b) => {
+      const minPosA = Math.min(...a[1].map(r => r.position));
+      const minPosB = Math.min(...b[1].map(r => r.position));
+      return minPosA - minPosB;
+    });
+
+    for (const [dateStr, sameDateReleases] of sortedDateGroups) {
+      // Use the minimum position from all same-date releases as the aligned position
+      const leftPosition = Math.min(...sameDateReleases.map(r => r.position));
+      const rightPosition = leftPosition + itemWidthInMonths;
+
+      // For same-date releases, find the first row where they can all fit
+      let assignedRow = -1;
+      for (let rowIdx = 0; rowIdx < rowOccupancies.length; rowIdx++) {
+        const row = rowOccupancies[rowIdx];
+        const overlaps = row.some(occupied => {
+          // Check if there's any overlap: items overlap if one doesn't end before the other starts
+          return !(rightPosition <= occupied.start || leftPosition >= occupied.end);
+        });
+
+        if (!overlaps) {
+          assignedRow = rowIdx;
           break;
         }
       }
-      if (!added) {
-        groups.push([release]);
-      }
-    });
 
-    return groups;
+      // If no row found, create a new one
+      if (assignedRow === -1) {
+        assignedRow = rowOccupancies.length;
+        rowOccupancies.push([]);
+      }
+
+      // Add all same-date releases to consecutive rows starting from assignedRow
+      // Use the same aligned position for all same-date releases
+      sameDateReleases.forEach((release, idx) => {
+        const rowForRelease = assignedRow + idx;
+
+        // Extend rowOccupancies if needed
+        while (rowOccupancies.length <= rowForRelease) {
+          rowOccupancies.push([]);
+        }
+
+        // Add occupancy for this release
+        rowOccupancies[rowForRelease].push({ start: leftPosition, end: rightPosition });
+        rows.push({ ...release, row: rowForRelease, alignedPosition: leftPosition });
+      });
+    }
+
+    return rows;
   };
 
   // Type definitions
@@ -549,35 +619,74 @@ export default function Timeline() {
         {/* Timeline container - fixed left column + scrollable right */}
         <div className="flex">
           {/* Fixed left column for company labels */}
-          <div className="flex-shrink-0 w-[180px] border-r border-white/5 bg-[#0A0A0A] z-30">
+          <div className="flex-shrink-0 w-[180px] border-r border-white/5 bg-[#0A0A0A] z-30 overflow-visible">
             {/* Header spacer */}
             <div className="h-8 mb-8" />
 
             {/* Company labels */}
-            <div className="space-y-8 mt-16">
-              {filteredData.map((item) => {
+            <div className={`space-y-8 overflow-visible ${hoveredCompany ? 'z-[200] relative' : ''}`}>
+              {filteredData.map((item, companyIndex) => {
                 const companyInfo = companies[item.company as keyof typeof companies];
                 const stats = getCompanyStats(item.company);
                 const isCompanyHovered = hoveredCompany === item.company;
+                const isEvenRow = companyIndex % 2 === 0;
+
+                // Calculate the same row height as the timeline row
+                const releasesWithRows = assignReleasesToRows(item.releases, totalMonths);
+                const maxRow = Math.max(...releasesWithRows.map(r => r.row), 0);
+
+                // Calculate height using same logic as timeline rows
+                const rowHeights: number[] = [0];
+                for (let row = 1; row <= maxRow; row++) {
+                  const rowRelease = releasesWithRows.find(r => r.row === row);
+                  const prevRowRelease = releasesWithRows.find(r => r.row === row - 1);
+
+                  if (rowRelease && prevRowRelease) {
+                    // Check if they're on the same date by comparing date strings
+                    const isConsecutiveSameDate = rowRelease.date === prevRowRelease.date;
+                    if (isConsecutiveSameDate) {
+                      rowHeights[row] = rowHeights[row - 1] + 40 + 4;
+                    } else {
+                      rowHeights[row] = rowHeights[row - 1] + 48;
+                    }
+                  } else {
+                    rowHeights[row] = rowHeights[row - 1] + 48;
+                  }
+                }
+                // Match the same height calculation as timeline rows
+                const baseHeight = maxRow >= 0 ? (rowHeights[maxRow] || 0) + 48 : 0;
+                // Ensure consistent minimum height - higher for single-row companies to match multi-row spacing
+                const minHeight = maxRow === 0 ? 128 : 112;
+                const rowHeight = Math.max(baseHeight + 16, minHeight);
 
                 return (
-                  <div key={item.company} className="relative h-24 flex items-start">
+                  <div
+                    key={item.company}
+                    className={`relative flex items-start py-2 ${isEvenRow ? 'bg-white/[0.015]' : ''} ${isCompanyHovered ? 'z-[100]' : 'z-auto'}`}
+                    style={{ height: `${rowHeight}px`, width: '100%' }}
+                  >
                     <div
-                      className="pr-4 w-full"
+                      className="pr-4 w-full relative z-50"
                       onMouseEnter={() => setHoveredCompany(item.company)}
                       onMouseLeave={() => setHoveredCompany(null)}
                     >
-                      <div className="relative">
-                        <div className="flex items-center gap-2 mb-4 cursor-pointer">
+                      <div className="relative z-50 h-full flex items-center justify-start px-4">
+                        <div className="flex items-center gap-2 cursor-pointer">
                           <div className={`w-2 h-2 rounded-full ${companyInfo.dotColor}`} />
-                          <span className="text-gray-400 text-sm font-medium hover:text-gray-300 transition-colors">
+                          <span className="text-gray-400 text-sm md:text-base font-medium hover:text-gray-300 transition-colors">
                             {companyInfo.name}
                           </span>
                         </div>
 
                         {/* Stats panel on hover */}
                         {isCompanyHovered && stats && (
-                          <div className="absolute top-8 left-0 bg-[#151515] border border-white/10 rounded-lg p-4 shadow-xl z-[100] min-w-[320px] max-h-[500px] overflow-y-auto">
+                          <div
+                            className="absolute top-full left-0 mt-2 bg-[#151515] border border-white/10 rounded-lg p-4 shadow-xl min-w-[320px] max-h-[500px] overflow-y-auto"
+                            style={{
+                              zIndex: 99999,
+                              animation: 'fadeInSlideUp 0.2s ease-out forwards'
+                            }}
+                          >
                             <div className="space-y-3">
                               <div>
                                 <div className="text-xs text-gray-500 mb-1">Days since last release</div>
@@ -661,22 +770,19 @@ export default function Timeline() {
             onTouchEnd={handleMouseUpOrLeave}
           >
             <div className="relative" style={{ paddingRight: '200px' }}>
-              {/* Timeline header with dates */}
-              <div className="relative mb-8 h-8">
+              {/* Timeline header with dates - sticky */}
+              <div className="sticky top-0 z-40 bg-[#0A0A0A] mb-8 h-8 py-2">
                 <div className="relative" style={{ minWidth: `${totalMonths * 120}px` }}>
                   {/* Timeline line */}
                   <div className="absolute top-4 left-0 right-0 h-[1px] bg-white/5" />
 
-                  {/* Month markers with dotted lines */}
+                  {/* Month markers */}
                   {monthMarkers.map((marker, idx) => (
                     <div
                       key={idx}
                       className="absolute top-0"
                       style={{ left: `${(marker.position / totalMonths) * 100}%` }}
                     >
-                      {/* Dotted vertical line */}
-                      <div className="absolute top-8 w-[1px] h-[1200px] border-l border-dotted border-white/5" />
-
                       {/* Month label */}
                       <div className={`text-xs font-medium ${marker.isJanuary ? 'text-gray-500' : 'text-gray-700'}`}>
                         {marker.label}
@@ -686,81 +792,125 @@ export default function Timeline() {
                 </div>
               </div>
 
+              {/* Calculate total height of all company rows for dotted lines */}
+              {(() => {
+                const companyHeights: number[] = [];
+                for (const item of filteredData) {
+                  const releasesWithRows = assignReleasesToRows(item.releases, totalMonths);
+                  const maxRow = Math.max(...releasesWithRows.map(r => r.row), 0);
+                  const rowHeights: number[] = [0];
+                  for (let row = 1; row <= maxRow; row++) {
+                    const rowRelease = releasesWithRows.find(r => r.row === row);
+                    const prevRowRelease = releasesWithRows.find(r => r.row === row - 1);
+                    if (rowRelease && prevRowRelease) {
+                      const isConsecutiveSameDate = rowRelease.date === prevRowRelease.date;
+                      if (isConsecutiveSameDate) {
+                        rowHeights[row] = rowHeights[row - 1] + 40 + 4;
+                      } else {
+                        rowHeights[row] = rowHeights[row - 1] + 48;
+                      }
+                    } else {
+                      rowHeights[row] = rowHeights[row - 1] + 48;
+                    }
+                  }
+                  // Match the same height calculation as timeline rows
+                  const baseHeight = maxRow >= 0 ? (rowHeights[maxRow] || 0) + 48 : 0;
+                  // Ensure consistent minimum height - higher for single-row companies to match multi-row spacing
+                  const minHeight = maxRow === 0 ? 128 : 112;
+                  const totalHeight = Math.max(baseHeight + 16, minHeight);
+                  companyHeights.push(totalHeight);
+                }
+                // Sum all company heights + spacing between them (space-y-8 = 32px between each)
+                const totalCompanyHeight = companyHeights.reduce((sum, h) => sum + h, 0) + (filteredData.length - 1) * 32;
+                const totalTimelineHeight = totalCompanyHeight + 64; // 64px for mt-16 spacing
+
+                return (
+                  /* Dotted vertical lines spanning full height */
+                  <div className="absolute top-8 left-0 right-0 pointer-events-none" style={{ height: `${totalTimelineHeight}px`, minWidth: `${totalMonths * 120}px` }}>
+                    {monthMarkers.map((marker, idx) => (
+                      <div
+                        key={idx}
+                        className="absolute top-0 bottom-0 w-[1px] border-l border-dotted border-white/5"
+                        style={{ left: `${(marker.position / totalMonths) * 100}%` }}
+                      />
+                    ))}
+                  </div>
+                );
+              })()}
+
               {/* Company rows */}
-              <div className="space-y-8 mt-16">
-                {filteredData.map((item) => {
+              <div className="space-y-8 relative">
+                {filteredData.map((item, companyIndex) => {
                   const companyInfo = companies[item.company as keyof typeof companies];
                   const stats = getCompanyStats(item.company);
                   const isCompanyHovered = hoveredCompany === item.company;
+                  const isEvenRow = companyIndex % 2 === 0;
+
+                  // Assign releases to rows to prevent horizontal overlap
+                  const releasesWithRows = assignReleasesToRows(item.releases, totalMonths);
+
+                  // Calculate top offsets for each row, accounting for same-date stacking
+                  const maxRow = Math.max(...releasesWithRows.map(r => r.row), 0);
+                  const rowHeights: number[] = [0]; // Track cumulative height for each row
+
+                  // Calculate height for each row sequentially
+                  for (let row = 1; row <= maxRow; row++) {
+                    const rowRelease = releasesWithRows.find(r => r.row === row);
+                    const prevRowRelease = releasesWithRows.find(r => r.row === row - 1);
+
+                    if (rowRelease && prevRowRelease) {
+                      // Check if they're on the same date by comparing date strings
+                      const isConsecutiveSameDate = rowRelease.date === prevRowRelease.date;
+
+                      if (isConsecutiveSameDate) {
+                        // Stack directly underneath with minimal gap (4px) - item height is ~40px
+                        rowHeights[row] = rowHeights[row - 1] + 40 + 4;
+                      } else {
+                        // Normal spacing between different dates (48px = 40px item + 8px gap)
+                        rowHeights[row] = rowHeights[row - 1] + 48;
+                      }
+                    } else {
+                      // Fallback to normal spacing
+                      rowHeights[row] = rowHeights[row - 1] + 48;
+                    }
+                  }
+
+                  // Calculate total height needed (last row height + item height + padding)
+                  // Add extra padding at bottom for better spacing
+                  const baseHeight = maxRow >= 0 ? (rowHeights[maxRow] || 0) + 48 : 0;
+                  // Ensure consistent minimum height - higher for single-row companies to match multi-row spacing
+                  const minHeight = maxRow === 0 ? 128 : 112;
+                  const totalHeight = Math.max(baseHeight + 16, minHeight);
 
                   return (
-                    <div key={item.company} className="relative h-24">
+                    <div
+                      key={item.company}
+                      className={`relative py-2 ${isEvenRow ? 'bg-white/[0.015]' : ''}`}
+                      style={{ height: `${totalHeight}px`, minWidth: `${totalMonths * 120}px` }}
+                    >
                       {/* Timeline releases */}
-                      <div className="relative h-24" style={{ minWidth: `${totalMonths * 120}px` }}>
-                      {groupOverlappingReleases(item.releases).map((group, groupIdx) => {
-                        const avgPosition = group.reduce((sum, r) => sum + r.position, 0) / group.length;
+                      <div className="relative z-10" style={{ minWidth: `${totalMonths * 120}px`, height: `${totalHeight}px` }}>
+                      {releasesWithRows.map((release, idx) => {
+                        const topOffset = rowHeights[release.row] || 0;
 
-                        if (group.length === 1) {
-                          // Single release - render normally with date on same line
-                          const release = group[0];
-                          return (
-                            <div
-                              key={groupIdx}
-                              className="absolute top-0 border border-white/10 rounded-md px-3 py-2 bg-[#151515] hover:bg-[#1a1a1a] hover:border-white/20 transition-all cursor-pointer whitespace-nowrap z-10 group"
-                              style={{
-                                left: `${(release.position / totalMonths) * 100}%`,
-                              }}
-                            >
-                              <div className="flex items-center gap-2">
-                                <div className={`w-1.5 h-1.5 rounded-full ${companyInfo.dotColor}`} />
-                                <div className="text-sm font-medium text-gray-200">
-                                  {release.name}
-                                </div>
-                                <div className="text-xs text-gray-500">
-                                  {release.date}
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        }
-
-                        // Multiple releases - render as stacked cards with connecting lines
                         return (
                           <div
-                            key={groupIdx}
-                            className="absolute top-0"
+                            key={idx}
+                            className="absolute border border-white/10 rounded-md px-3 py-2 bg-[#151515] hover:bg-[#1a1a1a] hover:border-white/20 transition-all cursor-pointer whitespace-nowrap z-10"
                             style={{
-                              left: `${(avgPosition / totalMonths) * 100}%`,
+                              left: `${(release.alignedPosition / totalMonths) * 100}%`,
+                              top: `${topOffset}px`,
                             }}
                           >
-                            {group.map((release, idx) => (
-                              <div
-                                key={idx}
-                                className="border border-white/10 rounded-md px-3 py-2 bg-[#151515] whitespace-nowrap relative"
-                                style={{
-                                  position: 'relative',
-                                  marginTop: idx > 0 ? '4px' : 0,
-                                  zIndex: 10 + (group.length - idx),
-                                }}
-                              >
-                                {/* Connecting line for stacked items */}
-                                {idx > 0 && (
-                                  <div
-                                    className="absolute -top-[4px] left-1/2 w-[1px] h-[4px] bg-white/10"
-                                    style={{ transform: 'translateX(-50%)' }}
-                                  />
-                                )}
-                                <div className="flex items-center gap-2">
-                                  <div className={`w-1.5 h-1.5 rounded-full ${companyInfo.dotColor}`} />
-                                  <div className="text-sm font-medium text-gray-200">
-                                    {release.name}
-                                  </div>
-                                  <div className="text-xs text-gray-500">
-                                    {release.date}
-                                  </div>
-                                </div>
+                            <div className="flex items-center gap-2">
+                              <div className={`w-1.5 h-1.5 rounded-full ${companyInfo.dotColor}`} />
+                              <div className="text-sm font-medium text-gray-200">
+                                {release.name}
                               </div>
-                            ))}
+                              <div className="text-xs text-gray-500">
+                                {release.date}
+                              </div>
+                            </div>
                           </div>
                         );
                       })}
