@@ -313,11 +313,23 @@ export default function Timeline() {
       ? Math.floor(intervals.reduce((a, b) => a + b, 0) / intervals.length)
       : 0;
 
+    // Get recent releases (last 5)
+    const recentReleases = releases.slice(-5).reverse().map(release => {
+      const releaseDate = parseReleaseDate(release.date);
+      const daysSince = Math.floor((now.getTime() - releaseDate.getTime()) / (1000 * 60 * 60 * 24));
+      return {
+        name: release.name,
+        date: release.date,
+        daysSince
+      };
+    });
+
     return {
       daysSinceLastRelease,
       avgDaysBetweenReleases,
       totalReleases: releases.length,
       lastRelease: lastRelease.name,
+      recentReleases,
     };
   };
 
@@ -400,7 +412,7 @@ export default function Timeline() {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleMouseUpOrLeave}
         >
-          <div className="relative">
+          <div className="relative" style={{ paddingRight: '200px' }}>
             {/* Timeline header with dates */}
             <div className="relative mb-8 h-8 flex">
               <div className="sticky left-0 bg-[#0A0A0A] z-20" style={{ width: '180px' }} />
@@ -453,15 +465,17 @@ export default function Timeline() {
 
                         {/* Stats panel on hover */}
                         {isCompanyHovered && stats && (
-                          <div className="absolute top-8 left-0 bg-[#151515] border border-white/10 rounded-lg p-4 shadow-xl z-[100] min-w-[280px]">
+                          <div className="absolute top-8 left-0 bg-[#151515] border border-white/10 rounded-lg p-4 shadow-xl z-[100] min-w-[320px] max-h-[500px] overflow-y-auto">
                             <div className="space-y-3">
                               <div>
                                 <div className="text-xs text-gray-500 mb-1">Days since last release</div>
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between gap-3">
                                   <div className="text-xl font-semibold text-emerald-400">
                                     {stats.daysSinceLastRelease}
                                   </div>
-                                  <div className="text-xs text-gray-600">{stats.lastRelease}</div>
+                                  <div className="text-xs text-gray-600 text-right truncate">
+                                    {stats.lastRelease}
+                                  </div>
                                 </div>
                                 <div className="mt-2 h-1.5 bg-white/5 rounded-full overflow-hidden">
                                   <div
@@ -481,9 +495,19 @@ export default function Timeline() {
                               </div>
 
                               <div className="pt-3 border-t border-white/5">
-                                <div className="text-xs text-gray-500 mb-1">Total releases</div>
-                                <div className="text-lg font-semibold text-gray-300">
-                                  {stats.totalReleases}
+                                <div className="text-xs text-gray-500 mb-2">Recent releases</div>
+                                <div className="space-y-2">
+                                  {stats.recentReleases.map((release, idx) => (
+                                    <div key={idx} className="flex items-center justify-between gap-3">
+                                      <div className="flex-1 min-w-0">
+                                        <div className="text-xs text-gray-400 truncate">{release.name}</div>
+                                        <div className="text-xs text-gray-600">{release.date}</div>
+                                      </div>
+                                      <div className="text-sm font-semibold text-gray-400 whitespace-nowrap">
+                                        {release.daysSince}
+                                      </div>
+                                    </div>
+                                  ))}
                                 </div>
                               </div>
                             </div>
