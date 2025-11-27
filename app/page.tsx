@@ -1,10 +1,15 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 export default function Timeline() {
   const [selectedCompany, setSelectedCompany] = useState('all');
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Company configurations with subtle colors
   const companies = {
@@ -283,6 +288,15 @@ export default function Timeline() {
 
     return groups;
   };
+
+  // Prevent hydration mismatch by only rendering on client
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0A] text-white p-8 flex items-center justify-center">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white p-8">
