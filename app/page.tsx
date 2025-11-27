@@ -470,7 +470,7 @@ export default function Timeline() {
 
   // Type definitions
   type NextExpectedRelease = { company: string; companyName: string; date: string; daysUntil: number };
-  type LatestRelease = { company: string; companyName: string; model: string; date: string; releaseDate: Date };
+  type LatestRelease = { company: string; companyName: string; model: string; date: string; releaseDate: Date; daysSince: number };
 
   // Calculate next expected release across all companies
   const getNextExpectedRelease = (): NextExpectedRelease | null => {
@@ -534,13 +534,15 @@ export default function Timeline() {
 
   // Get latest release across all companies
   const getLatestRelease = (): LatestRelease | null => {
-    let latestRelease: { company: string; companyName: string; model: string; date: string; releaseDate: Date } | null = null;
+    let latestRelease: { company: string; companyName: string; model: string; date: string; releaseDate: Date; daysSince: number } | null = null;
+    const now = new Date();
 
     timelineData.forEach((item) => {
       const releases = item.releases;
       if (releases.length > 0) {
         const lastRelease = releases[releases.length - 1];
         const releaseDate = parseReleaseDate(lastRelease.date);
+        const daysSince = Math.floor((now.getTime() - releaseDate.getTime()) / (1000 * 60 * 60 * 24));
 
         if (!latestRelease || releaseDate > latestRelease.releaseDate) {
           const companyInfo = companies[item.company as keyof typeof companies];
@@ -550,6 +552,7 @@ export default function Timeline() {
             model: lastRelease.name,
             date: lastRelease.date,
             releaseDate,
+            daysSince,
           };
         }
       }
@@ -574,7 +577,7 @@ export default function Timeline() {
     <div className="min-h-screen bg-[#0A0A0A] text-white p-8">
       <div className="max-w-full mx-auto">
         {/* Header */}
-        <div className="mb-12 sticky top-0 bg-[#0A0A0A] z-50 py-4">
+        <div className="mb-4 sticky top-0 bg-[#0A0A0A] z-50 py-4">
           <div className="flex items-start justify-between gap-8">
             <div className="flex-1">
               <h1 className="text-2xl font-semibold text-white mb-2">
@@ -589,27 +592,28 @@ export default function Timeline() {
             <div className="flex-shrink-0 flex gap-4">
               {nextExpected !== null ? (
                 <div className="bg-[#151515] border border-white/10 rounded-lg p-4 min-w-[240px]">
-                  <div className="text-xs text-gray-500 mb-1">Next Expected Release</div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className={`w-2 h-2 rounded-full ${companies[nextExpected.company as keyof typeof companies]?.dotColor || 'bg-gray-500'}`} />
-                    <div className="text-sm font-semibold text-white">{nextExpected.companyName}</div>
-                  </div>
-                  <div className="text-xs text-gray-400 ml-4">~{nextExpected.date}</div>
-                  <div className={`text-xs font-medium mt-1 ml-4 ${nextExpected.daysUntil < 0 ? 'text-gray-500' : nextExpected.daysUntil < 30 ? 'text-yellow-400' : 'text-gray-400'}`}>
-                    {nextExpected.daysUntil < 0
-                      ? `${Math.abs(nextExpected.daysUntil)} days ago`
-                      : `${nextExpected.daysUntil} days`
-                    }
+                  <div className="text-xs text-gray-500 mb-2">Next Expected Release</div>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-1.5 h-1.5 rounded-full ${companies[nextExpected.company as keyof typeof companies]?.dotColor || 'bg-gray-500'}`} />
+                    <div className="text-sm font-medium text-gray-200">{nextExpected.companyName}</div>
+                    <div className={`text-xs font-medium ${nextExpected.daysUntil < 0 ? 'text-gray-500' : nextExpected.daysUntil < 30 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                      {nextExpected.daysUntil < 0
+                        ? `~${Math.abs(nextExpected.daysUntil)} days ago`
+                        : `~${nextExpected.daysUntil} days`
+                      }
+                    </div>
                   </div>
                 </div>
               ) : null}
 
               {latestRelease !== null ? (
                 <div className="bg-[#151515] border border-white/10 rounded-lg p-4 min-w-[240px]">
-                  <div className="text-xs text-gray-500 mb-1">Latest Release</div>
-                  <div className="text-sm font-semibold text-white mb-1">{latestRelease.model}</div>
-                  <div className="text-xs text-gray-400 mb-1">{latestRelease.companyName}</div>
-                  <div className="text-xs text-gray-400">{latestRelease.date}</div>
+                  <div className="text-xs text-gray-500 mb-2">Latest Release</div>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-1.5 h-1.5 rounded-full ${companies[latestRelease.company as keyof typeof companies]?.dotColor || 'bg-gray-500'}`} />
+                    <div className="text-sm font-medium text-gray-200">{latestRelease.model}</div>
+                    <div className="text-xs text-gray-500">{latestRelease.date}</div>
+                  </div>
                 </div>
               ) : null}
             </div>
