@@ -643,7 +643,7 @@ export default function Timeline() {
             {/* Top right corner info */}
             <div className="flex-shrink-0 flex gap-4">
               {nextExpected !== null ? (
-                <div className="bg-[#151515] border border-white/10 rounded-lg p-4 min-w-[240px]">
+                <div className="min-w-[240px] mt-4">
                   <div className="text-xs text-gray-500 mb-2">Next Expected Release</div>
                   <div className="flex items-center gap-2">
                     <div className={`w-1.5 h-1.5 rounded-full ${companies[nextExpected.company as keyof typeof companies]?.dotColor || 'bg-gray-500'}`} />
@@ -659,7 +659,7 @@ export default function Timeline() {
               ) : null}
 
               {latestRelease !== null ? (
-                <div className="bg-[#151515] border border-white/10 rounded-lg p-4 min-w-[240px]">
+                <div className="min-w-[240px] mt-4">
                   <div className="text-xs text-gray-500 mb-2">Latest Release</div>
                   <div className="flex items-center gap-2">
                     <div className={`w-1.5 h-1.5 rounded-full ${companies[latestRelease.company as keyof typeof companies]?.dotColor || 'bg-gray-500'}`} />
@@ -680,7 +680,7 @@ export default function Timeline() {
           {/* Month header - scrollable */}
           <div
             ref={monthHeaderRef}
-            className="flex-1 overflow-x-auto scrollbar-hide"
+            className="flex-1 overflow-x-auto scrollbar-hide relative"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             <div className="relative h-8 py-2" style={{ paddingRight: '200px', minWidth: `${totalMonths * 120}px` }}>
@@ -845,7 +845,7 @@ export default function Timeline() {
           {/* Scrollable timeline section */}
           <div
             ref={scrollContainerRef}
-            className={`flex-1 overflow-x-auto overflow-y-hidden  select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+            className={`flex-1 overflow-x-auto overflow-y-hidden select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUpOrLeave}
