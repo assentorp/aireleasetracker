@@ -648,51 +648,68 @@ export default function Timeline() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white">
       {/* Header */}
-      <div className="sticky top-0 bg-[#0A0A0A] z-50 py-4 px-8 border-b border-white/5">
-          <div className="flex items-start justify-between gap-8">
-            <div className="flex-1 flex flex-col justify-center gap-0">
-              <Link href="/" className="inline-block mt-3 hover:opacity-80 transition-opacity">
-                <Logo className="cursor-pointer" />
-              </Link>
-              <p className="text-sm text-gray-500 mb-2">
-                Major AI model releases since ChatGPT (November 30, 2022)
-              </p>
-            </div>
+      <div className="sticky top-0 bg-[#0A0A0A] z-50 py-8 px-8 border-b border-white/5">
+          <div className="flex items-center justify-between gap-8">
+            <div className="flex items-center gap-8">
+              {/* Left: Logo and description */}
+              <div className="flex-shrink-0 flex flex-col justify-center gap-0">
+                <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
+                  <Logo className="cursor-pointer" />
+                </Link>
+                <p className="text-sm text-gray-500">
+                  Major AI model releases since ChatGPT (November 30, 2022)
+                </p>
+              </div>
 
-            {/* Top right corner info */}
-            <div className="flex-shrink-0 flex gap-4">
-              {nextExpected !== null ? (
-                <div className="min-w-[240px] mt-4">
-                  <div className="text-xs text-gray-500 mb-2">Next Expected Release</div>
-                  <div className="flex items-center gap-2">
-                    <div className={`w-1.5 h-1.5 rounded-full ${companies[nextExpected.company as keyof typeof companies]?.dotColor || 'bg-gray-500'}`} />
-                    <div className="text-sm font-medium text-gray-200">{nextExpected.companyName}</div>
-                    <div className={`text-xs font-medium ${nextExpected.daysUntil < 0 ? 'text-gray-500' : nextExpected.daysUntil < 30 ? 'text-yellow-400' : 'text-gray-400'}`}>
-                      {nextExpected.daysUntil < 0
-                        ? `~${Math.abs(nextExpected.daysUntil)} days ago`
-                        : `~${nextExpected.daysUntil} days`
-                      }
+              {/* Middle-left: Release info */}
+              <div className="flex gap-1 ml-8">
+                {nextExpected !== null ? (
+                  <div className="min-w-[180px]">
+                    <div className="text-xs text-gray-500 mb-2">Next Expected Release</div>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-1.5 h-1.5 rounded-full ${companies[nextExpected.company as keyof typeof companies]?.dotColor || 'bg-gray-500'}`} />
+                      <div className="text-sm font-medium text-gray-200">{nextExpected.companyName}</div>
+                      <div className={`text-xs font-medium ${nextExpected.daysUntil < 0 ? 'text-gray-500' : nextExpected.daysUntil < 30 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                        {nextExpected.daysUntil < 0
+                          ? `~${Math.abs(nextExpected.daysUntil)} days ago`
+                          : `~${nextExpected.daysUntil} days`
+                        }
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : null}
+                ) : null}
 
-              {latestRelease !== null ? (
-                <div className="min-w-[240px] mt-4">
-                  <div className="text-xs text-gray-500 mb-2">Latest Release</div>
-                  <div className="flex items-center gap-2">
-                    <div className={`w-1.5 h-1.5 rounded-full ${companies[latestRelease.company as keyof typeof companies]?.dotColor || 'bg-gray-500'}`} />
-                    <div className="text-sm font-medium text-gray-200">{latestRelease.model}</div>
-                    <div className="text-xs text-gray-500">{latestRelease.date}</div>
+                {latestRelease !== null ? (
+                  <div className="min-w-[180px]">
+                    <div className="text-xs text-gray-500 mb-2">Latest Release</div>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-1.5 h-1.5 rounded-full ${companies[latestRelease.company as keyof typeof companies]?.dotColor || 'bg-gray-500'}`} />
+                      <div className="text-sm font-medium text-gray-200">{latestRelease.model}</div>
+                      <div className="text-xs text-gray-500">{latestRelease.date}</div>
+                    </div>
                   </div>
-                </div>
-              ) : null}
+                ) : null}
+              </div>
+            </div>
+
+            {/* Right: Auth buttons */}
+            <div className="flex-shrink-0 flex items-center gap-3">
+              <button className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors">
+                Log in
+              </button>
+              <button className="px-3 py-2 text-sm font-medium bg-white text-black hover:bg-gray-200 rounded-md transition-colors flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                Get Updates
+              </button>
             </div>
           </div>
       </div>
 
       {/* Sticky month header - outside scroll container */}
-      <div className="flex sticky top-[104px] z-40 bg-[#0A0A0A] border-b border-white/5">
+      <div className="flex sticky top-[116px] z-40 bg-[#0A0A0A] border-b border-white/5">
           {/* Left spacer to align with company labels */}
           <div className="flex-shrink-0 w-[180px]" />
 
