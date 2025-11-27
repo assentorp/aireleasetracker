@@ -108,13 +108,13 @@ export default function Timeline() {
       name: 'Google',
       dotColor: 'bg-blue-500',
       initial: 'G',
-      order: 4,
+      order: 3,
     },
     meta: {
       name: 'Meta',
       dotColor: 'bg-sky-500',
       initial: 'M',
-      order: 3,
+      order: 4,
     },
     xai: {
       name: 'xAI',
@@ -694,9 +694,6 @@ export default function Timeline() {
 
             {/* Right: Auth buttons */}
             <div className="flex-shrink-0 flex items-center gap-3">
-              <button className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors">
-                Log in
-              </button>
               <button className="px-3 py-2 text-sm font-medium bg-white text-black hover:bg-gray-200 rounded-md transition-colors flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
