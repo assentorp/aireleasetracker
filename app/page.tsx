@@ -546,46 +546,14 @@ export default function Timeline() {
           </div>
         </div>
 
-        {/* Timeline container - scrollable */}
-        <div
-          ref={scrollContainerRef}
-          className={`overflow-x-auto pb-8 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUpOrLeave}
-          onMouseLeave={handleMouseUpOrLeave}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleMouseUpOrLeave}
-        >
-          <div className="relative" style={{ paddingRight: '200px' }}>
-            {/* Timeline header with dates */}
-            <div className="relative mb-8 h-8 flex">
-              <div className="sticky left-0 bg-[#0A0A0A] z-20" style={{ width: '180px' }} />
-              <div className="flex-1 relative" style={{ minWidth: `${totalMonths * 120}px` }}>
-                {/* Timeline line */}
-                <div className="absolute top-4 left-0 right-0 h-[1px] bg-white/5" />
+        {/* Timeline container - fixed left column + scrollable right */}
+        <div className="flex">
+          {/* Fixed left column for company labels */}
+          <div className="flex-shrink-0 w-[180px] border-r border-white/5 bg-[#0A0A0A] z-30">
+            {/* Header spacer */}
+            <div className="h-8 mb-8" />
 
-                {/* Month markers with dotted lines */}
-                {monthMarkers.map((marker, idx) => (
-                  <div
-                    key={idx}
-                    className="absolute top-0"
-                    style={{ left: `${(marker.position / totalMonths) * 100}%` }}
-                  >
-                    {/* Dotted vertical line */}
-                    <div className="absolute top-8 w-[1px] h-[1200px] border-l border-dotted border-white/5" />
-
-                    {/* Month label */}
-                    <div className={`text-xs font-medium ${marker.isJanuary ? 'text-gray-500' : 'text-gray-700'}`}>
-                      {marker.label}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Company rows */}
+            {/* Company labels */}
             <div className="space-y-8 mt-16">
               {filteredData.map((item) => {
                 const companyInfo = companies[item.company as keyof typeof companies];
@@ -593,11 +561,9 @@ export default function Timeline() {
                 const isCompanyHovered = hoveredCompany === item.company;
 
                 return (
-                  <div key={item.company} className="relative flex">
-                    {/* Company label - sticky */}
+                  <div key={item.company} className="relative h-24 flex items-start">
                     <div
-                      className={`sticky left-0 bg-[#0A0A0A] pr-4 flex items-start transition-all ${isCompanyHovered ? 'z-50' : 'z-20'}`}
-                      style={{ width: '180px' }}
+                      className="pr-4 w-full"
                       onMouseEnter={() => setHoveredCompany(item.company)}
                       onMouseLeave={() => setHoveredCompany(null)}
                     >
@@ -676,16 +642,66 @@ export default function Timeline() {
                         )}
                       </div>
                     </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
-                    {/* Timeline releases */}
-                    <div className="relative h-24 flex-1" style={{ minWidth: `${totalMonths * 120}px` }}>
+          {/* Scrollable timeline section */}
+          <div
+            ref={scrollContainerRef}
+            className={`flex-1 overflow-x-auto pb-8 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUpOrLeave}
+            onMouseLeave={handleMouseUpOrLeave}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleMouseUpOrLeave}
+          >
+            <div className="relative" style={{ paddingRight: '200px' }}>
+              {/* Timeline header with dates */}
+              <div className="relative mb-8 h-8">
+                <div className="relative" style={{ minWidth: `${totalMonths * 120}px` }}>
+                  {/* Timeline line */}
+                  <div className="absolute top-4 left-0 right-0 h-[1px] bg-white/5" />
+
+                  {/* Month markers with dotted lines */}
+                  {monthMarkers.map((marker, idx) => (
+                    <div
+                      key={idx}
+                      className="absolute top-0"
+                      style={{ left: `${(marker.position / totalMonths) * 100}%` }}
+                    >
+                      {/* Dotted vertical line */}
+                      <div className="absolute top-8 w-[1px] h-[1200px] border-l border-dotted border-white/5" />
+
+                      {/* Month label */}
+                      <div className={`text-xs font-medium ${marker.isJanuary ? 'text-gray-500' : 'text-gray-700'}`}>
+                        {marker.label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Company rows */}
+              <div className="space-y-8 mt-16">
+                {filteredData.map((item) => {
+                  const companyInfo = companies[item.company as keyof typeof companies];
+                  const stats = getCompanyStats(item.company);
+                  const isCompanyHovered = hoveredCompany === item.company;
+
+                  return (
+                    <div key={item.company} className="relative h-24">
+                      {/* Timeline releases */}
+                      <div className="relative h-24" style={{ minWidth: `${totalMonths * 120}px` }}>
                       {groupOverlappingReleases(item.releases).map((group, groupIdx) => {
                         const avgPosition = group.reduce((sum, r) => sum + r.position, 0) / group.length;
-                        const groupId = `${item.company}-${groupIdx}`;
-                        const isHovered = hoveredGroup === groupId;
 
                         if (group.length === 1) {
-                          // Single release - render normally
+                          // Single release - render normally with date on same line
                           const release = group[0];
                           return (
                             <div
@@ -700,15 +716,15 @@ export default function Timeline() {
                                 <div className="text-sm font-medium text-gray-200">
                                   {release.name}
                                 </div>
-                              </div>
-                              <div className="text-xs text-gray-500 mt-1 ml-3.5">
-                                {release.date}
+                                <div className="text-xs text-gray-500">
+                                  {release.date}
+                                </div>
                               </div>
                             </div>
                           );
                         }
 
-                        // Multiple releases - render as stacked cards
+                        // Multiple releases - render as stacked cards with connecting lines
                         return (
                           <div
                             key={groupIdx}
@@ -716,31 +732,32 @@ export default function Timeline() {
                             style={{
                               left: `${(avgPosition / totalMonths) * 100}%`,
                             }}
-                            onMouseEnter={() => setHoveredGroup(groupId)}
-                            onMouseLeave={() => setHoveredGroup(null)}
                           >
                             {group.map((release, idx) => (
                               <div
                                 key={idx}
-                                className="border border-white/10 rounded-md px-3 py-2 bg-[#151515] hover:bg-[#1a1a1a] hover:border-white/20 transition-all cursor-pointer whitespace-nowrap"
+                                className="border border-white/10 rounded-md px-3 py-2 bg-[#151515] whitespace-nowrap relative"
                                 style={{
-                                  position: isHovered ? 'relative' : 'absolute',
-                                  top: isHovered ? 0 : idx * 2,
-                                  left: isHovered ? 0 : idx * 2,
-                                  zIndex: isHovered ? 20 + idx : 10 + (group.length - idx),
-                                  marginBottom: isHovered ? '8px' : 0,
-                                  transform: isHovered ? 'translateY(0)' : 'translateY(0)',
-                                  opacity: isHovered ? 1 : (idx === group.length - 1 ? 1 : 0.7),
+                                  position: 'relative',
+                                  marginTop: idx > 0 ? '4px' : 0,
+                                  zIndex: 10 + (group.length - idx),
                                 }}
                               >
+                                {/* Connecting line for stacked items */}
+                                {idx > 0 && (
+                                  <div
+                                    className="absolute -top-[4px] left-1/2 w-[1px] h-[4px] bg-white/10"
+                                    style={{ transform: 'translateX(-50%)' }}
+                                  />
+                                )}
                                 <div className="flex items-center gap-2">
                                   <div className={`w-1.5 h-1.5 rounded-full ${companyInfo.dotColor}`} />
                                   <div className="text-sm font-medium text-gray-200">
                                     {release.name}
                                   </div>
-                                </div>
-                                <div className="text-xs text-gray-500 mt-1 ml-3.5">
-                                  {release.date}
+                                  <div className="text-xs text-gray-500">
+                                    {release.date}
+                                  </div>
                                 </div>
                               </div>
                             ))}
@@ -752,6 +769,7 @@ export default function Timeline() {
                 );
               })}
             </div>
+          </div>
           </div>
         </div>
       </div>
