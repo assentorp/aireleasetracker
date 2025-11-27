@@ -58,9 +58,9 @@ export default function Timeline() {
     },
   };
 
-  // Helper function to calculate months from start date (Nov 2022)
+  // Helper function to calculate months from start date (Jun 2018)
   const getMonthPosition = (dateStr: string) => {
-    const startDate = new Date('2022-11-01');
+    const startDate = new Date('2018-06-01');
     const parts = dateStr.split(' ');
 
     const monthMap: { [key: string]: number } = {
@@ -90,98 +90,148 @@ export default function Timeline() {
     return monthsDiff;
   };
 
-  // Timeline data organized by company (accurate data from Wikipedia/sources)
+  // Timeline data organized by company (comprehensive release data)
   const timelineData = [
+    {
+      company: 'xai',
+      releases: [
+        { date: 'Nov 3 2023', name: 'Grok‑1', position: getMonthPosition('Nov 3 2023') },
+        { date: 'Mar 29 2024', name: 'Grok‑1.5', position: getMonthPosition('Mar 29 2024') },
+        { date: 'Aug 14 2024', name: 'Grok‑2', position: getMonthPosition('Aug 14 2024') },
+        { date: 'Feb 17 2025', name: 'Grok 3', position: getMonthPosition('Feb 17 2025') },
+        { date: 'Aug 2025', name: 'Grok 2.5', position: getMonthPosition('Aug 2025') },
+        { date: 'Jul 9 2025', name: 'Grok 4', position: getMonthPosition('Jul 9 2025') },
+        { date: 'Sep 2025', name: 'Grok 4 Fast', position: getMonthPosition('Sep 2025') },
+        { date: 'Aug 28 2025', name: 'Grok Code Fast 1', position: getMonthPosition('Aug 28 2025') },
+        { date: 'Nov 17 2025', name: 'Grok 4.1', position: getMonthPosition('Nov 17 2025') }
+      ]
+    },
     {
       company: 'anthropic',
       releases: [
-        { date: 'Mar 14 2023', name: 'Claude 1.0', position: getMonthPosition('Mar 14 2023') },
-        { date: 'Jul 11 2023', name: 'Claude 2.0', position: getMonthPosition('Jul 11 2023') },
-        { date: 'Nov 21 2023', name: 'Claude 2.1', position: getMonthPosition('Nov 21 2023') },
-        { date: 'Mar 04 2024', name: 'Claude 3 (Haiku/Sonnet/Opus)', position: getMonthPosition('Mar 04 2024') },
-        { date: 'Jun 20 2024', name: 'Claude 3.5 Sonnet', position: getMonthPosition('Jun 20 2024') },
-        { date: 'Oct 22 2024', name: 'Claude 3.5 Sonnet (New)', position: getMonthPosition('Oct 22 2024') },
-        { date: 'Oct 22 2024', name: 'Claude 3.5 Haiku', position: getMonthPosition('Oct 22 2024') + 0.1 },
-        { date: 'Feb 24 2025', name: 'Claude 3.7 Sonnet', position: getMonthPosition('Feb 24 2025') },
-        { date: 'May 22 2025', name: 'Claude 4 (Sonnet/Opus)', position: getMonthPosition('May 22 2025') },
-        { date: 'Sep 2025', name: 'Claude Sonnet 4.5', position: getMonthPosition('Sep 2025') },
-        { date: 'Oct 2025', name: 'Claude Haiku 4.5', position: getMonthPosition('Oct 2025') },
-        { date: 'Nov 24 2025', name: 'Claude Opus 4.5', position: getMonthPosition('Nov 24 2025') },
-      ],
-    },
-    {
-      company: 'openai',
-      releases: [
-        { date: 'Nov 30 2022', name: 'ChatGPT (GPT-3.5)', position: 0 },
-        { date: 'Mar 14 2023', name: 'GPT-4', position: getMonthPosition('Mar 14 2023') },
-        { date: 'May 2024', name: 'GPT-4o', position: getMonthPosition('May 2024') },
-        { date: 'Jul 18 2024', name: 'GPT-4o mini', position: getMonthPosition('Jul 18 2024') },
-        { date: 'Dec 2024', name: 'o3 (Announced)', position: getMonthPosition('Dec 2024') },
-        { date: 'Aug 07 2025', name: 'GPT-5', position: getMonthPosition('Aug 07 2025') },
-      ],
+        { date: 'Mar 14 2023', name: 'Claude 1', position: getMonthPosition('Mar 14 2023') },
+        { date: 'Jul 11 2023', name: 'Claude 2', position: getMonthPosition('Jul 11 2023') },
+        { date: 'Mar 4 2024', name: 'Claude 3 Haiku', position: getMonthPosition('Mar 4 2024') },
+        { date: 'Mar 4 2024', name: 'Claude 3 Sonnet', position: getMonthPosition('Mar 4 2024') + 0.1 },
+        { date: 'Mar 4 2024', name: 'Claude 3 Opus', position: getMonthPosition('Mar 4 2024') + 0.2 },
+        { date: 'Jun 21 2024', name: 'Claude 3.5 Sonnet', position: getMonthPosition('Jun 21 2024') },
+        { date: 'Oct 2024', name: 'Claude 3.5 Haiku', position: getMonthPosition('Oct 2024') },
+        { date: 'Feb 25 2025', name: 'Claude Code', position: getMonthPosition('Feb 25 2025') },
+        { date: 'Feb 2025', name: 'Claude 3.7 Sonnet', position: getMonthPosition('Feb 2025') + 0.1 },
+        { date: 'May 23 2025', name: 'Claude Sonnet 4', position: getMonthPosition('May 23 2025') },
+        { date: 'May 23 2025', name: 'Claude Opus 4', position: getMonthPosition('May 23 2025') + 0.1 },
+        { date: 'Sep 30 2025', name: 'Claude Sonnet 4.5', position: getMonthPosition('Sep 30 2025') },
+        { date: 'Oct 16 2025', name: 'Claude Haiku 4.5', position: getMonthPosition('Oct 16 2025') },
+        { date: 'Nov 24 2025', name: 'Claude Opus 4.5', position: getMonthPosition('Nov 24 2025') }
+      ]
     },
     {
       company: 'meta',
       releases: [
-        { date: 'Feb 2023', name: 'LLaMA 1', position: getMonthPosition('Feb 2023') },
-        { date: 'Jul 2023', name: 'Llama 2', position: getMonthPosition('Jul 2023') },
-        { date: 'Apr 2024', name: 'Llama 3', position: getMonthPosition('Apr 2024') },
-        { date: 'Jul 23 2024', name: 'Llama 3.1 (405B)', position: getMonthPosition('Jul 23 2024') },
-        { date: 'Oct 2024', name: 'Llama 3.2', position: getMonthPosition('Oct 2024') },
-        { date: 'Dec 2024', name: 'Llama 3.3', position: getMonthPosition('Dec 2024') },
-        { date: 'Apr 05 2025', name: 'Llama 4 (Scout/Maverick)', position: getMonthPosition('Apr 05 2025') },
-      ],
+        { date: 'Feb 24 2023', name: 'LLaMA 1', position: getMonthPosition('Feb 24 2023') },
+        { date: 'Jul 18 2023', name: 'LLaMA 2', position: getMonthPosition('Jul 18 2023') },
+        { date: 'Aug 24 2023', name: 'Code Llama', position: getMonthPosition('Aug 24 2023') },
+        { date: 'Jan 29 2024', name: 'Code Llama 70B', position: getMonthPosition('Jan 29 2024') },
+        { date: 'Apr 18 2024', name: 'LLaMA 3 (8B/70B)', position: getMonthPosition('Apr 18 2024') },
+        { date: 'Jul 23 2024', name: 'LLaMA 3.1', position: getMonthPosition('Jul 23 2024') },
+        { date: 'Apr 5 2025', name: 'LLaMA 4 Scout', position: getMonthPosition('Apr 5 2025') },
+        { date: 'Apr 5 2025', name: 'LLaMA 4 Maverick', position: getMonthPosition('Apr 5 2025') + 0.1 }
+      ]
     },
     {
       company: 'google',
       releases: [
-        { date: 'May 10 2023', name: 'Bard (PaLM 2)', position: getMonthPosition('May 10 2023') },
-        { date: 'Dec 06 2023', name: 'Gemini 1.0', position: getMonthPosition('Dec 06 2023') },
-        { date: 'Feb 2024', name: 'Gemini 1.5', position: getMonthPosition('Feb 2024') },
-        { date: 'Dec 11 2024', name: 'Gemini 2.0 Flash (Experimental)', position: getMonthPosition('Dec 11 2024') },
+        { date: 'Mar 21 2023', name: 'Bard (pre-Gemini)', position: getMonthPosition('Mar 21 2023') },
+        { date: 'Dec 6 2023', name: 'Gemini 1.0 Nano', position: getMonthPosition('Dec 6 2023') },
+        { date: 'Dec 13 2023', name: 'Gemini 1.0 Pro', position: getMonthPosition('Dec 13 2023') },
+        { date: 'Feb 8 2024', name: 'Gemini 1.0 Ultra', position: getMonthPosition('Feb 8 2024') },
+        { date: 'Feb 15 2024', name: 'Gemini 1.5 Pro', position: getMonthPosition('Feb 15 2024') },
+        { date: 'May 14 2024', name: 'Gemini 1.5 Flash', position: getMonthPosition('May 14 2024') },
         { date: 'Jan 30 2025', name: 'Gemini 2.0 Flash', position: getMonthPosition('Jan 30 2025') },
-        { date: 'Jun 2025', name: 'Gemini 2.5', position: getMonthPosition('Jun 2025') },
-      ],
+        { date: 'Feb 1 2025', name: 'Gemini 2.0 Flash-Lite', position: getMonthPosition('Feb 1 2025') },
+        { date: 'Mar 25 2025', name: 'Gemini 2.5 Pro', position: getMonthPosition('Mar 25 2025') },
+        { date: 'Apr 17 2025', name: 'Gemini 2.5 Flash', position: getMonthPosition('Apr 17 2025') },
+        { date: 'Jun 17 2025', name: 'Gemini 2.5 Flash-Lite', position: getMonthPosition('Jun 17 2025') },
+        { date: 'Aug 26 2025', name: 'Gemini 2.5 Flash Image', position: getMonthPosition('Aug 26 2025') },
+        { date: 'Nov 18 2025', name: 'Gemini 3.0 Pro', position: getMonthPosition('Nov 18 2025') },
+        { date: 'Nov 20 2025', name: 'Gemini 3.0 Pro Image', position: getMonthPosition('Nov 20 2025') }
+      ]
     },
     {
-      company: 'xai',
+      company: 'openai',
       releases: [
-        { date: 'Nov 2023', name: 'Grok-1', position: getMonthPosition('Nov 2023') },
-        { date: 'Mar 2024', name: 'Grok-1.5', position: getMonthPosition('Mar 2024') },
-        { date: 'Aug 2024', name: 'Grok-2', position: getMonthPosition('Aug 2024') },
-        { date: 'Feb 17 2025', name: 'Grok-3', position: getMonthPosition('Feb 17 2025') },
-      ],
+        { date: 'Jun 2018', name: 'GPT-1', position: getMonthPosition('Jun 2018') },
+        { date: 'Feb 14 2019', name: 'GPT-2', position: getMonthPosition('Feb 14 2019') },
+        { date: 'May 29 2020', name: 'GPT-3', position: getMonthPosition('May 29 2020') },
+        { date: 'Nov 30 2022', name: 'ChatGPT (GPT-3.5)', position: getMonthPosition('Nov 30 2022') },
+        { date: 'Mar 14 2023', name: 'GPT-4', position: getMonthPosition('Mar 14 2023') },
+        { date: 'Nov 6 2023', name: 'GPT-4 Turbo', position: getMonthPosition('Nov 6 2023') },
+        { date: 'May 13 2024', name: 'GPT-4o', position: getMonthPosition('May 13 2024') },
+        { date: 'Jul 18 2024', name: 'GPT-4o mini', position: getMonthPosition('Jul 18 2024') },
+        { date: 'Sep 12 2024', name: 'o1', position: getMonthPosition('Sep 12 2024') },
+        { date: 'Sep 12 2024', name: 'o1 mini', position: getMonthPosition('Sep 12 2024') + 0.1 },
+        { date: 'Jan 31 2025', name: 'o3 mini', position: getMonthPosition('Jan 31 2025') },
+        { date: 'Feb 27 2025', name: 'GPT-4.5', position: getMonthPosition('Feb 27 2025') },
+        { date: 'May 14 2025', name: 'GPT-4.1', position: getMonthPosition('May 14 2025') },
+        { date: 'May 14 2025', name: 'GPT-4.1 mini', position: getMonthPosition('May 14 2025') + 0.1 },
+        { date: 'Jun 6 2025', name: 'o4 mini', position: getMonthPosition('Jun 6 2025') },
+        { date: 'Jun 10 2025', name: 'o3 pro', position: getMonthPosition('Jun 10 2025') },
+        { date: 'Aug 5 2025', name: 'GPT-5 (gpt-oss-120b/20b)', position: getMonthPosition('Aug 5 2025') }
+      ]
     },
     {
       company: 'deepseek',
       releases: [
-        { date: 'May 06 2024', name: 'DeepSeek-V2', position: getMonthPosition('May 06 2024') },
-        { date: 'Dec 2024', name: 'DeepSeek-V3', position: getMonthPosition('Dec 2024') },
-        { date: 'Jan 20 2025', name: 'DeepSeek-R1', position: getMonthPosition('Jan 20 2025') },
-        { date: 'Mar 24 2025', name: 'DeepSeek-V3-0324', position: getMonthPosition('Mar 24 2025') },
-        { date: 'May 28 2025', name: 'DeepSeek-R1-0528', position: getMonthPosition('May 28 2025') },
-        { date: 'Aug 2025', name: 'DeepSeek-V3.1', position: getMonthPosition('Aug 2025') },
-      ],
+        { date: 'Nov 2 2023', name: 'DeepSeek Coder', position: getMonthPosition('Nov 2 2023') },
+        { date: 'Nov 29 2023', name: 'DeepSeek-LLM', position: getMonthPosition('Nov 29 2023') },
+        { date: 'Jan 9 2024', name: 'DeepSeek-MoE', position: getMonthPosition('Jan 9 2024') },
+        { date: 'Apr 3 2024', name: 'DeepSeek-Math', position: getMonthPosition('Apr 3 2024') },
+        { date: 'May 2024', name: 'DeepSeek V2', position: getMonthPosition('May 2024') },
+        { date: 'Jun 2024', name: 'DeepSeek Coder V2', position: getMonthPosition('Jun 2024') },
+        { date: 'Sep 2024', name: 'DeepSeek V2.5', position: getMonthPosition('Sep 2024') },
+        { date: 'Dec 2024', name: 'DeepSeek V2.5 (Revised)', position: getMonthPosition('Dec 2024') + 0.1 },
+        { date: 'Nov 20 2024', name: 'DeepSeek-R1-Lite Preview', position: getMonthPosition('Nov 20 2024') },
+        { date: 'Dec 2024', name: 'DeepSeek V3 Base', position: getMonthPosition('Dec 2024') },
+        { date: 'Dec 2024', name: 'DeepSeek V3 Chat', position: getMonthPosition('Dec 2024') + 0.2 },
+        { date: 'Jan 20 2025', name: 'DeepSeek Chat (R1-based)', position: getMonthPosition('Jan 20 2025') },
+        { date: 'Mar 24 2025', name: 'DeepSeek V3-0324', position: getMonthPosition('Mar 24 2025') },
+        { date: 'May 28 2025', name: 'DeepSeek R1-0528', position: getMonthPosition('May 28 2025') },
+        { date: 'Aug 21 2025', name: 'DeepSeek V3.1', position: getMonthPosition('Aug 21 2025') },
+        { date: 'Sep 22 2025', name: 'DeepSeek V3.1 Terminus', position: getMonthPosition('Sep 22 2025') },
+        { date: 'Sep 29 2025', name: 'DeepSeek V3.2 Exp', position: getMonthPosition('Sep 29 2025') }
+      ]
     },
     {
       company: 'mistral',
       releases: [
         { date: 'Sep 27 2023', name: 'Mistral 7B', position: getMonthPosition('Sep 27 2023') },
-        { date: 'Dec 2023', name: 'Mixtral 8x7B', position: getMonthPosition('Dec 2023') },
+        { date: 'Dec 9 2023', name: 'Mixtral 8×7B', position: getMonthPosition('Dec 9 2023') },
+        { date: 'Dec 2023', name: 'Mistral Medium', position: getMonthPosition('Dec 2023') + 0.1 },
         { date: 'Feb 26 2024', name: 'Mistral Large', position: getMonthPosition('Feb 26 2024') },
-        { date: 'Apr 10 2024', name: 'Mixtral 8x22B', position: getMonthPosition('Apr 10 2024') },
-        { date: 'Jul 2024', name: 'Mistral Large (Upgraded)', position: getMonthPosition('Jul 2024') },
-        { date: 'Nov 18 2024', name: 'Pixtral Large', position: getMonthPosition('Nov 18 2024') },
+        { date: 'Feb 26 2024', name: 'Mistral Small', position: getMonthPosition('Feb 26 2024') + 0.1 },
+        { date: 'Apr 10 2024', name: 'Mixtral 8×22B', position: getMonthPosition('Apr 10 2024') },
+        { date: 'May 29 2024', name: 'Codestral 22B', position: getMonthPosition('May 29 2024') },
+        { date: 'Jul 16 2024', name: 'Codestral Mamba 7B', position: getMonthPosition('Jul 16 2024') },
+        { date: 'Jul 16 2024', name: 'Mathstral 7B', position: getMonthPosition('Jul 16 2024') + 0.1 },
+        { date: 'Jul 24 2024', name: 'Mistral Large 2', position: getMonthPosition('Jul 24 2024') },
+        { date: 'Sep 2024', name: 'Pixtral 24.09', position: getMonthPosition('Sep 2024') },
+        { date: 'Oct 2024', name: 'Ministral 8B', position: getMonthPosition('Oct 2024') },
+        { date: 'Oct 2024', name: 'Ministral 3B', position: getMonthPosition('Oct 2024') + 0.1 },
+        { date: 'Nov 19 2024', name: 'Mistral Large 2 24.11', position: getMonthPosition('Nov 19 2024') },
+        { date: 'Nov 19 2024', name: 'Pixtral Large 24.11', position: getMonthPosition('Nov 19 2024') + 0.1 },
+        { date: 'Jan 2025', name: 'Mistral Small 3', position: getMonthPosition('Jan 2025') },
         { date: 'Mar 17 2025', name: 'Mistral Small 3.1', position: getMonthPosition('Mar 17 2025') },
-        { date: 'May 07 2025', name: 'Mistral Medium 3', position: getMonthPosition('May 07 2025') },
-      ],
-    },
+        { date: 'May 7 2025', name: 'Mistral Medium 3', position: getMonthPosition('May 7 2025') },
+        { date: 'Jun 10 2025', name: 'Magistral Small', position: getMonthPosition('Jun 10 2025') },
+        { date: 'Jun 10 2025', name: 'Magistral Medium', position: getMonthPosition('Jun 10 2025') + 0.1 }
+      ]
+    }
   ];
 
-  // Generate month markers from Nov 2022 to Dec 2025
+  // Generate month markers from Jun 2018 to Dec 2025
   const generateMonthMarkers = () => {
     const markers = [];
-    const startDate = new Date('2022-11-01');
+    const startDate = new Date('2018-06-01');
     const endDate = new Date('2025-12-01');
 
     let current = new Date(startDate);
