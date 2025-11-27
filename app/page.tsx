@@ -6,55 +6,41 @@ export default function Timeline() {
   const [selectedCompany, setSelectedCompany] = useState('all');
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
 
-  // Company configurations with colors
+  // Company configurations with subtle colors
   const companies = {
     anthropic: {
       name: 'Anthropic',
-      color: 'bg-orange-500',
-      borderColor: 'border-orange-500/30',
-      textColor: 'text-orange-400',
+      dotColor: 'bg-orange-500',
       initial: 'A',
     },
     openai: {
       name: 'OpenAI',
-      color: 'bg-emerald-500',
-      borderColor: 'border-emerald-500/30',
-      textColor: 'text-emerald-400',
+      dotColor: 'bg-emerald-500',
       initial: 'O',
     },
     google: {
       name: 'Google',
-      color: 'bg-blue-500',
-      borderColor: 'border-blue-500/30',
-      textColor: 'text-blue-400',
+      dotColor: 'bg-blue-500',
       initial: 'G',
     },
     meta: {
       name: 'Meta',
-      color: 'bg-sky-500',
-      borderColor: 'border-sky-500/30',
-      textColor: 'text-sky-400',
+      dotColor: 'bg-sky-500',
       initial: 'M',
     },
     xai: {
       name: 'xAI',
-      color: 'bg-purple-500',
-      borderColor: 'border-purple-500/30',
-      textColor: 'text-purple-400',
+      dotColor: 'bg-purple-500',
       initial: 'X',
     },
     deepseek: {
       name: 'DeepSeek',
-      color: 'bg-pink-500',
-      borderColor: 'border-pink-500/30',
-      textColor: 'text-pink-400',
+      dotColor: 'bg-pink-500',
       initial: 'D',
     },
     mistral: {
       name: 'Mistral AI',
-      color: 'bg-amber-500',
-      borderColor: 'border-amber-500/30',
-      textColor: 'text-amber-400',
+      dotColor: 'bg-amber-500',
       initial: 'Mi',
     },
   };
@@ -305,10 +291,10 @@ export default function Timeline() {
         <div className="mb-12 flex gap-2 sticky top-0 bg-[#0A0A0A] z-50 py-4">
           <button
             onClick={() => setSelectedCompany('all')}
-            className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+            className={`px-3 py-1.5 rounded-md font-medium text-sm transition-all ${
               selectedCompany === 'all'
-                ? 'bg-white/10 text-white border border-white/20'
-                : 'bg-transparent text-gray-400 border border-transparent hover:bg-white/5'
+                ? 'bg-white/10 text-white'
+                : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
             }`}
           >
             All Companies
@@ -317,12 +303,13 @@ export default function Timeline() {
             <button
               key={key}
               onClick={() => setSelectedCompany(key)}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+              className={`px-3 py-1.5 rounded-md font-medium text-sm transition-all flex items-center gap-2 ${
                 selectedCompany === key
-                  ? 'bg-white/10 text-white border border-white/20'
-                  : 'bg-transparent text-gray-400 border border-transparent hover:bg-white/5'
+                  ? 'bg-white/10 text-white'
+                  : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
               }`}
             >
+              <div className={`w-2 h-2 rounded-full ${company.dotColor}`} />
               {company.name}
             </button>
           ))}
@@ -334,7 +321,7 @@ export default function Timeline() {
             {/* Timeline header with dates */}
             <div className="relative mb-8 h-8">
               {/* Timeline line */}
-              <div className="absolute top-4 left-0 right-0 h-[1px] bg-white/10" />
+              <div className="absolute top-4 left-0 right-0 h-[1px] bg-white/5" />
 
               {/* Month markers with dotted lines */}
               {monthMarkers.map((marker, idx) => (
@@ -344,10 +331,10 @@ export default function Timeline() {
                   style={{ left: `${(marker.position / totalMonths) * 100}%` }}
                 >
                   {/* Dotted vertical line */}
-                  <div className="absolute top-8 w-[1px] h-[600px] border-l border-dotted border-gray-800" />
+                  <div className="absolute top-8 w-[1px] h-[600px] border-l border-dotted border-white/5" />
 
                   {/* Month label */}
-                  <div className={`text-sm font-medium ${marker.isJanuary ? 'text-gray-400' : 'text-gray-600'}`}>
+                  <div className={`text-xs font-medium ${marker.isJanuary ? 'text-gray-500' : 'text-gray-700'}`}>
                     {marker.label}
                   </div>
                 </div>
@@ -361,13 +348,9 @@ export default function Timeline() {
                 return (
                   <div key={item.company} className="relative">
                     {/* Company label */}
-                    <div className="flex items-center gap-3 mb-4">
-                      <div
-                        className={`w-8 h-8 rounded-md ${companyInfo.color} flex items-center justify-center text-white font-bold text-sm`}
-                      >
-                        {companyInfo.initial}
-                      </div>
-                      <span className="text-white font-medium">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className={`w-2 h-2 rounded-full ${companyInfo.dotColor}`} />
+                      <span className="text-gray-400 text-sm font-medium">
                         {companyInfo.name}
                       </span>
                     </div>
@@ -385,15 +368,18 @@ export default function Timeline() {
                           return (
                             <div
                               key={groupIdx}
-                              className={`absolute top-0 border ${companyInfo.borderColor} rounded-lg px-4 py-2 backdrop-blur-sm bg-white/5 hover:bg-white/10 transition-all cursor-pointer whitespace-nowrap z-10`}
+                              className="absolute top-0 border border-white/10 rounded-md px-3 py-2 bg-[#151515] hover:bg-[#1a1a1a] hover:border-white/20 transition-all cursor-pointer whitespace-nowrap z-10 group"
                               style={{
                                 left: `${(release.position / totalMonths) * 100}%`,
                               }}
                             >
-                              <div className={`text-sm font-medium ${companyInfo.textColor}`}>
-                                {release.name}
+                              <div className="flex items-center gap-2">
+                                <div className={`w-1.5 h-1.5 rounded-full ${companyInfo.dotColor}`} />
+                                <div className="text-sm font-medium text-gray-200">
+                                  {release.name}
+                                </div>
                               </div>
-                              <div className="text-xs text-gray-500 mt-0.5">
+                              <div className="text-xs text-gray-500 mt-1 ml-3.5">
                                 {release.date}
                               </div>
                             </div>
@@ -414,7 +400,7 @@ export default function Timeline() {
                             {group.map((release, idx) => (
                               <div
                                 key={idx}
-                                className={`border ${companyInfo.borderColor} rounded-lg px-4 py-2 backdrop-blur-sm bg-white/5 hover:bg-white/10 transition-all cursor-pointer whitespace-nowrap`}
+                                className="border border-white/10 rounded-md px-3 py-2 bg-[#151515] hover:bg-[#1a1a1a] hover:border-white/20 transition-all cursor-pointer whitespace-nowrap"
                                 style={{
                                   position: isHovered ? 'relative' : 'absolute',
                                   top: isHovered ? 0 : idx * 2,
@@ -425,10 +411,13 @@ export default function Timeline() {
                                   opacity: isHovered ? 1 : (idx === group.length - 1 ? 1 : 0.7),
                                 }}
                               >
-                                <div className={`text-sm font-medium ${companyInfo.textColor}`}>
-                                  {release.name}
+                                <div className="flex items-center gap-2">
+                                  <div className={`w-1.5 h-1.5 rounded-full ${companyInfo.dotColor}`} />
+                                  <div className="text-sm font-medium text-gray-200">
+                                    {release.name}
+                                  </div>
                                 </div>
-                                <div className="text-xs text-gray-500 mt-0.5">
+                                <div className="text-xs text-gray-500 mt-1 ml-3.5">
                                   {release.date}
                                 </div>
                               </div>
