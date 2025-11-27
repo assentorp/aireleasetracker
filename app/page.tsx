@@ -146,7 +146,6 @@ export default function Timeline() {
         { date: 'Mar 4 2024', name: 'Claude 3 Opus', position: getMonthPosition('Mar 4 2024') + 0.2 },
         { date: 'Jun 21 2024', name: 'Claude 3.5 Sonnet', position: getMonthPosition('Jun 21 2024') },
         { date: 'Oct 2024', name: 'Claude 3.5 Haiku', position: getMonthPosition('Oct 2024') },
-        { date: 'Feb 25 2025', name: 'Claude Code', position: getMonthPosition('Feb 25 2025') },
         { date: 'Feb 2025', name: 'Claude 3.7 Sonnet', position: getMonthPosition('Feb 2025') + 0.1 },
         { date: 'May 23 2025', name: 'Claude Sonnet 4', position: getMonthPosition('May 23 2025') },
         { date: 'May 23 2025', name: 'Claude Opus 4', position: getMonthPosition('May 23 2025') + 0.1 },
