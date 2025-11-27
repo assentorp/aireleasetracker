@@ -329,14 +329,44 @@ export default function Timeline() {
       ? Math.floor(intervals.reduce((a, b) => a + b, 0) / intervals.length)
       : 0;
 
-    // Get recent releases (last 5)
-    const recentReleases = releases.slice(-5).reverse().map(release => {
-      const releaseDate = parseReleaseDate(release.date);
-      const daysSince = Math.floor((now.getTime() - releaseDate.getTime()) / (1000 * 60 * 60 * 24));
+    // Get recent releases (last 5 unique dates) - combine releases on same day
+    // Group releases by date
+    const dateGroups: { [dateStr: string]: typeof releases } = {};
+    releases.forEach(release => {
+      if (!dateGroups[release.date]) {
+        dateGroups[release.date] = [];
+      }
+      dateGroups[release.date].push(release);
+    });
+
+    // Sort date groups by position (using the first release's position for each date)
+    const sortedDateGroups = Object.entries(dateGroups).sort((a, b) => {
+      const posA = Math.min(...a[1].map(r => r.position));
+      const posB = Math.min(...b[1].map(r => r.position));
+      return posA - posB;
+    });
+
+    // Get last 5 date groups and reverse to show newest first
+    const recentDateGroups = sortedDateGroups.slice(-5).reverse();
+
+    const recentReleases = recentDateGroups.map(([dateStr, sameDateReleases], index) => {
+      const releaseDate = parseReleaseDate(dateStr);
+      let daysSincePrior: number | null = null;
+
+      // If there's a previous date group, calculate days between them
+      if (index < recentDateGroups.length - 1) {
+        const priorDateStr = recentDateGroups[index + 1][0];
+        const priorReleaseDate = parseReleaseDate(priorDateStr);
+        daysSincePrior = Math.floor((releaseDate.getTime() - priorReleaseDate.getTime()) / (1000 * 60 * 60 * 24));
+      }
+
+      // Combine multiple releases on same day into one entry
+      const combinedNames = sameDateReleases.map(r => r.name).join(', ');
+
       return {
-        name: release.name,
-        date: release.date,
-        daysSince
+        name: combinedNames,
+        date: dateStr,
+        daysSince: daysSincePrior
       };
     });
 
@@ -574,10 +604,10 @@ export default function Timeline() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white p-8">
+    <div className="min-h-screen bg-[#0A0A0A] text-white">
       <div className="max-w-full mx-auto">
         {/* Header */}
-        <div className="mb-4 sticky top-0 bg-[#0A0A0A] z-50 py-4">
+        <div className="mb-4 sticky top-0 bg-[#0A0A0A] z-50 py-4 px-8">
           <div className="flex items-start justify-between gap-8">
             <div className="flex-1">
               <h1 className="text-2xl font-semibold text-white mb-2">
@@ -744,7 +774,7 @@ export default function Timeline() {
                                         <div className="text-xs text-gray-600">{release.date}</div>
                                       </div>
                                       <div className="text-sm font-semibold text-gray-400 whitespace-nowrap">
-                                        {release.daysSince}
+                                        {release.daysSince !== null ? `${release.daysSince} days` : '-'}
                                       </div>
                                     </div>
                                   ))}
