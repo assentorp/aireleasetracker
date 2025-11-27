@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 
 export default function Timeline() {
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
+  const [hoveredCompany, setHoveredCompany] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -287,6 +288,61 @@ export default function Timeline() {
   // Use all timeline data (already starts from ChatGPT)
   const filteredData = timelineData;
 
+  // Calculate statistics for a company
+  const getCompanyStats = (companyKey: string) => {
+    const company = timelineData.find(c => c.company === companyKey);
+    if (!company || company.releases.length === 0) return null;
+
+    const releases = company.releases;
+    const now = new Date();
+
+    // Parse last release date
+    const lastRelease = releases[releases.length - 1];
+    const lastReleaseDate = parseReleaseDate(lastRelease.date);
+    const daysSinceLastRelease = Math.floor((now.getTime() - lastReleaseDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    // Calculate average days between releases
+    const intervals: number[] = [];
+    for (let i = 1; i < releases.length; i++) {
+      const date1 = parseReleaseDate(releases[i - 1].date);
+      const date2 = parseReleaseDate(releases[i].date);
+      const days = Math.floor((date2.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24));
+      intervals.push(days);
+    }
+    const avgDaysBetweenReleases = intervals.length > 0
+      ? Math.floor(intervals.reduce((a, b) => a + b, 0) / intervals.length)
+      : 0;
+
+    return {
+      daysSinceLastRelease,
+      avgDaysBetweenReleases,
+      totalReleases: releases.length,
+      lastRelease: lastRelease.name,
+    };
+  };
+
+  const parseReleaseDate = (dateStr: string): Date => {
+    const parts = dateStr.split(' ');
+    const monthMap: { [key: string]: number } = {
+      Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+      Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+    };
+
+    if (parts.length === 3) {
+      // "Mar 14 2023"
+      const month = monthMap[parts[0]] || 0;
+      const day = parseInt(parts[1]);
+      const year = parseInt(parts[2]);
+      return new Date(year, month, day);
+    } else if (parts.length === 2) {
+      // "May 2024" - use first day of month
+      const month = monthMap[parts[0]] || 0;
+      const year = parseInt(parts[1]);
+      return new Date(year, month, 1);
+    }
+    return new Date();
+  };
+
   // Group overlapping releases (within 0.3 months of each other)
   const groupOverlappingReleases = (releases: any[]) => {
     const groups: any[][] = [];
@@ -344,46 +400,100 @@ export default function Timeline() {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleMouseUpOrLeave}
         >
-          <div className="relative" style={{ minWidth: `${totalMonths * 120}px` }}>
+          <div className="relative">
             {/* Timeline header with dates */}
-            <div className="relative mb-8 h-8">
-              {/* Timeline line */}
-              <div className="absolute top-4 left-0 right-0 h-[1px] bg-white/5" />
+            <div className="relative mb-8 h-8 flex">
+              <div className="sticky left-0 bg-[#0A0A0A] z-20" style={{ width: '180px' }} />
+              <div className="flex-1 relative" style={{ minWidth: `${totalMonths * 120}px` }}>
+                {/* Timeline line */}
+                <div className="absolute top-4 left-0 right-0 h-[1px] bg-white/5" />
 
-              {/* Month markers with dotted lines */}
-              {monthMarkers.map((marker, idx) => (
-                <div
-                  key={idx}
-                  className="absolute top-0"
-                  style={{ left: `${(marker.position / totalMonths) * 100}%` }}
-                >
-                  {/* Dotted vertical line */}
-                  <div className="absolute top-8 w-[1px] h-[600px] border-l border-dotted border-white/5" />
+                {/* Month markers with dotted lines */}
+                {monthMarkers.map((marker, idx) => (
+                  <div
+                    key={idx}
+                    className="absolute top-0"
+                    style={{ left: `${(marker.position / totalMonths) * 100}%` }}
+                  >
+                    {/* Dotted vertical line */}
+                    <div className="absolute top-8 w-[1px] h-[600px] border-l border-dotted border-white/5" />
 
-                  {/* Month label */}
-                  <div className={`text-xs font-medium ${marker.isJanuary ? 'text-gray-500' : 'text-gray-700'}`}>
-                    {marker.label}
+                    {/* Month label */}
+                    <div className={`text-xs font-medium ${marker.isJanuary ? 'text-gray-500' : 'text-gray-700'}`}>
+                      {marker.label}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             {/* Company rows */}
             <div className="space-y-8 mt-16">
               {filteredData.map((item) => {
                 const companyInfo = companies[item.company as keyof typeof companies];
+                const stats = getCompanyStats(item.company);
+                const isCompanyHovered = hoveredCompany === item.company;
+
                 return (
-                  <div key={item.company} className="relative">
-                    {/* Company label */}
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className={`w-2 h-2 rounded-full ${companyInfo.dotColor}`} />
-                      <span className="text-gray-400 text-sm font-medium">
-                        {companyInfo.name}
-                      </span>
+                  <div key={item.company} className="relative flex">
+                    {/* Company label - sticky */}
+                    <div
+                      className="sticky left-0 z-20 bg-[#0A0A0A] pr-4 flex items-start"
+                      style={{ width: '180px' }}
+                      onMouseEnter={() => setHoveredCompany(item.company)}
+                      onMouseLeave={() => setHoveredCompany(null)}
+                    >
+                      <div className="relative">
+                        <div className="flex items-center gap-2 mb-4 cursor-pointer">
+                          <div className={`w-2 h-2 rounded-full ${companyInfo.dotColor}`} />
+                          <span className="text-gray-400 text-sm font-medium hover:text-gray-300 transition-colors">
+                            {companyInfo.name}
+                          </span>
+                        </div>
+
+                        {/* Stats panel on hover */}
+                        {isCompanyHovered && stats && (
+                          <div className="absolute top-8 left-0 bg-[#151515] border border-white/10 rounded-lg p-4 shadow-xl z-30 min-w-[280px]">
+                            <div className="space-y-3">
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">Days since last release</div>
+                                <div className="flex items-center justify-between">
+                                  <div className="text-xl font-semibold text-emerald-400">
+                                    {stats.daysSinceLastRelease}
+                                  </div>
+                                  <div className="text-xs text-gray-600">{stats.lastRelease}</div>
+                                </div>
+                                <div className="mt-2 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-emerald-500 rounded-full transition-all"
+                                    style={{
+                                      width: `${Math.min((stats.daysSinceLastRelease / stats.avgDaysBetweenReleases) * 100, 100)}%`
+                                    }}
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="pt-3 border-t border-white/5">
+                                <div className="text-xs text-gray-500 mb-1">Average</div>
+                                <div className="text-lg font-semibold text-gray-300">
+                                  {stats.avgDaysBetweenReleases} days
+                                </div>
+                              </div>
+
+                              <div className="pt-3 border-t border-white/5">
+                                <div className="text-xs text-gray-500 mb-1">Total releases</div>
+                                <div className="text-lg font-semibold text-gray-300">
+                                  {stats.totalReleases}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Timeline releases */}
-                    <div className="relative h-24">
+                    <div className="relative h-24 flex-1" style={{ minWidth: `${totalMonths * 120}px` }}>
                       {groupOverlappingReleases(item.releases).map((group, groupIdx) => {
                         const avgPosition = group.reduce((sum, r) => sum + r.position, 0) / group.length;
                         const groupId = `${item.company}-${groupIdx}`;
