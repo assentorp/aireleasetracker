@@ -438,7 +438,7 @@ export default function Timeline() {
                   <div key={item.company} className="relative flex">
                     {/* Company label - sticky */}
                     <div
-                      className="sticky left-0 z-20 bg-[#0A0A0A] pr-4 flex items-start"
+                      className={`sticky left-0 bg-[#0A0A0A] pr-4 flex items-start transition-all ${isCompanyHovered ? 'z-50' : 'z-20'}`}
                       style={{ width: '180px' }}
                       onMouseEnter={() => setHoveredCompany(item.company)}
                       onMouseLeave={() => setHoveredCompany(null)}
@@ -453,7 +453,7 @@ export default function Timeline() {
 
                         {/* Stats panel on hover */}
                         {isCompanyHovered && stats && (
-                          <div className="absolute top-8 left-0 bg-[#151515] border border-white/10 rounded-lg p-4 shadow-xl z-30 min-w-[280px]">
+                          <div className="absolute top-8 left-0 bg-[#151515] border border-white/10 rounded-lg p-4 shadow-xl z-[100] min-w-[280px]">
                             <div className="space-y-3">
                               <div>
                                 <div className="text-xs text-gray-500 mb-1">Days since last release</div>
