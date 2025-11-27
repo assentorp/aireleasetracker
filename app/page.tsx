@@ -7,10 +7,12 @@ import Logo from '../assets/Logo';
 export default function Timeline() {
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const [hoveredCompany, setHoveredCompany] = useState<string | null>(null);
+  const [hoveredRelease, setHoveredRelease] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const [mousePosition, setMousePosition] = useState<{ x: number; viewportX: number; month: string } | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const monthHeaderRef = useRef<HTMLDivElement>(null);
   const hasScrolledOnLoadRef = useRef(false);
@@ -64,15 +66,46 @@ export default function Timeline() {
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !scrollContainerRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - scrollContainerRef.current.offsetLeft;
-    const walk = (x - startX) * 2; // Multiply for faster scrolling
-    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+    if (!scrollContainerRef.current) return;
+
+    // Calculate mouse position and month
+    const rect = scrollContainerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left + scrollContainerRef.current.scrollLeft;
+
+    // Calculate which month based on position (Nov 2022 to Dec 2025 = 38 months)
+    const startDate = new Date('2022-11-01');
+    const endDate = new Date('2025-12-01');
+    const totalMonthsCount = ((endDate.getFullYear() - startDate.getFullYear()) * 12 +
+                               endDate.getMonth() - startDate.getMonth() + 1);
+    const timelineWidth = totalMonthsCount * 120;
+    const monthIndex = Math.floor((x / timelineWidth) * totalMonthsCount);
+
+    if (monthIndex >= 0 && monthIndex < totalMonthsCount) {
+      const currentMonth = new Date(startDate);
+      currentMonth.setMonth(currentMonth.getMonth() + monthIndex);
+      const monthLabel = currentMonth.toLocaleString('default', { month: 'short' });
+      const year = currentMonth.getFullYear();
+      const isJanuary = currentMonth.getMonth() === 0;
+
+      setMousePosition({
+        x: x, // Use the full timeline position for the line
+        viewportX: e.clientX, // Viewport position for the label
+        month: `${monthLabel} ${year}`
+      });
+    }
+
+    // Handle dragging
+    if (isDragging) {
+      e.preventDefault();
+      const pageX = e.pageX - scrollContainerRef.current.offsetLeft;
+      const walk = (pageX - startX) * 2;
+      scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+    }
   };
 
   const handleMouseUpOrLeave = () => {
     setIsDragging(false);
+    setMousePosition(null);
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -736,6 +769,22 @@ export default function Timeline() {
           </div>
       </div>
 
+      {/* Fixed month label - follows mouse */}
+      {mousePosition && (
+        <div
+          className="fixed pointer-events-none z-[10000]"
+          style={{
+            left: `${mousePosition.viewportX + 8}px`, // Viewport position + small margin
+            top: '50vh',
+            transform: 'translateY(-50%)'
+          }}
+        >
+          <div className="px-2 py-1 bg-black text-white text-xs rounded whitespace-nowrap">
+            {mousePosition.month}
+          </div>
+        </div>
+      )}
+
       {/* Timeline container - fixed left column + scrollable right */}
       <div className="flex">
           {/* Fixed left column for company labels */}
@@ -893,7 +942,8 @@ export default function Timeline() {
           {/* Scrollable timeline section */}
           <div
             ref={scrollContainerRef}
-            className={`flex-1 overflow-x-auto overflow-y-hidden select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+            className={`flex-1 overflow-x-auto overflow-y-clip select-none relative ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+            style={{ isolation: 'isolate' }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUpOrLeave}
@@ -938,16 +988,34 @@ export default function Timeline() {
                 const totalTimelineHeight = totalCompanyHeight + 64; // 64px for mt-16 spacing
 
                 return (
-                  /* Dotted vertical lines spanning full height */
-                  <div className="absolute top-0 left-0 right-0 pointer-events-none" style={{ height: `${totalTimelineHeight}px`, minWidth: `${totalMonths * 120}px` }}>
-                    {monthMarkers.map((marker, idx) => (
+                  <>
+                    {/* Dotted vertical lines spanning full height */}
+                    <div className="absolute top-0 left-0 right-0 pointer-events-none" style={{ height: `${totalTimelineHeight}px`, minWidth: `${totalMonths * 120}px` }}>
+                      {monthMarkers.map((marker, idx) => (
+                        <div
+                          key={idx}
+                          className="absolute top-0 bottom-0 w-[1px] border-l border-dotted border-white/5"
+                          style={{ left: `${(marker.position / totalMonths) * 100}%` }}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Mouse tracker line */}
+                    {mousePosition && (
                       <div
-                        key={idx}
-                        className="absolute top-0 bottom-0 w-[1px] border-l border-dotted border-white/5"
-                        style={{ left: `${(marker.position / totalMonths) * 100}%` }}
-                      />
-                    ))}
-                  </div>
+                        className="absolute pointer-events-none"
+                        style={{
+                          left: `${mousePosition.x}px`,
+                          top: 0,
+                          height: `${totalTimelineHeight}px`,
+                          zIndex: 10
+                        }}
+                      >
+                        {/* Vertical line */}
+                        <div className="absolute top-0 w-[2px] bg-white opacity-30" style={{ height: `${totalTimelineHeight}px` }} />
+                      </div>
+                    )}
+                  </>
                 );
               })()}
 
@@ -1007,6 +1075,9 @@ export default function Timeline() {
                       {releasesWithRows.map((release, idx) => {
                         const topOffset = rowHeights[release.row] || 0;
 
+                        const releaseKey = `${item.company}-${idx}`;
+                        const isReleaseHovered = hoveredRelease === releaseKey;
+
                         return (
                           <div
                             key={idx}
@@ -1015,16 +1086,23 @@ export default function Timeline() {
                               left: `${(release.alignedPosition / totalMonths) * 100}%`,
                               top: `${topOffset}px`,
                             }}
+                            onMouseEnter={() => setHoveredRelease(releaseKey)}
+                            onMouseLeave={() => setHoveredRelease(null)}
                           >
                             <div className="flex items-center gap-2">
                               <div className={`w-1.5 h-1.5 rounded-full ${companyInfo.dotColor}`} />
                               <div className="text-sm font-medium text-gray-200">
                                 {release.name}
                               </div>
-                              <div className="text-xs text-gray-500">
-                                {release.date}
-                              </div>
                             </div>
+
+                            {/* Custom tooltip */}
+                            {isReleaseHovered && (
+                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded whitespace-nowrap pointer-events-none z-50">
+                                {release.date}
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-black"></div>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
