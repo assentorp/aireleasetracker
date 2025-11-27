@@ -90,41 +90,49 @@ export default function Timeline() {
   };
 
   // Company configurations with subtle colors
+  // Change the 'order' property to reorder companies in the timeline
   const companies = {
     anthropic: {
       name: 'Anthropic',
       dotColor: 'bg-orange-500',
       initial: 'A',
+      order: 2,
     },
     openai: {
       name: 'OpenAI',
       dotColor: 'bg-emerald-500',
       initial: 'O',
+      order: 1,
     },
     google: {
       name: 'Google',
       dotColor: 'bg-blue-500',
       initial: 'G',
+      order: 4,
     },
     meta: {
       name: 'Meta',
       dotColor: 'bg-sky-500',
       initial: 'M',
+      order: 3,
     },
     xai: {
       name: 'xAI',
       dotColor: 'bg-purple-500',
       initial: 'X',
+      order: 5,
     },
     deepseek: {
       name: 'DeepSeek',
       dotColor: 'bg-pink-500',
       initial: 'D',
+      order: 6,
     },
     mistral: {
       name: 'Mistral AI',
       dotColor: 'bg-amber-500',
       initial: 'Mi',
+      order: 7,
     },
   };
 
@@ -230,19 +238,25 @@ export default function Timeline() {
       company: 'openai',
       releases: [
         { date: 'Nov 30 2022', name: 'ChatGPT (GPT-3.5)', position: getMonthPosition('Nov 30 2022') },
-        { date: 'Mar 14 2023', name: 'GPT-4', position: getMonthPosition('Mar 14 2023') },
-        { date: 'Nov 6 2023', name: 'GPT-4 Turbo', position: getMonthPosition('Nov 6 2023') },
-        { date: 'May 13 2024', name: 'GPT-4o', position: getMonthPosition('May 13 2024') },
-        { date: 'Jul 18 2024', name: 'GPT-4o mini', position: getMonthPosition('Jul 18 2024') },
-        { date: 'Sep 12 2024', name: 'o1', position: getMonthPosition('Sep 12 2024') },
-        { date: 'Sep 12 2024', name: 'o1 mini', position: getMonthPosition('Sep 12 2024') + 0.1 },
-        { date: 'Jan 31 2025', name: 'o3 mini', position: getMonthPosition('Jan 31 2025') },
-        { date: 'Feb 27 2025', name: 'GPT-4.5', position: getMonthPosition('Feb 27 2025') },
-        { date: 'May 14 2025', name: 'GPT-4.1', position: getMonthPosition('May 14 2025') },
-        { date: 'May 14 2025', name: 'GPT-4.1 mini', position: getMonthPosition('May 14 2025') + 0.1 },
-        { date: 'Jun 6 2025', name: 'o4 mini', position: getMonthPosition('Jun 6 2025') },
-        { date: 'Jun 10 2025', name: 'o3 pro', position: getMonthPosition('Jun 10 2025') },
-        { date: 'Aug 5 2025', name: 'GPT-5 (gpt-oss-120b/20b)', position: getMonthPosition('Aug 5 2025') }
+        { date: 'Mar 2023', name: 'GPT-4', position: getMonthPosition('Mar 2023') },
+        { date: 'May 2024', name: 'GPT-4o', position: getMonthPosition('May 2024') },
+        { date: 'Jul 2024', name: 'GPT-4o mini', position: getMonthPosition('Jul 2024') },
+        { date: 'Sep 2024', name: 'o1-preview', position: getMonthPosition('Sep 2024') },
+        { date: 'Sep 2024', name: 'o1-mini', position: getMonthPosition('Sep 2024') + 0.1 },
+        { date: 'Dec 2024', name: 'o1', position: getMonthPosition('Dec 2024') },
+        { date: 'Dec 2024', name: 'o1-pro', position: getMonthPosition('Dec 2024') + 0.1 },
+        { date: 'Jan 2025', name: 'o3-mini', position: getMonthPosition('Jan 2025') },
+        { date: 'Jan 2025', name: 'o3-mini-high', position: getMonthPosition('Jan 2025') + 0.1 },
+        { date: 'Feb 2025', name: 'GPT-4.5', position: getMonthPosition('Feb 2025') },
+        { date: 'Apr 2025', name: 'GPT-4.1', position: getMonthPosition('Apr 2025') },
+        { date: 'Apr 2025', name: 'GPT-4.1 mini', position: getMonthPosition('Apr 2025') + 0.1 },
+        { date: 'Apr 2025', name: 'o3', position: getMonthPosition('Apr 2025') + 0.2 },
+        { date: 'Apr 2025', name: 'o4-mini', position: getMonthPosition('Apr 2025') + 0.3 },
+        { date: 'Apr 2025', name: 'o4-mini-high', position: getMonthPosition('Apr 2025') + 0.4 },
+        { date: 'Jun 2025', name: 'o3-pro', position: getMonthPosition('Jun 2025') },
+        { date: 'Aug 7 2025', name: 'GPT-5', position: getMonthPosition('Aug 7 2025') },
+        { date: 'Aug 7 2025', name: 'GPT-5 mini', position: getMonthPosition('Aug 7 2025') + 0.1 },
+        { date: 'Nov 12 2025', name: 'GPT-5.1', position: getMonthPosition('Nov 12 2025') }
       ]
     },
     {
@@ -325,7 +339,12 @@ export default function Timeline() {
   const totalMonths = monthMarkers.length;
 
   // Use all timeline data (already starts from ChatGPT)
-  const filteredData = timelineData;
+  // Sort companies by their order property
+  const filteredData = [...timelineData].sort((a, b) => {
+    const orderA = companies[a.company as keyof typeof companies]?.order || 999;
+    const orderB = companies[b.company as keyof typeof companies]?.order || 999;
+    return orderA - orderB;
+  });
 
   // Calculate statistics for a company
   const getCompanyStats = (companyKey: string) => {
