@@ -49,9 +49,9 @@ export default function Timeline() {
     },
   };
 
-  // Helper function to calculate months from start date (Jun 2018)
+  // Helper function to calculate months from start date (Nov 2022)
   const getMonthPosition = (dateStr: string) => {
-    const startDate = new Date('2018-06-01');
+    const startDate = new Date('2022-11-01');
     const parts = dateStr.split(' ');
 
     const monthMap: { [key: string]: number } = {
@@ -151,9 +151,6 @@ export default function Timeline() {
     {
       company: 'openai',
       releases: [
-        { date: 'Jun 2018', name: 'GPT-1', position: getMonthPosition('Jun 2018') },
-        { date: 'Feb 14 2019', name: 'GPT-2', position: getMonthPosition('Feb 14 2019') },
-        { date: 'May 29 2020', name: 'GPT-3', position: getMonthPosition('May 29 2020') },
         { date: 'Nov 30 2022', name: 'ChatGPT (GPT-3.5)', position: getMonthPosition('Nov 30 2022') },
         { date: 'Mar 14 2023', name: 'GPT-4', position: getMonthPosition('Mar 14 2023') },
         { date: 'Nov 6 2023', name: 'GPT-4 Turbo', position: getMonthPosition('Nov 6 2023') },
@@ -219,10 +216,10 @@ export default function Timeline() {
     }
   ];
 
-  // Generate month markers from Jun 2018 to Dec 2025
+  // Generate month markers from Nov 2022 to Dec 2025
   const generateMonthMarkers = () => {
     const markers = [];
-    const startDate = new Date('2018-06-01');
+    const startDate = new Date('2022-11-01');
     const endDate = new Date('2025-12-01');
 
     let current = new Date(startDate);
@@ -249,19 +246,8 @@ export default function Timeline() {
   const monthMarkers = generateMonthMarkers();
   const totalMonths = monthMarkers.length;
 
-  // ChatGPT launch date position
-  const chatGptLaunchPosition = getMonthPosition('Nov 30 2022');
-
-  // Filter data: only show releases from ChatGPT launch onwards
-  const filteredByDate = useMemo(() => {
-    return timelineData.map((company) => ({
-      ...company,
-      releases: company.releases.filter((release) => release.position >= chatGptLaunchPosition),
-    })).filter((company) => company.releases.length > 0);
-  }, [chatGptLaunchPosition]);
-
-  // Use all companies (no filtering)
-  const filteredData = filteredByDate;
+  // Use all timeline data (already starts from ChatGPT)
+  const filteredData = timelineData;
 
   // Group overlapping releases (within 0.3 months of each other)
   const groupOverlappingReleases = (releases: any[]) => {
