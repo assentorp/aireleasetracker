@@ -323,9 +323,15 @@ export default function Timeline() {
       };
     });
 
-    // Calculate expected next release date
-    const expectedNextReleaseDate = new Date(lastReleaseDate);
+    // Calculate expected next release date - keep adding intervals until it's in the future
+    let expectedNextReleaseDate = new Date(lastReleaseDate);
     expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
+
+    // Keep adding intervals until we get a date in the future
+    while (expectedNextReleaseDate <= now && avgDaysBetweenReleases > 0) {
+      expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
+    }
+
     const daysUntilExpected = Math.floor((expectedNextReleaseDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
     // Format expected date
@@ -392,6 +398,99 @@ export default function Timeline() {
     return groups;
   };
 
+  // Type definitions
+  type NextExpectedRelease = { company: string; companyName: string; date: string; daysUntil: number };
+  type LatestRelease = { company: string; companyName: string; model: string; date: string; releaseDate: Date };
+
+  // Calculate next expected release across all companies
+  const getNextExpectedRelease = (): NextExpectedRelease | null => {
+    const now = new Date();
+    let nextRelease: { company: string; companyName: string; date: string; daysUntil: number } | null = null;
+
+    timelineData.forEach((item) => {
+      const company = timelineData.find(c => c.company === item.company);
+      if (!company || company.releases.length === 0) return;
+
+      const releases = company.releases;
+      const lastRelease = releases[releases.length - 1];
+      const lastReleaseDate = parseReleaseDate(lastRelease.date);
+
+      // Calculate average days between releases
+      const intervals: number[] = [];
+      for (let i = 1; i < releases.length; i++) {
+        const date1 = parseReleaseDate(releases[i - 1].date);
+        const date2 = parseReleaseDate(releases[i].date);
+        const days = Math.floor((date2.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24));
+        intervals.push(days);
+      }
+      const avgDaysBetweenReleases = intervals.length > 0
+        ? Math.floor(intervals.reduce((a, b) => a + b, 0) / intervals.length)
+        : 0;
+
+      if (avgDaysBetweenReleases > 0) {
+        // Calculate expected next release date - keep adding intervals until it's in the future
+        let expectedNextReleaseDate = new Date(lastReleaseDate);
+        expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
+
+        // Keep adding intervals until we get a date in the future
+        while (expectedNextReleaseDate <= now) {
+          expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
+        }
+
+        const daysUntil = Math.floor((expectedNextReleaseDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+        // Format expected date
+        const formatExpectedDate = (date: Date) => {
+          const month = date.toLocaleString('default', { month: 'short' });
+          const day = date.getDate();
+          const year = date.getFullYear();
+          return `${month} ${day}, ${year}`;
+        };
+
+        if (!nextRelease || daysUntil < nextRelease.daysUntil) {
+          const companyInfo = companies[item.company as keyof typeof companies];
+          nextRelease = {
+            company: item.company,
+            companyName: companyInfo.name,
+            date: formatExpectedDate(expectedNextReleaseDate),
+            daysUntil,
+          };
+        }
+      }
+    });
+
+    return nextRelease;
+  };
+
+  // Get latest release across all companies
+  const getLatestRelease = (): LatestRelease | null => {
+    let latestRelease: { company: string; companyName: string; model: string; date: string; releaseDate: Date } | null = null;
+
+    timelineData.forEach((item) => {
+      const releases = item.releases;
+      if (releases.length > 0) {
+        const lastRelease = releases[releases.length - 1];
+        const releaseDate = parseReleaseDate(lastRelease.date);
+
+        if (!latestRelease || releaseDate > latestRelease.releaseDate) {
+          const companyInfo = companies[item.company as keyof typeof companies];
+          latestRelease = {
+            company: item.company,
+            companyName: companyInfo.name,
+            model: lastRelease.name,
+            date: lastRelease.date,
+            releaseDate,
+          };
+        }
+      }
+    });
+
+    return latestRelease;
+  };
+
+  const nextExpected = getNextExpectedRelease();
+  const latestRelease = getLatestRelease();
+
   // Prevent hydration mismatch by only rendering on client
   if (!mounted) {
     return (
@@ -406,12 +505,45 @@ export default function Timeline() {
       <div className="max-w-full mx-auto">
         {/* Header */}
         <div className="mb-12 sticky top-0 bg-[#0A0A0A] z-50 py-4">
-          <h1 className="text-2xl font-semibold text-white mb-2">
-            AI Release Tracker
-          </h1>
-          <p className="text-sm text-gray-500">
-            Major AI model releases since ChatGPT (November 30, 2022)
-          </p>
+          <div className="flex items-start justify-between gap-8">
+            <div className="flex-1">
+              <h1 className="text-2xl font-semibold text-white mb-2">
+                AI Release Tracker
+              </h1>
+              <p className="text-sm text-gray-500">
+                Major AI model releases since ChatGPT (November 30, 2022)
+              </p>
+            </div>
+
+            {/* Top right corner info */}
+            <div className="flex-shrink-0 flex gap-4">
+              {nextExpected !== null ? (
+                <div className="bg-[#151515] border border-white/10 rounded-lg p-4 min-w-[240px]">
+                  <div className="text-xs text-gray-500 mb-1">Next Expected Release</div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className={`w-2 h-2 rounded-full ${companies[nextExpected.company as keyof typeof companies]?.dotColor || 'bg-gray-500'}`} />
+                    <div className="text-sm font-semibold text-white">{nextExpected.companyName}</div>
+                  </div>
+                  <div className="text-xs text-gray-400 ml-4">~{nextExpected.date}</div>
+                  <div className={`text-xs font-medium mt-1 ml-4 ${nextExpected.daysUntil < 0 ? 'text-gray-500' : nextExpected.daysUntil < 30 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                    {nextExpected.daysUntil < 0
+                      ? `${Math.abs(nextExpected.daysUntil)} days ago`
+                      : `${nextExpected.daysUntil} days`
+                    }
+                  </div>
+                </div>
+              ) : null}
+
+              {latestRelease !== null ? (
+                <div className="bg-[#151515] border border-white/10 rounded-lg p-4 min-w-[240px]">
+                  <div className="text-xs text-gray-500 mb-1">Latest Release</div>
+                  <div className="text-sm font-semibold text-white mb-1">{latestRelease.model}</div>
+                  <div className="text-xs text-gray-400 mb-1">{latestRelease.companyName}</div>
+                  <div className="text-xs text-gray-400">{latestRelease.date}</div>
+                </div>
+              ) : null}
+            </div>
+          </div>
         </div>
 
         {/* Timeline container - scrollable */}
@@ -442,7 +574,7 @@ export default function Timeline() {
                     style={{ left: `${(marker.position / totalMonths) * 100}%` }}
                   >
                     {/* Dotted vertical line */}
-                    <div className="absolute top-8 w-[1px] h-[600px] border-l border-dotted border-white/5" />
+                    <div className="absolute top-8 w-[1px] h-[1200px] border-l border-dotted border-white/5" />
 
                     {/* Month label */}
                     <div className={`text-xs font-medium ${marker.isJanuary ? 'text-gray-500' : 'text-gray-700'}`}>
