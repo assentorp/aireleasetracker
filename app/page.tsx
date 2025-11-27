@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import Logo from '../assets/Logo';
 
 export default function Timeline() {
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
@@ -610,9 +612,9 @@ export default function Timeline() {
         <div className="mb-4 sticky top-0 bg-[#0A0A0A] z-50 py-4 px-8">
           <div className="flex items-start justify-between gap-8">
             <div className="flex-1">
-              <h1 className="text-2xl font-semibold text-white mb-2">
-                AI Release Tracker
-              </h1>
+              <Link href="/" className="inline-block mt-6 hover:opacity-80 transition-opacity">
+                <Logo className="cursor-pointer" />
+              </Link>
               <p className="text-sm text-gray-500">
                 Major AI model releases since ChatGPT (November 30, 2022)
               </p>
