@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 export default function Timeline() {
   const [selectedCompany, setSelectedCompany] = useState('all');
+  const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
 
   // Company configurations with colors
   const companies = {
@@ -258,10 +259,44 @@ export default function Timeline() {
   const monthMarkers = generateMonthMarkers();
   const totalMonths = monthMarkers.length;
 
-  const filteredData =
-    selectedCompany === 'all'
-      ? timelineData
-      : timelineData.filter((item) => item.company === selectedCompany);
+  // ChatGPT launch date position
+  const chatGptLaunchPosition = getMonthPosition('Nov 30 2022');
+
+  // Filter data: only show releases from ChatGPT launch onwards
+  const filteredByDate = useMemo(() => {
+    return timelineData.map((company) => ({
+      ...company,
+      releases: company.releases.filter((release) => release.position >= chatGptLaunchPosition),
+    })).filter((company) => company.releases.length > 0);
+  }, [chatGptLaunchPosition]);
+
+  // Filter by selected company
+  const filteredData = selectedCompany === 'all'
+    ? filteredByDate
+    : filteredByDate.filter((item) => item.company === selectedCompany);
+
+  // Group overlapping releases (within 0.3 months of each other)
+  const groupOverlappingReleases = (releases: any[]) => {
+    const groups: any[][] = [];
+    const sorted = [...releases].sort((a, b) => a.position - b.position);
+
+    sorted.forEach((release) => {
+      let added = false;
+      for (const group of groups) {
+        const lastInGroup = group[group.length - 1];
+        if (Math.abs(lastInGroup.position - release.position) < 0.3) {
+          group.push(release);
+          added = true;
+          break;
+        }
+      }
+      if (!added) {
+        groups.push([release]);
+      }
+    });
+
+    return groups;
+  };
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white p-8">
@@ -338,23 +373,69 @@ export default function Timeline() {
                     </div>
 
                     {/* Timeline releases */}
-                    <div className="relative h-16">
-                      {item.releases.map((release, idx) => (
-                        <div
-                          key={idx}
-                          className={`absolute top-0 border ${companyInfo.borderColor} rounded-lg px-4 py-2 backdrop-blur-sm bg-white/5 hover:bg-white/10 transition-all cursor-pointer whitespace-nowrap`}
-                          style={{
-                            left: `${(release.position / totalMonths) * 100}%`,
-                          }}
-                        >
-                          <div className={`text-sm font-medium ${companyInfo.textColor}`}>
-                            {release.name}
+                    <div className="relative h-24">
+                      {groupOverlappingReleases(item.releases).map((group, groupIdx) => {
+                        const avgPosition = group.reduce((sum, r) => sum + r.position, 0) / group.length;
+                        const groupId = `${item.company}-${groupIdx}`;
+                        const isHovered = hoveredGroup === groupId;
+
+                        if (group.length === 1) {
+                          // Single release - render normally
+                          const release = group[0];
+                          return (
+                            <div
+                              key={groupIdx}
+                              className={`absolute top-0 border ${companyInfo.borderColor} rounded-lg px-4 py-2 backdrop-blur-sm bg-white/5 hover:bg-white/10 transition-all cursor-pointer whitespace-nowrap z-10`}
+                              style={{
+                                left: `${(release.position / totalMonths) * 100}%`,
+                              }}
+                            >
+                              <div className={`text-sm font-medium ${companyInfo.textColor}`}>
+                                {release.name}
+                              </div>
+                              <div className="text-xs text-gray-500 mt-0.5">
+                                {release.date}
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        // Multiple releases - render as stacked cards
+                        return (
+                          <div
+                            key={groupIdx}
+                            className="absolute top-0"
+                            style={{
+                              left: `${(avgPosition / totalMonths) * 100}%`,
+                            }}
+                            onMouseEnter={() => setHoveredGroup(groupId)}
+                            onMouseLeave={() => setHoveredGroup(null)}
+                          >
+                            {group.map((release, idx) => (
+                              <div
+                                key={idx}
+                                className={`border ${companyInfo.borderColor} rounded-lg px-4 py-2 backdrop-blur-sm bg-white/5 hover:bg-white/10 transition-all cursor-pointer whitespace-nowrap`}
+                                style={{
+                                  position: isHovered ? 'relative' : 'absolute',
+                                  top: isHovered ? 0 : idx * 2,
+                                  left: isHovered ? 0 : idx * 2,
+                                  zIndex: isHovered ? 20 + idx : 10 + (group.length - idx),
+                                  marginBottom: isHovered ? '8px' : 0,
+                                  transform: isHovered ? 'translateY(0)' : 'translateY(0)',
+                                  opacity: isHovered ? 1 : (idx === group.length - 1 ? 1 : 0.7),
+                                }}
+                              >
+                                <div className={`text-sm font-medium ${companyInfo.textColor}`}>
+                                  {release.name}
+                                </div>
+                                <div className="text-xs text-gray-500 mt-0.5">
+                                  {release.date}
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                          <div className="text-xs text-gray-500 mt-0.5">
-                            {release.date}
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 );
