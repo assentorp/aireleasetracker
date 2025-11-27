@@ -694,7 +694,7 @@ export default function Timeline() {
                   style={{ left: `${(marker.position / totalMonths) * 100}%` }}
                 >
                   {/* Month label */}
-                  <div className={`text-xs font-medium ${marker.isJanuary ? 'text-gray-500' : 'text-gray-700'}`}>
+                  <div className={`text-xs font-medium ${marker.isJanuary ? 'text-white' : 'text-gray-700'}`}>
                     {marker.label}
                   </div>
                 </div>
@@ -704,7 +704,7 @@ export default function Timeline() {
       </div>
 
       {/* Timeline container - fixed left column + scrollable right */}
-      <div className="flex pt-4 pb-8">
+      <div className="flex">
           {/* Fixed left column for company labels */}
           <div className="flex-shrink-0 w-[180px] border-r border-white/5 bg-[#0A0A0A] z-30 overflow-visible">
 
