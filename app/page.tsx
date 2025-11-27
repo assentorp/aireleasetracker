@@ -12,6 +12,7 @@ export default function Timeline() {
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const monthHeaderRef = useRef<HTMLDivElement>(null);
   const hasScrolledOnLoadRef = useRef(false);
 
   useEffect(() => {
@@ -20,18 +21,38 @@ export default function Timeline() {
 
   // Scroll to end of timeline smoothly on initial page load
   useEffect(() => {
-    if (mounted && scrollContainerRef.current && !hasScrolledOnLoadRef.current) {
+    if (mounted && scrollContainerRef.current && monthHeaderRef.current && !hasScrolledOnLoadRef.current) {
       // Small delay to ensure DOM is fully rendered
       setTimeout(() => {
-        if (scrollContainerRef.current) {
+        if (scrollContainerRef.current && monthHeaderRef.current) {
+          const scrollWidth = scrollContainerRef.current.scrollWidth;
           scrollContainerRef.current.scrollTo({
-            left: scrollContainerRef.current.scrollWidth,
+            left: scrollWidth,
+            behavior: 'smooth'
+          });
+          monthHeaderRef.current.scrollTo({
+            left: scrollWidth,
             behavior: 'smooth'
           });
           hasScrolledOnLoadRef.current = true;
         }
       }, 100);
     }
+  }, [mounted]);
+
+  // Sync scroll position between timeline and month header
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    const monthHeader = monthHeaderRef.current;
+
+    if (!scrollContainer || !monthHeader) return;
+
+    const handleScroll = () => {
+      monthHeader.scrollLeft = scrollContainer.scrollLeft;
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
   }, [mounted]);
 
   // Drag/pan handlers
@@ -607,9 +628,8 @@ export default function Timeline() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white">
-      <div className="max-w-full mx-auto">
-        {/* Header */}
-        <div className="mb-4 sticky top-0 bg-[#0A0A0A] z-50 py-4 px-8">
+      {/* Header */}
+      <div className="sticky top-0 bg-[#0A0A0A] z-50 py-4 px-8 border-b border-white/5">
           <div className="flex items-start justify-between gap-8">
             <div className="flex-1">
               <Link href="/" className="inline-block mt-6 hover:opacity-80 transition-opacity">
@@ -650,14 +670,43 @@ export default function Timeline() {
               ) : null}
             </div>
           </div>
-        </div>
+      </div>
 
-        {/* Timeline container - fixed left column + scrollable right */}
-        <div className="flex">
+      {/* Sticky month header - outside scroll container */}
+      <div className="flex sticky top-[112px] z-40 bg-[#0A0A0A] border-b border-white/5">
+          {/* Left spacer to align with company labels */}
+          <div className="flex-shrink-0 w-[180px]" />
+
+          {/* Month header - scrollable */}
+          <div
+            ref={monthHeaderRef}
+            className="flex-1 overflow-x-auto scrollbar-hide"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            <div className="relative h-8 py-2" style={{ paddingRight: '200px', minWidth: `${totalMonths * 120}px` }}>
+              {/* Timeline line */}
+
+              {/* Month markers */}
+              {monthMarkers.map((marker, idx) => (
+                <div
+                  key={idx}
+                  className="absolute top-2"
+                  style={{ left: `${(marker.position / totalMonths) * 100}%` }}
+                >
+                  {/* Month label */}
+                  <div className={`text-xs font-medium ${marker.isJanuary ? 'text-gray-500' : 'text-gray-700'}`}>
+                    {marker.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+      </div>
+
+      {/* Timeline container - fixed left column + scrollable right */}
+      <div className="flex pt-4 pb-8">
           {/* Fixed left column for company labels */}
           <div className="flex-shrink-0 w-[180px] border-r border-white/5 bg-[#0A0A0A] z-30 overflow-visible">
-            {/* Header spacer */}
-            <div className="h-8 mb-8" />
 
             {/* Company labels */}
             <div className={`space-y-8 overflow-visible ${hoveredCompany ? 'z-[200] relative' : ''}`}>
@@ -796,7 +845,7 @@ export default function Timeline() {
           {/* Scrollable timeline section */}
           <div
             ref={scrollContainerRef}
-            className={`flex-1 overflow-x-auto pb-8 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+            className={`flex-1 overflow-x-auto overflow-y-hidden  select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUpOrLeave}
@@ -806,28 +855,6 @@ export default function Timeline() {
             onTouchEnd={handleMouseUpOrLeave}
           >
             <div className="relative" style={{ paddingRight: '200px' }}>
-              {/* Timeline header with dates - sticky */}
-              <div className="sticky top-0 z-40 bg-[#0A0A0A] mb-8 h-8 py-2">
-                <div className="relative" style={{ minWidth: `${totalMonths * 120}px` }}>
-                  {/* Timeline line */}
-                  <div className="absolute top-4 left-0 right-0 h-[1px] bg-white/5" />
-
-                  {/* Month markers */}
-                  {monthMarkers.map((marker, idx) => (
-                    <div
-                      key={idx}
-                      className="absolute top-0"
-                      style={{ left: `${(marker.position / totalMonths) * 100}%` }}
-                    >
-                      {/* Month label */}
-                      <div className={`text-xs font-medium ${marker.isJanuary ? 'text-gray-500' : 'text-gray-700'}`}>
-                        {marker.label}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               {/* Calculate total height of all company rows for dotted lines */}
               {(() => {
                 const companyHeights: number[] = [];
@@ -862,7 +889,7 @@ export default function Timeline() {
 
                 return (
                   /* Dotted vertical lines spanning full height */
-                  <div className="absolute top-8 left-0 right-0 pointer-events-none" style={{ height: `${totalTimelineHeight}px`, minWidth: `${totalMonths * 120}px` }}>
+                  <div className="absolute top-0 left-0 right-0 pointer-events-none" style={{ height: `${totalTimelineHeight}px`, minWidth: `${totalMonths * 120}px` }}>
                     {monthMarkers.map((marker, idx) => (
                       <div
                         key={idx}
@@ -955,7 +982,6 @@ export default function Timeline() {
                 );
               })}
             </div>
-          </div>
           </div>
         </div>
       </div>
