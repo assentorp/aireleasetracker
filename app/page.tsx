@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect } from 'react';
 
 export default function Timeline() {
-  const [selectedCompany, setSelectedCompany] = useState('all');
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -261,10 +260,8 @@ export default function Timeline() {
     })).filter((company) => company.releases.length > 0);
   }, [chatGptLaunchPosition]);
 
-  // Filter by selected company
-  const filteredData = selectedCompany === 'all'
-    ? filteredByDate
-    : filteredByDate.filter((item) => item.company === selectedCompany);
+  // Use all companies (no filtering)
+  const filteredData = filteredByDate;
 
   // Group overlapping releases (within 0.3 months of each other)
   const groupOverlappingReleases = (releases: any[]) => {
@@ -301,32 +298,14 @@ export default function Timeline() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white p-8">
       <div className="max-w-full mx-auto">
-        {/* Header with filters */}
-        <div className="mb-12 flex gap-2 sticky top-0 bg-[#0A0A0A] z-50 py-4">
-          <button
-            onClick={() => setSelectedCompany('all')}
-            className={`px-3 py-1.5 rounded-md font-medium text-sm transition-all ${
-              selectedCompany === 'all'
-                ? 'bg-white/10 text-white'
-                : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
-            }`}
-          >
-            All Companies
-          </button>
-          {Object.entries(companies).map(([key, company]) => (
-            <button
-              key={key}
-              onClick={() => setSelectedCompany(key)}
-              className={`px-3 py-1.5 rounded-md font-medium text-sm transition-all flex items-center gap-2 ${
-                selectedCompany === key
-                  ? 'bg-white/10 text-white'
-                  : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
-              }`}
-            >
-              <div className={`w-2 h-2 rounded-full ${company.dotColor}`} />
-              {company.name}
-            </button>
-          ))}
+        {/* Header */}
+        <div className="mb-12 sticky top-0 bg-[#0A0A0A] z-50 py-4">
+          <h1 className="text-2xl font-semibold text-white mb-2">
+            AI Model Timeline
+          </h1>
+          <p className="text-sm text-gray-500">
+            Major AI model releases since ChatGPT (November 30, 2022)
+          </p>
         </div>
 
         {/* Timeline container - scrollable */}
