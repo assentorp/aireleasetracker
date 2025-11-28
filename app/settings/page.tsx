@@ -13,6 +13,7 @@ export default function SettingsPage() {
   const [frequency, setFrequency] = useState('immediately');
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   // Redirect if not signed in
   useEffect(() => {
@@ -21,20 +22,56 @@ export default function SettingsPage() {
     }
   }, [isLoaded, user, router]);
 
+  // Load user preferences from metadata
+  useEffect(() => {
+    if (user && isLoaded) {
+      const metadata = user.publicMetadata as {
+        emailNotifications?: boolean;
+        notificationFrequency?: string;
+      };
+
+      if (metadata.emailNotifications !== undefined) {
+        setEmailNotifications(metadata.emailNotifications);
+      }
+      if (metadata.notificationFrequency) {
+        setFrequency(metadata.notificationFrequency);
+      }
+      setIsLoading(false);
+    }
+  }, [user, isLoaded]);
+
   const handleSave = async () => {
     setIsSaving(true);
     setSaveMessage('');
 
-    // TODO: Implement actual API call to save settings
-    // Placeholder simulation
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      const response = await fetch('/api/notifications/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          emailNotifications,
+          frequency,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save settings');
+      }
+
       setSaveMessage('Settings saved successfully!');
       setTimeout(() => setSaveMessage(''), 3000);
-    }, 500);
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      setSaveMessage('Failed to save settings. Please try again.');
+      setTimeout(() => setSaveMessage(''), 3000);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  if (!isLoaded || !user) {
+  if (!isLoaded || !user || isLoading) {
     return (
       <div className="min-h-screen bg-[#0A0A0A] text-white flex items-center justify-center">
         <div className="text-gray-500">Loading...</div>
@@ -61,13 +98,10 @@ export default function SettingsPage() {
         </div>
 
         {/* Notification Settings Card */}
-        <div className="bg-[#151515] border border-white/20 rounded-lg p-4 md:p-6 space-y-4 md:space-y-6 opacity-60 pointer-events-none">
+        <div className="bg-[#151515] border border-white/20 rounded-lg p-4 md:p-6 space-y-4 md:space-y-6">
           <div>
             <div className="flex items-center gap-3 mb-3 md:mb-4">
               <h2 className="text-lg md:text-xl font-semibold text-white">Email Notifications</h2>
-              <span className="px-2 py-0.5 text-xs font-medium bg-white/10 text-gray-400 rounded-full border border-white/20">
-                Coming Soon
-              </span>
             </div>
             <p className="text-xs md:text-sm text-gray-300 mb-4 md:mb-6">
               Get notified about new AI model releases from your favorite companies
@@ -211,7 +245,9 @@ export default function SettingsPage() {
               <line x1="12" y1="8" x2="12.01" y2="8"></line>
             </svg>
             <p className="text-[10px] md:text-xs text-gray-400">
-              Email notifications are coming soon! Sign up now to be ready when this feature launches.
+              {emailNotifications
+                ? `You'll receive ${frequency === 'immediately' ? 'instant' : frequency === 'weekly' ? 'weekly' : 'monthly'} notifications about new AI model releases.`
+                : 'Enable email notifications to stay updated on new AI model releases.'}
             </p>
           </div>
         </div>
