@@ -774,7 +774,7 @@ export default function Timeline() {
       {/* Sticky month header - outside scroll container */}
       <div className="flex sticky top-[52px] md:top-[116px] z-40 bg-[#0A0A0A] border-b border-white/5">
           {/* Left spacer to align with company labels */}
-          <div className="flex-shrink-0 w-[80px] md:w-[180px]" />
+          <div className="flex-shrink-0 w-[120px] md:w-[180px]" />
 
           {/* Month header - scrollable */}
           <div
@@ -821,7 +821,7 @@ export default function Timeline() {
       {/* Timeline container - fixed left column + scrollable right */}
       <section className="flex" aria-label="AI Model Release Timeline">
           {/* Fixed left column for company labels */}
-          <div className="flex-shrink-0 w-[80px] md:w-[180px] border-r border-white/5 bg-[#0A0A0A] z-30 overflow-visible">
+          <div className="flex-shrink-0 w-[120px] md:w-[180px] border-r border-white/5 bg-[#0A0A0A] z-30 overflow-visible">
 
             {/* Company labels */}
             <div className={`space-y-8 overflow-visible ${hoveredCompany || clickedCompany ? 'z-[200] relative' : ''}`}>
@@ -882,9 +882,8 @@ export default function Timeline() {
                           }}
                         >
                           <div className={`w-1.5 md:w-2 h-1.5 md:h-2 rounded-full ${companyInfo.dotColor}`} />
-                          <span className="text-white text-[10px] md:text-base font-medium hover:text-gray-200 transition-colors truncate">
-                            <span className="md:hidden">{companyInfo.initial}</span>
-                            <span className="hidden md:inline">{companyInfo.name}</span>
+                          <span className="text-white text-[10px] md:text-base font-medium hover:text-gray-200 transition-colors">
+                            {companyInfo.name}
                           </span>
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
