@@ -1,0 +1,10 @@
+# *
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://aireleasetracker.com/sitemap.xml
+
+# Disallow admin or private paths (if any in the future)
+# Disallow: /admin/
+# Disallow: /api/
