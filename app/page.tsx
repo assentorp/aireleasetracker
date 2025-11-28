@@ -15,6 +15,7 @@ export default function Timeline() {
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const [mousePosition, setMousePosition] = useState<{ x: number; viewportX: number; month: string } | null>(null);
+  const [displayMode, setDisplayMode] = useState<'timeline' | 'list'>('timeline');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const monthHeaderRef = useRef<HTMLDivElement>(null);
   const hasScrolledOnLoadRef = useRef(false);
@@ -683,6 +684,37 @@ export default function Timeline() {
   const nextExpected = getNextExpectedRelease();
   const latestRelease = getLatestRelease();
 
+  // Get all releases sorted by date (newest first) for list view
+  const getAllReleasesSorted = () => {
+    const allReleases: Array<{
+      company: string;
+      companyName: string;
+      dotColor: string;
+      modelName: string;
+      date: string;
+      dateObj: Date;
+    }> = [];
+
+    timelineData.forEach((item) => {
+      const companyInfo = companies[item.company as keyof typeof companies];
+      item.releases.forEach((release) => {
+        allReleases.push({
+          company: item.company,
+          companyName: companyInfo.name,
+          dotColor: companyInfo.dotColor,
+          modelName: release.name,
+          date: release.date,
+          dateObj: parseReleaseDate(release.date),
+        });
+      });
+    });
+
+    // Sort by date (newest first)
+    return allReleases.sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime());
+  };
+
+  const sortedReleases = getAllReleasesSorted();
+
   // Prevent hydration mismatch by only rendering on client
   if (!mounted) {
     return (
@@ -771,6 +803,36 @@ export default function Timeline() {
           </div>
       </header>
 
+      {/* Fixed Display Mode Toggle - Top Right Corner */}
+      <button
+        onClick={() => setDisplayMode(displayMode === 'timeline' ? 'list' : 'timeline')}
+        className="fixed top-20 md:top-24 right-4 md:right-8 z-50 flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-[#151515] border border-white/10 rounded-lg text-gray-300 hover:text-white hover:border-white/20 transition-all shadow-lg"
+      >
+        {displayMode === 'timeline' ? (
+          // List icon
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-[18px] md:h-[18px]">
+            <line x1="8" y1="6" x2="21" y2="6"></line>
+            <line x1="8" y1="12" x2="21" y2="12"></line>
+            <line x1="8" y1="18" x2="21" y2="18"></line>
+            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+          </svg>
+        ) : (
+          // Timeline icon
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-[18px] md:h-[18px]">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+        )}
+        <span className="text-xs md:text-sm font-medium">Display</span>
+      </button>
+
+      {/* Conditional rendering based on display mode */}
+      {displayMode === 'timeline' ? (
+        <>
       {/* Sticky month header - outside scroll container */}
       <div className="flex sticky top-[52px] md:top-[116px] z-40 bg-[#0A0A0A] border-b border-white/5">
           {/* Left spacer to align with company labels */}
@@ -1156,6 +1218,49 @@ export default function Timeline() {
           </div>
         </div>
       </section>
+        </>
+      ) : (
+        /* List View */
+        <section className="flex justify-center px-4 md:px-8 py-8 min-h-screen" aria-label="AI Model Release List">
+          <div className="w-full max-w-3xl">
+            <div className="space-y-0">
+              {sortedReleases.map((release, idx) => {
+                const prevRelease = idx > 0 ? sortedReleases[idx - 1] : null;
+                const showDateHeader = !prevRelease || release.date !== prevRelease.date;
+
+                return (
+                  <div key={`${release.company}-${release.modelName}-${idx}`}>
+                    {/* Date header for new dates */}
+                    {showDateHeader && (
+                      <div className="sticky top-[52px] md:top-[116px] bg-[#0A0A0A] py-4 border-b border-white/10 mt-8 first:mt-0 z-30">
+                        <h2 className="text-sm md:text-base font-semibold text-white">
+                          {release.date}
+                        </h2>
+                      </div>
+                    )}
+
+                    {/* Release item */}
+                    <div className="flex items-center gap-3 md:gap-4 py-3 md:py-4 px-3 md:px-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                      {/* Company indicator */}
+                      <div className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full flex-shrink-0 ${release.dotColor}`} />
+
+                      {/* Company name */}
+                      <div className="min-w-[90px] md:min-w-[140px]">
+                        <span className="text-xs md:text-sm text-gray-500">{release.companyName}</span>
+                      </div>
+
+                      {/* Model name */}
+                      <div className="flex-1">
+                        <span className="text-sm md:text-base font-medium text-gray-200">{release.modelName}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
     </main>
   );
 }
