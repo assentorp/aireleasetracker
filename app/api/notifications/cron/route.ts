@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { clerkClient } from '@clerk/nextjs/server';
 import { Resend } from 'resend';
-import { getRecentReleases, ReleaseWithCompany } from '../../../lib/timeline-data';
+import { getRecentReleases, ReleaseWithCompany } from '../../../../lib/timeline-data';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -144,7 +144,7 @@ async function sendDigestEmail(
   email: string,
   releases: Release[],
   type: 'weekly' | 'monthly',
-  client: any,
+  client: Awaited<ReturnType<typeof clerkClient>>,
   userId: string
 ): Promise<boolean> {
   try {
@@ -182,12 +182,12 @@ function generateEmailContent(releases: Release[], type: 'weekly' | 'monthly') {
   const title = type === 'weekly' ? 'Weekly AI Release Digest' : 'Monthly AI Release Summary';
 
   const releasesByCompany: { [key: string]: Release[] } = {};
-  releases.forEach(release => {
+  for (const release of releases) {
     if (!releasesByCompany[release.companyName]) {
       releasesByCompany[release.companyName] = [];
     }
     releasesByCompany[release.companyName].push(release);
-  });
+  }
 
   const companySections = Object.entries(releasesByCompany)
     .map(([companyName, companyReleases]) => {
