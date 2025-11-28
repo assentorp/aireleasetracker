@@ -57,6 +57,53 @@
   }
 }
 
+/* Animation utilities with proper durations and easing */
+.animate-fade-in-slide-up {
+  animation: fadeInSlideUp 200ms ease-out forwards;
+  will-change: transform;
+}
+
+/* Button press feedback - apply to buttons without complex transforms */
+button:active {
+  transform: scale(0.97);
+}
+
+/* Buttons with transform transitions should handle their own active state */
+button.transform-transition:active {
+  transform: scale(0.97);
+}
+
+/* Disable hover animations on touch devices */
+@media (hover: hover) and (pointer: fine) {
+  .hover-transition {
+    transition-property: color, background-color, border-color, opacity;
+    transition-duration: 150ms;
+    transition-timing-function: ease-in-out;
+  }
+
+  .hover-transition-fast {
+    transition-property: color, background-color, border-color, opacity;
+    transition-duration: 100ms;
+    transition-timing-function: ease-in-out;
+  }
+}
+
+/* Transform animations need will-change */
+.transform-transition {
+  will-change: transform;
+  transition-property: transform;
+  transition-duration: 200ms;
+  transition-timing-function: ease-in-out;
+  transform-origin: center;
+}
+
+/* Progress bar - linear for time-based */
+.progress-bar {
+  transition-property: width;
+  transition-duration: 300ms;
+  transition-timing-function: linear;
+}
+
 /* Clerk UserButton dropdown menu fixes */
 .cl-userButtonPopoverActionButton,
 .cl-userButtonPopoverActionButton:hover,
