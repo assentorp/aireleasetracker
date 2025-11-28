@@ -761,12 +761,8 @@ export default function Timeline() {
               </SignedOut>
               <SignedIn>
                 <Link href="/settings">
-                  <button className="px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium text-gray-300 hover:text-white transition-colors flex items-center gap-1.5 md:gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-4 md:h-4">
-                      <circle cx="12" cy="12" r="3"></circle>
-                      <path d="M12 1v6m0 6v6m4.22-13.22l-4.24 4.24m0 5.96l4.24 4.24M23 12h-6m-6 0H1m18.78 4.22l-4.24-4.24m0-5.96l-4.24-4.24"></path>
-                    </svg>
-                    <span className="hidden sm:inline">Settings</span>
+                  <button className="px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium text-gray-300 hover:text-white transition-colors">
+                    Settings
                   </button>
                 </Link>
                 <UserButton afterSignOutUrl="/" />

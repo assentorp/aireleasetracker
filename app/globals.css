@@ -72,3 +72,75 @@
 .cl-userButtonPopoverActionButton:hover {
   background-color: rgba(255, 255, 255, 0.1) !important;
 }
+
+/* Clerk verification code inputs - make them visible */
+.cl-formFieldInput,
+.cl-input,
+input[type="text"].cl-formFieldInput,
+input[type="email"].cl-formFieldInput {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+}
+
+.cl-formFieldInput:focus,
+.cl-input:focus {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Clerk verification code input fields specifically */
+.cl-otpCodeFieldInput {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+}
+
+.cl-otpCodeFieldInput:focus {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Clerk password toggle icon (eye icon) */
+.cl-formFieldInputShowPasswordButton,
+.cl-formFieldAction__password {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.cl-formFieldInputShowPasswordButton:hover,
+.cl-formFieldAction__password:hover {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.cl-formFieldInputShowPasswordIcon {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.cl-formFieldInputShowPasswordIcon:hover {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Email code display in verification - only the email address itself */
+.cl-identityPreviewText {
+  color: white !important;
+}
+
+/* Alternative methods button - outline style */
+.cl-alternativeMethodsBlockButton {
+  background-color: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+}
+
+.cl-alternativeMethodsBlockButton:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.cl-alternativeMethodsBlockButtonText {
+  color: white !important;
+}
+
+.cl-alternativeMethodsBlockButtonArrow {
+  color: white !important;
+}

@@ -61,9 +61,14 @@ export default function SettingsPage() {
         </div>
 
         {/* Notification Settings Card */}
-        <div className="bg-[#151515] border border-white/20 rounded-lg p-4 md:p-6 space-y-4 md:space-y-6">
+        <div className="bg-[#151515] border border-white/20 rounded-lg p-4 md:p-6 space-y-4 md:space-y-6 opacity-60 pointer-events-none">
           <div>
-            <h2 className="text-lg md:text-xl font-semibold text-white mb-3 md:mb-4">Email Notifications</h2>
+            <div className="flex items-center gap-3 mb-3 md:mb-4">
+              <h2 className="text-lg md:text-xl font-semibold text-white">Email Notifications</h2>
+              <span className="px-2 py-0.5 text-xs font-medium bg-white/10 text-gray-400 rounded-full border border-white/20">
+                Coming Soon
+              </span>
+            </div>
             <p className="text-xs md:text-sm text-gray-300 mb-4 md:mb-6">
               Get notified about new AI model releases from your favorite companies
             </p>
@@ -206,7 +211,7 @@ export default function SettingsPage() {
               <line x1="12" y1="8" x2="12.01" y2="8"></line>
             </svg>
             <p className="text-[10px] md:text-xs text-gray-400">
-              Notification settings are currently in preview mode. Full implementation coming soon.
+              Email notifications are coming soon! Sign up now to be ready when this feature launches.
             </p>
           </div>
         </div>
