@@ -2,10 +2,12 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { SignInButton, SignUpButton, UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
 import Logo from '../assets/Logo';
 
 export default function Timeline() {
+  const router = useRouter();
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const [hoveredCompany, setHoveredCompany] = useState<string | null>(null);
   const [clickedCompany, setClickedCompany] = useState<string | null>(null);
@@ -792,12 +794,33 @@ export default function Timeline() {
                 </SignUpButton>
               </SignedOut>
               <SignedIn>
-                <Link href="/settings">
-                  <button className="px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium text-gray-300 hover:text-white transition-colors">
-                    Settings
-                  </button>
-                </Link>
-                <UserButton afterSignOutUrl="/" />
+                <UserButton
+                  afterSignOutUrl="/"
+                  appearance={{
+                    elements: {
+                      userButtonPopoverCard: 'bg-[#151515] border border-white/20',
+                      userButtonPopoverActionButton: 'text-white hover:bg-white/10',
+                      userButtonPopoverActionButton__manageAccount: 'text-white hover:text-white',
+                      userButtonPopoverActionButton__signOut: 'text-white hover:text-white',
+                      userButtonPopoverActionButtonText: 'text-white hover:text-white',
+                      userButtonPopoverActionButtonIcon: 'text-gray-400',
+                      userButtonPopoverFooter: 'hidden',
+                    },
+                  }}
+                >
+                  <UserButton.MenuItems>
+                    <UserButton.Action
+                      label="Notifications"
+                      onClick={() => router.push('/settings')}
+                      labelIcon={
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+                          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                      }
+                    />
+                  </UserButton.MenuItems>
+                </UserButton>
               </SignedIn>
             </div>
           </div>

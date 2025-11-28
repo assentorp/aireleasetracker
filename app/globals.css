@@ -73,6 +73,74 @@
   background-color: rgba(255, 255, 255, 0.1) !important;
 }
 
+/* Custom menu items (like Notifications link) - Force white text everywhere */
+.cl-userButtonPopoverCard,
+.cl-userButtonPopoverCard *,
+.cl-userButtonPopoverActionButton,
+.cl-userButtonPopoverActionButton *,
+.cl-userButtonPopoverActionButtonText,
+.cl-userButtonPopoverActionButtonText *,
+[data-cl-user-button-popover] *,
+[data-cl-user-button-popover] button,
+[data-cl-user-button-popover] a,
+[data-cl-user-button-popover] span,
+[data-cl-user-button-popover] div {
+  color: white !important;
+}
+
+/* Hover states - more specific selectors with higher specificity */
+.cl-userButtonPopoverCard .cl-userButtonPopoverActionButton:hover,
+.cl-userButtonPopoverCard .cl-userButtonPopoverActionButton:hover *,
+.cl-userButtonPopoverCard .cl-userButtonPopoverActionButton:focus,
+.cl-userButtonPopoverCard .cl-userButtonPopoverActionButton:focus-within,
+.cl-userButtonPopoverCard [data-cl-user-button-popover] button:hover,
+.cl-userButtonPopoverCard [data-cl-user-button-popover] a:hover,
+.cl-userButtonPopoverCard [data-cl-user-button-popover] button:focus,
+.cl-userButtonPopoverCard [data-cl-user-button-popover] a:focus,
+.cl-userButtonPopoverActionButton:hover,
+.cl-userButtonPopoverActionButton:hover *,
+.cl-userButtonPopoverActionButton:focus,
+.cl-userButtonPopoverActionButton:focus-within,
+[data-cl-user-button-popover] button:hover,
+[data-cl-user-button-popover] a:hover,
+[data-cl-user-button-popover] button:focus,
+[data-cl-user-button-popover] a:focus {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+/* Force hover background on the button element itself - multiple selectors for maximum coverage */
+.cl-userButtonPopoverActionButton:hover,
+.cl-userButtonPopoverActionButton:hover::before,
+.cl-userButtonPopoverActionButton:hover::after {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.cl-userButtonPopoverActionButton:focus,
+.cl-userButtonPopoverActionButton:focus::before,
+.cl-userButtonPopoverActionButton:focus::after {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Also target any button or anchor inside the popover */
+.cl-userButtonPopoverCard button:hover,
+.cl-userButtonPopoverCard a:hover,
+.cl-userButtonPopoverCard button:focus,
+.cl-userButtonPopoverCard a:focus {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Make sure icons stay gray */
+.cl-userButtonPopoverActionButtonIcon,
+.cl-userButtonPopoverActionButtonIcon *,
+[data-cl-user-button-popover] svg {
+  color: rgb(156, 163, 175) !important; /* gray-400 */
+}
+
 /* Clerk verification code inputs - make them visible */
 .cl-formFieldInput,
 .cl-input,
