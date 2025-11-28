@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/og-image.png', // Add an og-image.png to your public folder
+        url: '/ogimage.png',
         width: 1200,
         height: 630,
         alt: 'AI Model Release Timeline',
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: "AI Model Release Tracker | Complete Timeline 2022-2025",
     description: "Track major AI model releases from OpenAI, Anthropic, Google, Meta, xAI, DeepSeek, and Mistral.",
-    images: ['/og-image.png'], // Add an og-image.png to your public folder
+    images: ['/ogimage.png'],
   },
   robots: {
     index: true,
@@ -147,6 +147,8 @@ export default function RootLayout({
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
           <meta name="theme-color" content="#0A0A0A" />
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
           <link rel="icon" type="image/x-icon" href="/favicon.ico" />
           <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
           <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
