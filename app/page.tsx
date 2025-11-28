@@ -772,7 +772,7 @@ export default function Timeline() {
       </header>
 
       {/* Sticky month header - outside scroll container */}
-      <div className="flex sticky top-[60px] md:top-[116px] z-40 bg-[#0A0A0A] border-b border-white/5">
+      <div className="flex sticky top-[52px] md:top-[116px] z-40 bg-[#0A0A0A] border-b border-white/5">
           {/* Left spacer to align with company labels */}
           <div className="flex-shrink-0 w-[80px] md:w-[180px]" />
 
@@ -793,7 +793,7 @@ export default function Timeline() {
                   style={{ left: `${(marker.position / totalMonths) * 100}%` }}
                 >
                   {/* Month label */}
-                  <div className={`text-[8px] md:text-xs font-medium ${marker.isJanuary ? 'text-white' : 'text-gray-700'}`}>
+                  <div className={`text-[8px] md:text-xs font-medium text-white ${marker.isJanuary ? '' : 'md:text-gray-700'}`}>
                     {marker.label}
                   </div>
                 </div>
