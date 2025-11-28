@@ -803,10 +803,10 @@ export default function Timeline() {
           </div>
       </header>
 
-      {/* Fixed Display Mode Toggle - Top Right Corner */}
+      {/* Fixed Display Mode Toggle - Bottom Right Corner */}
       <button
         onClick={() => setDisplayMode(displayMode === 'timeline' ? 'list' : 'timeline')}
-        className="fixed top-20 md:top-24 right-4 md:right-8 z-50 flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-[#151515] border border-white/10 rounded-lg text-gray-300 hover:text-white hover:border-white/20 transition-all shadow-lg"
+        className="fixed bottom-8 right-8 z-50 flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-[#151515] border border-white/10 rounded-lg text-gray-300 hover:text-white hover:border-white/20 transition-all shadow-lg"
       >
         {displayMode === 'timeline' ? (
           // List icon
@@ -819,15 +819,15 @@ export default function Timeline() {
             <line x1="3" y1="18" x2="3.01" y2="18"></line>
           </svg>
         ) : (
-          // Timeline icon
+          // Grab/cursor icon for horizontal scroll
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-[18px] md:h-[18px]">
-            <rect x="3" y="3" width="7" height="7"></rect>
-            <rect x="14" y="3" width="7" height="7"></rect>
-            <rect x="14" y="14" width="7" height="7"></rect>
-            <rect x="3" y="14" width="7" height="7"></rect>
+            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+            <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"></path>
+            <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path>
+            <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
           </svg>
         )}
-        <span className="text-xs md:text-sm font-medium">Display</span>
+        <span className="text-xs md:text-sm font-medium">{displayMode === 'timeline' ? 'List' : 'Horizontal scroll'}</span>
       </button>
 
       {/* Conditional rendering based on display mode */}
@@ -1226,15 +1226,28 @@ export default function Timeline() {
             <div className="space-y-0">
               {sortedReleases.map((release, idx) => {
                 const prevRelease = idx > 0 ? sortedReleases[idx - 1] : null;
-                const showDateHeader = !prevRelease || release.date !== prevRelease.date;
+
+                // Get month and year from dateObj
+                const currentMonth = release.dateObj.toLocaleString('default', { month: 'short' });
+                const currentYear = release.dateObj.getFullYear();
+                const isJanuary = release.dateObj.getMonth() === 0;
+
+                const prevMonth = prevRelease ? prevRelease.dateObj.toLocaleString('default', { month: 'short' }) : null;
+                const prevYear = prevRelease ? prevRelease.dateObj.getFullYear() : null;
+
+                // Show month header when month changes
+                const showMonthHeader = !prevRelease || currentMonth !== prevMonth || currentYear !== prevYear;
+
+                // Format the month header
+                const monthHeader = isJanuary ? `${currentMonth} ${currentYear}` : currentMonth;
 
                 return (
                   <div key={`${release.company}-${release.modelName}-${idx}`}>
-                    {/* Date header for new dates */}
-                    {showDateHeader && (
+                    {/* Month header */}
+                    {showMonthHeader && (
                       <div className="sticky top-[52px] md:top-[116px] bg-[#0A0A0A] py-4 border-b border-white/10 mt-8 first:mt-0 z-30">
                         <h2 className="text-sm md:text-base font-semibold text-white">
-                          {release.date}
+                          {monthHeader}
                         </h2>
                       </div>
                     )}
@@ -1252,6 +1265,11 @@ export default function Timeline() {
                       {/* Model name */}
                       <div className="flex-1">
                         <span className="text-sm md:text-base font-medium text-gray-200">{release.modelName}</span>
+                      </div>
+
+                      {/* Date */}
+                      <div className="text-xs md:text-sm text-gray-500">
+                        {release.date}
                       </div>
                     </div>
                   </div>
