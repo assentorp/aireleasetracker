@@ -2,11 +2,13 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { SignInButton, SignUpButton, UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
 import Logo from '../assets/Logo';
 
 export default function Timeline() {
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const [hoveredCompany, setHoveredCompany] = useState<string | null>(null);
+  const [clickedCompany, setClickedCompany] = useState<string | null>(null);
   const [hoveredRelease, setHoveredRelease] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -20,6 +22,18 @@ export default function Timeline() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Close clicked company stats when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (clickedCompany) {
+        setClickedCompany(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [clickedCompany]);
 
   // Scroll to end of timeline smoothly on initial page load
   useEffect(() => {
@@ -681,22 +695,22 @@ export default function Timeline() {
   return (
     <main className="min-h-screen bg-[#0A0A0A] text-white">
       {/* Header */}
-      <header className="sticky top-0 bg-[#0A0A0A] z-50 py-8 px-8 border-b border-white/5">
+      <header className="sticky top-0 bg-[#0A0A0A] z-50 py-3 md:py-8 px-4 md:px-8 border-b border-white/5">
         <h1 className="sr-only">AI Model Release Tracker - Timeline of Major AI Models from 2022-2025</h1>
-          <div className="flex items-center justify-between gap-8">
-            <div className="flex items-center gap-8">
+          <div className="flex items-center justify-between gap-2 md:gap-8">
+            <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
               {/* Left: Logo and description */}
-              <div className="flex-shrink-0 flex flex-col justify-center gap-3">
+              <div className="flex-shrink-0 flex flex-col justify-center gap-2 md:gap-3">
                 <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
-                  <Logo className="cursor-pointer" />
+                  <Logo className="cursor-pointer scale-50 md:scale-100 origin-left" />
                 </Link>
-                <p className="text-sm text-gray-500">
+                <p className="hidden md:block text-xs md:text-sm text-gray-500">
                   Major AI model releases since ChatGPT (November 30, 2022)
                 </p>
               </div>
 
-              {/* Middle-left: Release info */}
-              <div className="flex gap-1 ml-8">
+              {/* Middle-left: Release info - Hidden on mobile */}
+              <div className="hidden lg:flex gap-1 ml-8">
                 {nextExpected !== null ? (
                   <div className="min-w-[180px]">
                     <div className="text-xs text-gray-500 mb-2">Next Expected Release</div>
@@ -727,22 +741,44 @@ export default function Timeline() {
             </div>
 
             {/* Right: Auth buttons */}
-            <div className="flex-shrink-0 flex items-center gap-3">
-              <button className="px-3 py-2 text-sm font-medium bg-white text-black hover:bg-gray-200 rounded-md transition-colors flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                </svg>
-                Get Updates
-              </button>
+            <div className="flex-shrink-0 flex items-center gap-2 md:gap-3">
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <button className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium text-gray-300 hover:text-white transition-colors">
+                    Log in
+                  </button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <button className="px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm font-medium bg-white text-black hover:bg-gray-200 rounded-md transition-colors flex items-center gap-1.5 md:gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-4 md:h-4">
+                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                      <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <span className="hidden sm:inline">Sign up to receive updates</span>
+                    <span className="sm:hidden">Sign up</span>
+                  </button>
+                </SignUpButton>
+              </SignedOut>
+              <SignedIn>
+                <Link href="/settings">
+                  <button className="px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium text-gray-300 hover:text-white transition-colors flex items-center gap-1.5 md:gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-4 md:h-4">
+                      <circle cx="12" cy="12" r="3"></circle>
+                      <path d="M12 1v6m0 6v6m4.22-13.22l-4.24 4.24m0 5.96l4.24 4.24M23 12h-6m-6 0H1m18.78 4.22l-4.24-4.24m0-5.96l-4.24-4.24"></path>
+                    </svg>
+                    <span className="hidden sm:inline">Settings</span>
+                  </button>
+                </Link>
+                <UserButton afterSignOutUrl="/" />
+              </SignedIn>
             </div>
           </div>
       </header>
 
       {/* Sticky month header - outside scroll container */}
-      <div className="flex sticky top-[116px] z-40 bg-[#0A0A0A] border-b border-white/5">
+      <div className="flex sticky top-[60px] md:top-[116px] z-40 bg-[#0A0A0A] border-b border-white/5">
           {/* Left spacer to align with company labels */}
-          <div className="flex-shrink-0 w-[180px]" />
+          <div className="flex-shrink-0 w-[80px] md:w-[180px]" />
 
           {/* Month header - scrollable */}
           <div
@@ -761,7 +797,7 @@ export default function Timeline() {
                   style={{ left: `${(marker.position / totalMonths) * 100}%` }}
                 >
                   {/* Month label */}
-                  <div className={`text-xs font-medium ${marker.isJanuary ? 'text-white' : 'text-gray-700'}`}>
+                  <div className={`text-[8px] md:text-xs font-medium ${marker.isJanuary ? 'text-white' : 'text-gray-700'}`}>
                     {marker.label}
                   </div>
                 </div>
@@ -789,14 +825,16 @@ export default function Timeline() {
       {/* Timeline container - fixed left column + scrollable right */}
       <section className="flex" aria-label="AI Model Release Timeline">
           {/* Fixed left column for company labels */}
-          <div className="flex-shrink-0 w-[180px] border-r border-white/5 bg-[#0A0A0A] z-30 overflow-visible">
+          <div className="flex-shrink-0 w-[80px] md:w-[180px] border-r border-white/5 bg-[#0A0A0A] z-30 overflow-visible">
 
             {/* Company labels */}
-            <div className={`space-y-8 overflow-visible ${hoveredCompany ? 'z-[200] relative' : ''}`}>
+            <div className={`space-y-8 overflow-visible ${hoveredCompany || clickedCompany ? 'z-[200] relative' : ''}`}>
               {filteredData.map((item, companyIndex) => {
                 const companyInfo = companies[item.company as keyof typeof companies];
                 const stats = getCompanyStats(item.company);
                 const isCompanyHovered = hoveredCompany === item.company;
+                const isCompanyClicked = clickedCompany === item.company;
+                const isCompanyActive = isCompanyHovered || isCompanyClicked;
                 const isEvenRow = companyIndex % 2 === 0;
 
                 // Calculate the same row height as the timeline row
@@ -831,44 +869,52 @@ export default function Timeline() {
                 return (
                   <div
                     key={item.company}
-                    className={`relative flex items-start ${isEvenRow ? 'bg-white/[0.015] py-8' : ''} ${isCompanyHovered ? 'z-[100]' : 'z-auto'}`}
+                    className={`relative flex items-start ${isEvenRow ? 'bg-white/[0.015] py-8' : ''} ${isCompanyActive ? 'z-[100]' : 'z-auto'}`}
                     style={{ height: `${rowHeight}px`, width: '100%' }}
                   >
                     <div
-                      className="pr-4 w-full relative z-50"
+                      className="pr-2 md:pr-4 w-full relative z-50"
                       onMouseEnter={() => setHoveredCompany(item.company)}
                       onMouseLeave={() => setHoveredCompany(null)}
                     >
-                      <div className="relative z-50 h-full flex items-center justify-start px-4">
-                        <div className="flex items-center gap-2 cursor-pointer">
-                          <div className={`w-2 h-2 rounded-full ${companyInfo.dotColor}`} />
-                          <span className="text-white text-sm md:text-base font-medium hover:text-gray-200 transition-colors">
-                            {companyInfo.name}
+                      <div className="relative z-50 h-full flex items-center justify-start px-2 md:px-4">
+                        <div
+                          className="flex items-center gap-1 md:gap-2 cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setClickedCompany(isCompanyClicked ? null : item.company);
+                          }}
+                        >
+                          <div className={`w-1.5 md:w-2 h-1.5 md:h-2 rounded-full ${companyInfo.dotColor}`} />
+                          <span className="text-white text-[10px] md:text-base font-medium hover:text-gray-200 transition-colors truncate">
+                            <span className="md:hidden">{companyInfo.initial}</span>
+                            <span className="hidden md:inline">{companyInfo.name}</span>
                           </span>
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            width="14"
-                            height="14"
+                            width="10"
+                            height="10"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className="text-gray-600"
+                            className={`text-gray-600 md:w-[14px] md:h-[14px] transition-transform ${isCompanyClicked ? 'rotate-180' : ''}`}
                           >
                             <polyline points="6 9 12 15 18 9"></polyline>
                           </svg>
                         </div>
 
-                        {/* Stats panel on hover */}
-                        {isCompanyHovered && stats && (
+                        {/* Stats panel - shows on hover (desktop) or click (mobile) */}
+                        {isCompanyActive && stats && (
                           <div
-                            className="absolute top-full left-8 mt-2 bg-[#151515] border border-white/10 rounded-lg p-4 shadow-xl min-w-[320px] max-h-[500px] overflow-y-auto"
+                            className="absolute top-full left-2 md:left-8 mt-2 bg-[#151515] border border-white/10 rounded-lg p-3 md:p-4 shadow-xl w-[280px] md:min-w-[320px] max-h-[500px] overflow-y-auto"
                             style={{
                               zIndex: 99999,
                               animation: 'fadeInSlideUp 0.2s ease-out forwards'
                             }}
+                            onClick={(e) => e.stopPropagation()}
                           >
                             <div className="space-y-3">
                               <div>
@@ -1082,7 +1128,7 @@ export default function Timeline() {
                         return (
                           <div
                             key={idx}
-                            className="absolute border border-white/10 rounded-md px-3 py-2 bg-[#151515] hover:bg-[#1a1a1a] hover:border-white/20 transition-all cursor-pointer whitespace-nowrap z-10"
+                            className="absolute border border-white/10 rounded-md px-1.5 md:px-3 py-1 md:py-2 bg-[#151515] hover:bg-[#1a1a1a] hover:border-white/20 transition-all cursor-pointer whitespace-nowrap z-10"
                             style={{
                               left: `${(release.alignedPosition / totalMonths) * 100}%`,
                               top: `${topOffset}px`,
@@ -1090,9 +1136,9 @@ export default function Timeline() {
                             onMouseEnter={() => setHoveredRelease(releaseKey)}
                             onMouseLeave={() => setHoveredRelease(null)}
                           >
-                            <div className="flex items-center gap-2">
-                              <div className={`w-1.5 h-1.5 rounded-full ${companyInfo.dotColor}`} />
-                              <div className="text-sm font-medium text-gray-200">
+                            <div className="flex items-center gap-1 md:gap-2">
+                              <div className={`w-1 md:w-1.5 h-1 md:h-1.5 rounded-full ${companyInfo.dotColor}`} />
+                              <div className="text-[10px] md:text-sm font-medium text-gray-200">
                                 {release.name}
                               </div>
                             </div>

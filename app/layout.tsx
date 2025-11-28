@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -96,21 +97,68 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en">
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
-        <meta name="theme-color" content="#0A0A0A" />
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/manifest.json" />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-      </head>
-      <body className="font-sans antialiased bg-[#0A0A0A] text-white m-0">
-        {children}
-      </body>
-    </html>
+    <ClerkProvider
+      appearance={{
+        baseTheme: undefined,
+        elements: {
+          formButtonPrimary: 'bg-white text-black hover:bg-gray-200',
+          card: 'bg-[#151515] border border-white/10',
+          headerTitle: 'text-white',
+          headerSubtitle: 'text-gray-400',
+          socialButtonsBlockButton: 'bg-white/10 border border-white/20 text-white hover:bg-white/15',
+          formFieldLabel: 'text-gray-300',
+          formFieldInput: 'bg-white/5 border border-white/20 text-white',
+          footerActionText: 'text-gray-400',
+          footerActionLink: 'text-white hover:text-gray-300',
+          identityPreviewText: 'text-white',
+          identityPreviewEditButton: 'text-gray-300',
+          userButtonPopoverCard: 'bg-[#151515] border border-white/20',
+          userButtonPopoverActionButton: 'text-white hover:bg-white/10',
+          userButtonPopoverActionButton__manageAccount: 'text-white hover:text-white',
+          userButtonPopoverActionButton__signOut: 'text-white hover:text-white',
+          userButtonPopoverActionButtonText: 'text-white hover:text-white',
+          userButtonPopoverActionButtonIcon: 'text-gray-400',
+          userButtonPopoverFooter: 'hidden',
+        },
+        variables: {
+          colorBackground: '#151515',
+          colorText: '#ffffff',
+          colorPrimary: '#ffffff',
+          colorTextSecondary: '#9ca3af',
+          colorTextOnPrimaryBackground: '#ffffff',
+          colorDanger: '#ffffff',
+          colorShimmer: '#ffffff',
+        },
+        layout: {
+          socialButtonsPlacement: 'bottom',
+          socialButtonsVariant: 'blockButton',
+        },
+      }}
+      localization={{
+        signUp: {
+          start: {
+            title: 'Sign up to receive updates',
+            subtitle: 'Get notified about new AI model releases',
+          },
+        },
+      }}
+    >
+      <html lang="en">
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+          <meta name="theme-color" content="#0A0A0A" />
+          <link rel="icon" href="/favicon.ico" />
+          <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+          <link rel="manifest" href="/manifest.json" />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          />
+        </head>
+        <body className="font-sans antialiased bg-[#0A0A0A] text-white m-0">
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

@@ -56,3 +56,19 @@
     transform: translateY(0);
   }
 }
+
+/* Clerk UserButton dropdown menu fixes */
+.cl-userButtonPopoverActionButton,
+.cl-userButtonPopoverActionButton:hover,
+.cl-userButtonPopoverActionButton:focus {
+  color: white !important;
+}
+
+.cl-userButtonPopoverActionButtonText,
+.cl-userButtonPopoverActionButtonText:hover {
+  color: white !important;
+}
+
+.cl-userButtonPopoverActionButton:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
