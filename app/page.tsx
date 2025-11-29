@@ -786,7 +786,7 @@ export default function Timeline() {
               {/* Display Mode Toggle */}
               <button
                 onClick={() => setDisplayMode(displayMode === 'timeline' ? 'list' : 'timeline')}
-                className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 bg-[#151515] border border-white/10 rounded-md text-gray-300 hover-transition hover:text-white hover:border-white/20"
+                className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 bg-[#151515] border border-white/10 rounded-lg text-gray-300 hover-transition hover:text-white hover:border-white/20"
               >
                 {displayMode === 'timeline' ? (
                   // List icon
@@ -817,7 +817,7 @@ export default function Timeline() {
                   </button>
                 </SignInButton>
                 <SignUpButton mode="modal">
-                  <button className="px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm font-medium bg-white text-black hover-transition hover:bg-gray-200 rounded-md flex items-center gap-1.5 md:gap-2">
+                  <button className="px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm font-medium bg-white text-black hover-transition hover:bg-gray-200 rounded-lg flex items-center gap-1.5 md:gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-4 md:h-4">
                       <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                       <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
