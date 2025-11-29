@@ -847,7 +847,7 @@ export default function Timeline() {
   return (
     <main className="min-h-screen bg-[#0A0A0A] text-white">
       {/* Header */}
-      <header className="sticky top-0 bg-[#0A0A0A] z-50 py-3 md:py-8 px-4 md:px-8 border-b border-white/5">
+      <header className="sticky top-0 bg-[#0A0A0A] z-[10000] py-3 md:py-8 px-4 md:px-8 border-b border-white/5">
         <h1 className="sr-only">AI Model Release Tracker - Timeline of Major AI Models from 2022-2025</h1>
           <div className="flex items-center justify-between gap-2 md:gap-8">
             <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
@@ -959,7 +959,7 @@ export default function Timeline() {
       {displayMode === 'timeline' ? (
         <>
       {/* Sticky month header - outside scroll container */}
-      <div className="flex sticky top-[52px] md:top-[116px] z-40 bg-[#0A0A0A] border-b border-white/5">
+      <div className="flex sticky top-[52px] md:top-[116px] z-[9999] bg-[#0A0A0A] border-b border-white/5">
           {/* Left spacer to align with company labels */}
           <div className="flex-shrink-0 w-[120px] md:w-[180px]" />
 
@@ -1154,7 +1154,7 @@ export default function Timeline() {
                             }}
                             className="fixed bg-[#151515] border border-white/10 rounded-lg p-3 md:p-4 shadow-xl w-[280px] md:min-w-[320px] max-h-[500px] overflow-y-auto animate-fade-in-slide-up"
                             style={{
-                              zIndex: 10000,
+                              zIndex: 10001,
                               top: `${statsPanelCoords[item.company].top}px`,
                               left: `${statsPanelCoords[item.company].left}px`,
                             }}
