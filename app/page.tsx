@@ -1511,23 +1511,6 @@ export default function Timeline() {
                                       {moment(parseReleaseDate(release.date)).fromNow()}
                                     </span>
                                   </div>
-
-                                  {/* Comparison to average */}
-                                  {modelStats.comparisonToAverage !== null && (
-                                    <div className="flex items-center justify-between">
-                                      <span className="text-gray-400">vs. Company avg</span>
-                                      <span className={`font-medium ${
-                                        modelStats.comparisonToAverage > 0
-                                          ? 'text-orange-400'
-                                          : modelStats.comparisonToAverage < 0
-                                            ? 'text-green-400'
-                                            : 'text-white'
-                                      }`}>
-                                        {modelStats.comparisonToAverage > 0 && '+'}
-                                        {modelStats.comparisonToAverage} days
-                                      </span>
-                                    </div>
-                                  )}
                                 </div>
 
                                 {/* Tooltip arrow - flips based on position */}
@@ -1683,23 +1666,6 @@ export default function Timeline() {
                                   {moment(parseReleaseDate(release.date)).fromNow()}
                                 </span>
                               </div>
-
-                              {/* Comparison to average */}
-                              {modelStats.comparisonToAverage !== null && (
-                                <div className="flex items-center justify-between">
-                                  <span className="text-gray-400">vs. Company avg</span>
-                                  <span className={`font-medium ${
-                                    modelStats.comparisonToAverage > 0
-                                      ? 'text-orange-400'
-                                      : modelStats.comparisonToAverage < 0
-                                        ? 'text-green-400'
-                                        : 'text-white'
-                                  }`}>
-                                    {modelStats.comparisonToAverage > 0 && '+'}
-                                    {modelStats.comparisonToAverage} days
-                                  </span>
-                                </div>
-                              )}
                             </div>
 
                             {/* Tooltip arrow */}
