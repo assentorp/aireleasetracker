@@ -899,7 +899,7 @@ export default function Timeline() {
                   style={{ left: `${(marker.position / totalMonths) * 100}%` }}
                 >
                   {/* Month label */}
-                  <div className={`text-[8px] md:text-xs font-medium text-white ${marker.isJanuary ? '' : 'md:text-gray-700'}`}>
+                  <div className={`text-[8px] md:text-xs font-medium ${marker.isJanuary ? 'text-white' : 'text-gray-400'}`}>
                     {marker.label}
                   </div>
                 </div>
