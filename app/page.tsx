@@ -1154,7 +1154,7 @@ export default function Timeline() {
                             }}
                             className="fixed bg-[#151515] border border-white/10 rounded-lg p-3 md:p-4 shadow-xl w-[280px] md:min-w-[320px] max-h-[500px] overflow-y-auto animate-fade-in-slide-up"
                             style={{
-                              zIndex: 10001,
+                              zIndex: 99999,
                               top: `${statsPanelCoords[item.company].top}px`,
                               left: `${statsPanelCoords[item.company].left}px`,
                             }}
@@ -1490,7 +1490,7 @@ export default function Timeline() {
 
                             {/* Enhanced stats tooltip */}
                             {isReleaseActive && modelStats && (
-                              <div className={`absolute left-1/2 -translate-x-1/2 bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[10002] animate-fade-in-slide-up ${
+                              <div className={`absolute left-1/2 -translate-x-1/2 bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[99999] animate-fade-in-slide-up ${
                                 releaseTooltipPosition[releaseKey] === 'below'
                                   ? 'top-full mt-2'
                                   : 'bottom-full mb-2'
@@ -1645,7 +1645,7 @@ export default function Timeline() {
                         const modelStats = releaseIndex >= 0 ? getModelStats(release.company, releaseIndex) : null;
 
                         return isListReleaseActive && modelStats ? (
-                          <div className={`absolute left-full ml-4 bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[10002] animate-fade-in-slide-up ${
+                          <div className={`absolute left-full ml-4 bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[99999] animate-fade-in-slide-up ${
                             releaseTooltipPosition[listReleaseKey] === 'below'
                               ? 'top-0'
                               : 'top-1/2 -translate-y-1/2'
