@@ -1411,7 +1411,9 @@ export default function Timeline() {
                         return (
                           <div
                             key={idx}
-                            className="absolute border border-white/10 rounded-md px-1.5 md:px-3 py-1 md:py-2 bg-[#151515] hover-transition hover:bg-[#1a1a1a] hover:border-white/20 cursor-pointer whitespace-nowrap z-10"
+                            className={`absolute border border-white/10 rounded-md px-1.5 md:px-3 py-1 md:py-2 bg-[#151515] hover-transition hover:bg-[#1a1a1a] hover:border-white/20 cursor-pointer whitespace-nowrap ${
+                              isReleaseActive ? 'z-[10001]' : 'z-10'
+                            }`}
                             style={{
                               left: `${(release.alignedPosition / totalMonths) * 100}%`,
                               top: `${topOffset}px`,
@@ -1462,7 +1464,7 @@ export default function Timeline() {
 
                             {/* Enhanced stats tooltip */}
                             {isReleaseActive && modelStats && (
-                              <div className={`absolute left-1/2 -translate-x-1/2 bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[10000] animate-fade-in-slide-up ${
+                              <div className={`absolute left-1/2 -translate-x-1/2 bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[10002] animate-fade-in-slide-up ${
                                 releaseTooltipPosition[releaseKey] === 'below'
                                   ? 'top-full mt-2'
                                   : 'bottom-full mb-2'
@@ -1587,8 +1589,15 @@ export default function Timeline() {
                     )}
 
                     {/* Release item */}
+                     {(() => {
+                       const listReleaseKey = `list-${release.company}-${release.modelName}`;
+                       const isListReleaseActive = hoveredRelease === listReleaseKey || clickedRelease === listReleaseKey;
+
+                       return (
                      <div
-                      className="relative flex items-center gap-3 md:gap-4 py-3 md:py-4 px-3 md:px-4 border-b border-white/5 hover-transition hover:bg-white/[0.02] cursor-pointer"
+                      className={`relative flex items-center gap-3 md:gap-4 py-3 md:py-4 px-3 md:px-4 border-b border-white/5 hover-transition hover:bg-white/[0.02] cursor-pointer ${
+                        isListReleaseActive ? 'z-[10001]' : ''
+                      }`}
                       onMouseEnter={(e) => {
                         const listReleaseKey = `list-${release.company}-${release.modelName}`;
                         setHoveredRelease(listReleaseKey);
@@ -1658,7 +1667,7 @@ export default function Timeline() {
                         const modelStats = releaseIndex >= 0 ? getModelStats(release.company, releaseIndex) : null;
 
                         return isListReleaseActive && modelStats ? (
-                          <div className={`absolute left-full ml-4 bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[10000] animate-fade-in-slide-up ${
+                          <div className={`absolute left-full ml-4 bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[10002] animate-fade-in-slide-up ${
                             releaseTooltipPosition[listReleaseKey] === 'below'
                               ? 'top-0'
                               : 'top-1/2 -translate-y-1/2'
@@ -1739,6 +1748,8 @@ export default function Timeline() {
                         ) : null;
                       })()}
                     </div>
+                       );
+                     })()}
                   </div>
                 );
               })}
