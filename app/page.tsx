@@ -168,7 +168,7 @@ export default function Timeline() {
       order: 6,
     },
     mistral: {
-      name: 'Mistral AI',
+      name: 'Mistral',
       dotColor: 'bg-amber-500',
       initial: 'Mi',
       order: 7,
