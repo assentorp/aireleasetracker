@@ -759,7 +759,7 @@ export default function Timeline() {
               {/* Left: Logo and description */}
               <div className="flex-shrink-0 flex flex-col justify-center gap-2 md:gap-3">
                 <Link href="/" className="inline-block hover-transition hover:opacity-80">
-                  <Logo className="cursor-pointer scale-[0.35] md:scale-100 origin-left" />
+                  <Logo className="cursor-pointer w-36 md:w-[217px] h-auto" />
                 </Link>
                 <p className="hidden md:block text-xs md:text-sm text-gray-500">
                   Major AI model releases since ChatGPT (November 30, 2022)
