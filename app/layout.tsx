@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 export const metadata: Metadata = {
   title: "AI Model Release Tracker | Complete Timeline 2022-2025",
@@ -160,6 +161,7 @@ export default function RootLayout({
           />
         </head>
         <body className="font-sans antialiased bg-[#0A0A0A] text-white m-0">
+          <GoogleAnalytics />
           {children}
         </body>
       </html>
