@@ -12,6 +12,8 @@ export default function Timeline() {
   const [hoveredCompany, setHoveredCompany] = useState<string | null>(null);
   const [clickedCompany, setClickedCompany] = useState<string | null>(null);
   const [hoveredRelease, setHoveredRelease] = useState<string | null>(null);
+  const [clickedRelease, setClickedRelease] = useState<string | null>(null);
+  const [releaseTooltipPosition, setReleaseTooltipPosition] = useState<{ [key: string]: 'above' | 'below' }>({});
   const [mounted, setMounted] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -35,11 +37,14 @@ export default function Timeline() {
       if (clickedCompany) {
         setClickedCompany(null);
       }
+      if (clickedRelease) {
+        setClickedRelease(null);
+      }
     };
 
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
-  }, [clickedCompany]);
+  }, [clickedCompany, clickedRelease]);
 
   // Scroll to end of timeline smoothly on initial page load
   useEffect(() => {
@@ -518,6 +523,70 @@ export default function Timeline() {
       return new Date(year, month, 1);
     }
     return new Date();
+  };
+
+  // Calculate model-specific stats
+  const getModelStats = (companyKey: string, releaseIndex: number) => {
+    const company = timelineData.find(c => c.company === companyKey);
+    if (!company || !company.releases[releaseIndex]) return null;
+
+    const release = company.releases[releaseIndex];
+    const releaseDate = parseReleaseDate(release.date);
+    const now = new Date();
+
+    // 1. Release position
+    const releasePosition = releaseIndex + 1;
+    const totalReleases = company.releases.length;
+    const companyName = companies[companyKey as keyof typeof companies]?.name || companyKey;
+
+    // 2. Days since/until release
+    const daysSinceRelease = Math.floor((now.getTime() - releaseDate.getTime()) / (1000 * 60 * 60 * 24));
+    const isFuture = daysSinceRelease < 0;
+    const daysAbs = Math.abs(daysSinceRelease);
+
+    // 3. Time since previous model (if not first release)
+    let daysSincePrevious: number | null = null;
+    let previousModelName: string | null = null;
+    if (releaseIndex > 0) {
+      const previousRelease = company.releases[releaseIndex - 1];
+      const previousDate = parseReleaseDate(previousRelease.date);
+      daysSincePrevious = Math.floor((releaseDate.getTime() - previousDate.getTime()) / (1000 * 60 * 60 * 24));
+      previousModelName = previousRelease.name;
+    }
+
+    // 4. Comparison to company average
+    const companyStats = getCompanyStats(companyKey);
+    let comparisonToAverage: number | null = null;
+    if (companyStats && daysSincePrevious !== null) {
+      comparisonToAverage = daysSincePrevious - companyStats.avgDaysBetweenReleases;
+    }
+
+    // 5. Release density - count releases within 30 days window
+    const windowDays = 30;
+    const windowStart = new Date(releaseDate);
+    windowStart.setDate(windowStart.getDate() - windowDays);
+    const windowEnd = new Date(releaseDate);
+    windowEnd.setDate(windowEnd.getDate() + windowDays);
+
+    const nearbyReleases = company.releases.filter(r => {
+      const rDate = parseReleaseDate(r.date);
+      return rDate >= windowStart && rDate <= windowEnd && r.name !== release.name;
+    });
+    const clusterSize = nearbyReleases.length + 1; // +1 for current release
+
+    return {
+      releasePosition,
+      totalReleases,
+      companyName,
+      daysSinceRelease: daysAbs,
+      isFuture,
+      daysSincePrevious,
+      previousModelName,
+      comparisonToAverage,
+      avgDaysBetweenReleases: companyStats?.avgDaysBetweenReleases || 0,
+      clusterSize,
+      isInCluster: clusterSize >= 3,
+    };
   };
 
   // Type for release items
@@ -1335,17 +1404,56 @@ export default function Timeline() {
 
                         const releaseKey = `${item.company}-${idx}`;
                         const isReleaseHovered = hoveredRelease === releaseKey;
+                        const isReleaseClicked = clickedRelease === releaseKey;
+                        const isReleaseActive = isReleaseHovered || isReleaseClicked;
+                        const modelStats = getModelStats(item.company, idx);
 
                         return (
                           <div
                             key={idx}
-                            className="absolute border border-white/10 rounded-md px-1.5 md:px-3 py-1 md:py-2 bg-[#151515] hover-transition hover:bg-[#1a1a1a] hover:border-white/20 cursor-pointer whitespace-nowrap z-10"
+                            className={`absolute border border-white/10 rounded-md px-1.5 md:px-3 py-1 md:py-2 bg-[#151515] hover-transition hover:bg-[#1a1a1a] hover:border-white/20 cursor-pointer whitespace-nowrap ${
+                              isReleaseActive ? 'z-[10001]' : 'z-10'
+                            }`}
                             style={{
                               left: `${(release.alignedPosition / totalMonths) * 100}%`,
                               top: `${topOffset}px`,
                             }}
-                            onMouseEnter={() => setHoveredRelease(releaseKey)}
+                            onMouseEnter={(e) => {
+                              setHoveredRelease(releaseKey);
+                              // Calculate tooltip position - prefer above to avoid covering items below
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              const headerHeight = window.innerWidth >= 768 ? 116 : 52;
+                              const tooltipHeight = 320; // Approximate tooltip height with padding
+                              const minClearance = 20; // Minimum space from header
+                              const spaceAbove = rect.top - headerHeight;
+
+                              // Only position below if tooltip would overlap header (very close to top)
+                              // This prevents covering timeline items below in most cases
+                              if (spaceAbove < (tooltipHeight + minClearance)) {
+                                setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'below' }));
+                              } else {
+                                setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'above' }));
+                              }
+                            }}
                             onMouseLeave={() => setHoveredRelease(null)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Calculate tooltip position on click - prefer above to avoid covering items below
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              const headerHeight = window.innerWidth >= 768 ? 116 : 52;
+                              const tooltipHeight = 320;
+                              const minClearance = 20;
+                              const spaceAbove = rect.top - headerHeight;
+
+                              // Only position below if tooltip would overlap header
+                              if (spaceAbove < (tooltipHeight + minClearance)) {
+                                setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'below' }));
+                              } else {
+                                setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'above' }));
+                              }
+
+                              setClickedRelease(isReleaseClicked ? null : releaseKey);
+                            }}
                           >
                             <div className="flex items-center gap-1 md:gap-2">
                               <div className={`w-1 md:w-1.5 h-1 md:h-1.5 rounded-full ${companyInfo.dotColor}`} />
@@ -1354,11 +1462,77 @@ export default function Timeline() {
                               </div>
                             </div>
 
-                            {/* Custom tooltip */}
-                            {isReleaseHovered && (
-                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded whitespace-nowrap pointer-events-none z-50">
-                                {release.date}
-                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-black"></div>
+                            {/* Enhanced stats tooltip */}
+                            {isReleaseActive && modelStats && (
+                              <div className={`absolute left-1/2 -translate-x-1/2 bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[10002] animate-fade-in-slide-up ${
+                                releaseTooltipPosition[releaseKey] === 'below'
+                                  ? 'top-full mt-2'
+                                  : 'bottom-full mb-2'
+                              }`}>
+                                {/* Model name and date */}
+                                <div className="mb-3 pb-3 border-b border-white/10">
+                                  <div className="text-sm font-semibold text-white mb-1">{release.name}</div>
+                                  <div className="text-xs text-gray-500">{release.date}</div>
+                                </div>
+
+                                <div className="space-y-2.5 text-xs">
+                                  {/* Days since/until release */}
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-gray-400">
+                                      {modelStats.isFuture ? 'Releasing in' : 'Released'}
+                                    </span>
+                                    <span className={`font-medium ${modelStats.isFuture ? 'text-blue-400' : 'text-white'}`}>
+                                      {modelStats.isFuture
+                                        ? `${modelStats.daysSinceRelease} days`
+                                        : `${modelStats.daysSinceRelease} days ago`
+                                      }
+                                    </span>
+                                  </div>
+
+                                  {/* Time since previous model */}
+                                  {modelStats.daysSincePrevious !== null && modelStats.previousModelName && (
+                                    <div className="flex items-start justify-between gap-2">
+                                      <span className="text-gray-400">After previous</span>
+                                      <span className="text-white font-medium text-right">
+                                        {modelStats.daysSincePrevious} days
+                                      </span>
+                                    </div>
+                                  )}
+
+                                  {/* Comparison to average */}
+                                  {modelStats.comparisonToAverage !== null && (
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-gray-400">vs. Company avg</span>
+                                      <span className={`font-medium ${
+                                        modelStats.comparisonToAverage > 0
+                                          ? 'text-orange-400'
+                                          : modelStats.comparisonToAverage < 0
+                                            ? 'text-green-400'
+                                            : 'text-white'
+                                      }`}>
+                                        {modelStats.comparisonToAverage > 0 && '+'}
+                                        {modelStats.comparisonToAverage} days
+                                      </span>
+                                    </div>
+                                  )}
+
+                                  {/* Release density */}
+                                  {modelStats.isInCluster && (
+                                    <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                                      <span className="text-gray-400">Release cluster</span>
+                                      <span className="text-yellow-400 font-medium">
+                                        {modelStats.clusterSize} within 30 days
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Tooltip arrow - flips based on position */}
+                                {releaseTooltipPosition[releaseKey] === 'below' ? (
+                                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-[#151515]"></div>
+                                ) : (
+                                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-[#151515]"></div>
+                                )}
                               </div>
                             )}
                           </div>
@@ -1407,7 +1581,53 @@ export default function Timeline() {
                     )}
 
                     {/* Release item */}
-                     <div className="flex items-center gap-3 md:gap-4 py-3 md:py-4 px-3 md:px-4 border-b border-white/5 hover-transition hover:bg-white/[0.02]">
+                     {(() => {
+                       const listReleaseKey = `list-${release.company}-${release.modelName}`;
+                       const isListReleaseActive = hoveredRelease === listReleaseKey || clickedRelease === listReleaseKey;
+
+                       return (
+                     <div
+                      className={`relative flex items-center gap-3 md:gap-4 py-3 md:py-4 px-3 md:px-4 border-b border-white/5 hover-transition hover:bg-white/[0.02] cursor-pointer ${
+                        isListReleaseActive ? 'z-[10001]' : ''
+                      }`}
+                      onMouseEnter={(e) => {
+                        const listReleaseKey = `list-${release.company}-${release.modelName}`;
+                        setHoveredRelease(listReleaseKey);
+                        // Calculate tooltip position - prefer centered to avoid covering items below
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const headerHeight = window.innerWidth >= 768 ? 116 : 52;
+                        const tooltipHeight = 320;
+                        const minClearance = 20;
+                        const spaceAbove = rect.top - headerHeight;
+
+                        // Only position at top if very close to header
+                        // Otherwise center vertically to avoid covering other items
+                        if (spaceAbove < (tooltipHeight / 2 + minClearance)) {
+                          setReleaseTooltipPosition(prev => ({ ...prev, [listReleaseKey]: 'below' }));
+                        } else {
+                          setReleaseTooltipPosition(prev => ({ ...prev, [listReleaseKey]: 'above' }));
+                        }
+                      }}
+                      onMouseLeave={() => setHoveredRelease(null)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const listReleaseKey = `list-${release.company}-${release.modelName}`;
+                        // Calculate tooltip position on click - prefer centered to avoid covering items
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const headerHeight = window.innerWidth >= 768 ? 116 : 52;
+                        const tooltipHeight = 320;
+                        const minClearance = 20;
+                        const spaceAbove = rect.top - headerHeight;
+
+                        // Only position at top if very close to header
+                        if (spaceAbove < (tooltipHeight / 2 + minClearance)) {
+                          setReleaseTooltipPosition(prev => ({ ...prev, [listReleaseKey]: 'below' }));
+                        } else {
+                          setReleaseTooltipPosition(prev => ({ ...prev, [listReleaseKey]: 'above' }));
+                        }
+                        setClickedRelease(clickedRelease === listReleaseKey ? null : listReleaseKey);
+                      }}
+                    >
                       {/* Company indicator */}
                       <div className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full flex-shrink-0 ${release.dotColor}`} />
 
@@ -1425,7 +1645,95 @@ export default function Timeline() {
                       <div className="text-xs md:text-sm text-gray-500">
                         {release.date}
                       </div>
+
+                      {/* Enhanced stats tooltip for list view */}
+                      {(() => {
+                        const listReleaseKey = `list-${release.company}-${release.modelName}`;
+                        const isListReleaseHovered = hoveredRelease === listReleaseKey;
+                        const isListReleaseClicked = clickedRelease === listReleaseKey;
+                        const isListReleaseActive = isListReleaseHovered || isListReleaseClicked;
+
+                        // Find the release index in the company's releases array
+                        const companyData = timelineData.find(c => c.company === release.company);
+                        const releaseIndex = companyData?.releases.findIndex(r => r.name === release.modelName) ?? -1;
+                        const modelStats = releaseIndex >= 0 ? getModelStats(release.company, releaseIndex) : null;
+
+                        return isListReleaseActive && modelStats ? (
+                          <div className={`absolute left-full ml-4 bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[10002] animate-fade-in-slide-up ${
+                            releaseTooltipPosition[listReleaseKey] === 'below'
+                              ? 'top-0'
+                              : 'top-1/2 -translate-y-1/2'
+                          }`}>
+                            {/* Model name and date */}
+                            <div className="mb-3 pb-3 border-b border-white/10">
+                              <div className="text-sm font-semibold text-white mb-1">{release.modelName}</div>
+                              <div className="text-xs text-gray-500">{release.date}</div>
+                            </div>
+
+                            <div className="space-y-2.5 text-xs">
+                              {/* Days since/until release */}
+                              <div className="flex items-center justify-between">
+                                <span className="text-gray-400">
+                                  {modelStats.isFuture ? 'Releasing in' : 'Released'}
+                                </span>
+                                <span className={`font-medium ${modelStats.isFuture ? 'text-blue-400' : 'text-white'}`}>
+                                  {modelStats.isFuture
+                                    ? `${modelStats.daysSinceRelease} days`
+                                    : `${modelStats.daysSinceRelease} days ago`
+                                  }
+                                </span>
+                              </div>
+
+                              {/* Time since previous model */}
+                              {modelStats.daysSincePrevious !== null && modelStats.previousModelName && (
+                                <div className="flex items-start justify-between gap-2">
+                                  <span className="text-gray-400">After previous</span>
+                                  <span className="text-white font-medium text-right">
+                                    {modelStats.daysSincePrevious} days
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* Comparison to average */}
+                              {modelStats.comparisonToAverage !== null && (
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-400">vs. Company avg</span>
+                                  <span className={`font-medium ${
+                                    modelStats.comparisonToAverage > 0
+                                      ? 'text-orange-400'
+                                      : modelStats.comparisonToAverage < 0
+                                        ? 'text-green-400'
+                                        : 'text-white'
+                                  }`}>
+                                    {modelStats.comparisonToAverage > 0 && '+'}
+                                    {modelStats.comparisonToAverage} days
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* Release density */}
+                              {modelStats.isInCluster && (
+                                <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                                  <span className="text-gray-400">Release cluster</span>
+                                  <span className="text-yellow-400 font-medium">
+                                    {modelStats.clusterSize} within 30 days
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Tooltip arrow */}
+                            <div className={`absolute right-full w-0 h-0 border-t-4 border-b-4 border-r-4 border-t-transparent border-b-transparent border-r-[#151515] ${
+                              releaseTooltipPosition[listReleaseKey] === 'below'
+                                ? 'top-4'
+                                : 'top-1/2 -translate-y-1/2'
+                            }`}></div>
+                          </div>
+                        ) : null;
+                      })()}
                     </div>
+                       );
+                     })()}
                   </div>
                 );
               })}
