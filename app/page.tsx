@@ -1418,14 +1418,16 @@ export default function Timeline() {
                             }}
                             onMouseEnter={(e) => {
                               setHoveredRelease(releaseKey);
-                              // Calculate tooltip position
+                              // Calculate tooltip position - prefer above to avoid covering items below
                               const rect = e.currentTarget.getBoundingClientRect();
                               const headerHeight = window.innerWidth >= 768 ? 116 : 52;
-                              const tooltipHeight = 300; // Approximate tooltip height
+                              const tooltipHeight = 320; // Approximate tooltip height with padding
+                              const minClearance = 20; // Minimum space from header
                               const spaceAbove = rect.top - headerHeight;
-                              const spaceBelow = window.innerHeight - rect.bottom;
 
-                              if (spaceAbove < tooltipHeight && spaceBelow > spaceAbove) {
+                              // Only position below if tooltip would overlap header (very close to top)
+                              // This prevents covering timeline items below in most cases
+                              if (spaceAbove < (tooltipHeight + minClearance)) {
                                 setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'below' }));
                               } else {
                                 setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'above' }));
@@ -1434,14 +1436,15 @@ export default function Timeline() {
                             onMouseLeave={() => setHoveredRelease(null)}
                             onClick={(e) => {
                               e.stopPropagation();
-                              // Calculate tooltip position on click too
+                              // Calculate tooltip position on click - prefer above to avoid covering items below
                               const rect = e.currentTarget.getBoundingClientRect();
                               const headerHeight = window.innerWidth >= 768 ? 116 : 52;
-                              const tooltipHeight = 300;
+                              const tooltipHeight = 320;
+                              const minClearance = 20;
                               const spaceAbove = rect.top - headerHeight;
-                              const spaceBelow = window.innerHeight - rect.bottom;
 
-                              if (spaceAbove < tooltipHeight && spaceBelow > spaceAbove) {
+                              // Only position below if tooltip would overlap header
+                              if (spaceAbove < (tooltipHeight + minClearance)) {
                                 setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'below' }));
                               } else {
                                 setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'above' }));
@@ -1589,14 +1592,16 @@ export default function Timeline() {
                       onMouseEnter={(e) => {
                         const listReleaseKey = `list-${release.company}-${release.modelName}`;
                         setHoveredRelease(listReleaseKey);
-                        // Calculate tooltip position
+                        // Calculate tooltip position - prefer centered to avoid covering items below
                         const rect = e.currentTarget.getBoundingClientRect();
                         const headerHeight = window.innerWidth >= 768 ? 116 : 52;
-                        const tooltipHeight = 300;
+                        const tooltipHeight = 320;
+                        const minClearance = 20;
                         const spaceAbove = rect.top - headerHeight;
-                        const spaceBelow = window.innerHeight - rect.bottom;
 
-                        if (spaceAbove < tooltipHeight && spaceBelow > spaceAbove) {
+                        // Only position at top if very close to header
+                        // Otherwise center vertically to avoid covering other items
+                        if (spaceAbove < (tooltipHeight / 2 + minClearance)) {
                           setReleaseTooltipPosition(prev => ({ ...prev, [listReleaseKey]: 'below' }));
                         } else {
                           setReleaseTooltipPosition(prev => ({ ...prev, [listReleaseKey]: 'above' }));
@@ -1606,14 +1611,15 @@ export default function Timeline() {
                       onClick={(e) => {
                         e.stopPropagation();
                         const listReleaseKey = `list-${release.company}-${release.modelName}`;
-                        // Calculate tooltip position on click too
+                        // Calculate tooltip position on click - prefer centered to avoid covering items
                         const rect = e.currentTarget.getBoundingClientRect();
                         const headerHeight = window.innerWidth >= 768 ? 116 : 52;
-                        const tooltipHeight = 300;
+                        const tooltipHeight = 320;
+                        const minClearance = 20;
                         const spaceAbove = rect.top - headerHeight;
-                        const spaceBelow = window.innerHeight - rect.bottom;
 
-                        if (spaceAbove < tooltipHeight && spaceBelow > spaceAbove) {
+                        // Only position at top if very close to header
+                        if (spaceAbove < (tooltipHeight / 2 + minClearance)) {
                           setReleaseTooltipPosition(prev => ({ ...prev, [listReleaseKey]: 'below' }));
                         } else {
                           setReleaseTooltipPosition(prev => ({ ...prev, [listReleaseKey]: 'above' }));
