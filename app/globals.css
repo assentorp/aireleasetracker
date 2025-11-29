@@ -18,6 +18,13 @@
   }
 }
 
+/* Smooth scrolling for mobile with momentum */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scroll-behavior: auto; /* Let native scrolling handle smoothness */
+}
+
 /* Hide scrollbar but keep functionality */
 .overflow-x-auto::-webkit-scrollbar {
   height: 6px;

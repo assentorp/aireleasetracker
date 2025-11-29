@@ -128,20 +128,6 @@ export default function Timeline() {
     setMousePosition(null);
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (!scrollContainerRef.current) return;
-    setIsDragging(true);
-    setStartX(e.touches[0].pageX - scrollContainerRef.current.offsetLeft);
-    setScrollLeft(scrollContainerRef.current.scrollLeft);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging || !scrollContainerRef.current) return;
-    const x = e.touches[0].pageX - scrollContainerRef.current.offsetLeft;
-    const walk = (x - startX) * 2;
-    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
-  };
-
   // Company configurations with subtle colors
   // Change the 'order' property to reorder companies in the timeline
   const companies = {
@@ -1217,15 +1203,12 @@ export default function Timeline() {
           {/* Scrollable timeline section */}
           <div
             ref={scrollContainerRef}
-            className={`flex-1 overflow-x-auto overflow-y-clip select-none relative ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+            className={`flex-1 overflow-x-auto overflow-y-clip relative ${isDragging ? 'cursor-grabbing' : 'md:cursor-grab'}`}
             style={{ isolation: 'isolate' }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUpOrLeave}
             onMouseLeave={handleMouseUpOrLeave}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleMouseUpOrLeave}
           >
             <div className="relative" style={{ paddingRight: '200px' }}>
               {/* Calculate total height of all company rows for dotted lines */}
