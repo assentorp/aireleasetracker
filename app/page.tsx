@@ -13,6 +13,7 @@ export default function Timeline() {
   const [clickedCompany, setClickedCompany] = useState<string | null>(null);
   const [hoveredRelease, setHoveredRelease] = useState<string | null>(null);
   const [clickedRelease, setClickedRelease] = useState<string | null>(null);
+  const [releaseTooltipPosition, setReleaseTooltipPosition] = useState<{ [key: string]: 'above' | 'below' }>({});
   const [mounted, setMounted] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -1415,10 +1416,37 @@ export default function Timeline() {
                               left: `${(release.alignedPosition / totalMonths) * 100}%`,
                               top: `${topOffset}px`,
                             }}
-                            onMouseEnter={() => setHoveredRelease(releaseKey)}
+                            onMouseEnter={(e) => {
+                              setHoveredRelease(releaseKey);
+                              // Calculate tooltip position
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              const headerHeight = window.innerWidth >= 768 ? 116 : 52;
+                              const tooltipHeight = 300; // Approximate tooltip height
+                              const spaceAbove = rect.top - headerHeight;
+                              const spaceBelow = window.innerHeight - rect.bottom;
+
+                              if (spaceAbove < tooltipHeight && spaceBelow > spaceAbove) {
+                                setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'below' }));
+                              } else {
+                                setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'above' }));
+                              }
+                            }}
                             onMouseLeave={() => setHoveredRelease(null)}
                             onClick={(e) => {
                               e.stopPropagation();
+                              // Calculate tooltip position on click too
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              const headerHeight = window.innerWidth >= 768 ? 116 : 52;
+                              const tooltipHeight = 300;
+                              const spaceAbove = rect.top - headerHeight;
+                              const spaceBelow = window.innerHeight - rect.bottom;
+
+                              if (spaceAbove < tooltipHeight && spaceBelow > spaceAbove) {
+                                setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'below' }));
+                              } else {
+                                setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'above' }));
+                              }
+
                               setClickedRelease(isReleaseClicked ? null : releaseKey);
                             }}
                           >
@@ -1431,7 +1459,11 @@ export default function Timeline() {
 
                             {/* Enhanced stats tooltip */}
                             {isReleaseActive && modelStats && (
-                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[10000] animate-fade-in-slide-up">
+                              <div className={`absolute left-1/2 -translate-x-1/2 bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[10000] animate-fade-in-slide-up ${
+                                releaseTooltipPosition[releaseKey] === 'below'
+                                  ? 'top-full mt-2'
+                                  : 'bottom-full mb-2'
+                              }`}>
                                 {/* Model name and date */}
                                 <div className="mb-3 pb-3 border-b border-white/10">
                                   <div className="text-sm font-semibold text-white mb-1">{release.name}</div>
@@ -1498,8 +1530,12 @@ export default function Timeline() {
                                   )}
                                 </div>
 
-                                {/* Tooltip arrow */}
-                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-[#151515]"></div>
+                                {/* Tooltip arrow - flips based on position */}
+                                {releaseTooltipPosition[releaseKey] === 'below' ? (
+                                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-[#151515]"></div>
+                                ) : (
+                                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-[#151515]"></div>
+                                )}
                               </div>
                             )}
                           </div>
@@ -1550,14 +1586,38 @@ export default function Timeline() {
                     {/* Release item */}
                      <div
                       className="relative flex items-center gap-3 md:gap-4 py-3 md:py-4 px-3 md:px-4 border-b border-white/5 hover-transition hover:bg-white/[0.02] cursor-pointer"
-                      onMouseEnter={() => {
+                      onMouseEnter={(e) => {
                         const listReleaseKey = `list-${release.company}-${release.modelName}`;
                         setHoveredRelease(listReleaseKey);
+                        // Calculate tooltip position
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const headerHeight = window.innerWidth >= 768 ? 116 : 52;
+                        const tooltipHeight = 300;
+                        const spaceAbove = rect.top - headerHeight;
+                        const spaceBelow = window.innerHeight - rect.bottom;
+
+                        if (spaceAbove < tooltipHeight && spaceBelow > spaceAbove) {
+                          setReleaseTooltipPosition(prev => ({ ...prev, [listReleaseKey]: 'below' }));
+                        } else {
+                          setReleaseTooltipPosition(prev => ({ ...prev, [listReleaseKey]: 'above' }));
+                        }
                       }}
                       onMouseLeave={() => setHoveredRelease(null)}
                       onClick={(e) => {
                         e.stopPropagation();
                         const listReleaseKey = `list-${release.company}-${release.modelName}`;
+                        // Calculate tooltip position on click too
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const headerHeight = window.innerWidth >= 768 ? 116 : 52;
+                        const tooltipHeight = 300;
+                        const spaceAbove = rect.top - headerHeight;
+                        const spaceBelow = window.innerHeight - rect.bottom;
+
+                        if (spaceAbove < tooltipHeight && spaceBelow > spaceAbove) {
+                          setReleaseTooltipPosition(prev => ({ ...prev, [listReleaseKey]: 'below' }));
+                        } else {
+                          setReleaseTooltipPosition(prev => ({ ...prev, [listReleaseKey]: 'above' }));
+                        }
                         setClickedRelease(clickedRelease === listReleaseKey ? null : listReleaseKey);
                       }}
                     >
@@ -1592,7 +1652,11 @@ export default function Timeline() {
                         const modelStats = releaseIndex >= 0 ? getModelStats(release.company, releaseIndex) : null;
 
                         return isListReleaseActive && modelStats ? (
-                          <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[10000] animate-fade-in-slide-up">
+                          <div className={`absolute left-full ml-4 bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[10000] animate-fade-in-slide-up ${
+                            releaseTooltipPosition[listReleaseKey] === 'below'
+                              ? 'top-0'
+                              : 'top-1/2 -translate-y-1/2'
+                          }`}>
                             {/* Model name and date */}
                             <div className="mb-3 pb-3 border-b border-white/10">
                               <div className="text-sm font-semibold text-white mb-1">{release.modelName}</div>
@@ -1660,7 +1724,11 @@ export default function Timeline() {
                             </div>
 
                             {/* Tooltip arrow */}
-                            <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-t-transparent border-b-transparent border-r-[#151515]"></div>
+                            <div className={`absolute right-full w-0 h-0 border-t-4 border-b-4 border-r-4 border-t-transparent border-b-transparent border-r-[#151515] ${
+                              releaseTooltipPosition[listReleaseKey] === 'below'
+                                ? 'top-4'
+                                : 'top-1/2 -translate-y-1/2'
+                            }`}></div>
                           </div>
                         ) : null;
                       })()}
