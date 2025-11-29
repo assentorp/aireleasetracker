@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { SignInButton, SignUpButton, UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
 import Logo from '../assets/Logo';
+import moment from 'moment';
 
 export default function Timeline() {
   const router = useRouter();
@@ -525,6 +526,12 @@ export default function Timeline() {
     return new Date();
   };
 
+  // Format date using moment.js to get relative, human-readable duration
+  const formatRelativeDate = (dateStr: string): string => {
+    const date = parseReleaseDate(dateStr);
+    return moment(date).fromNow();
+  };
+
   // Calculate model-specific stats
   const getModelStats = (companyKey: string, releaseIndex: number) => {
     const company = timelineData.find(c => c.company === companyKey);
@@ -843,7 +850,7 @@ export default function Timeline() {
                     <div className="flex items-center gap-2">
                       <div className={`w-1.5 h-1.5 rounded-full ${companies[latestRelease.company as keyof typeof companies]?.dotColor || 'bg-gray-500'}`} />
                       <div className="text-sm font-medium text-gray-200">{latestRelease.model}</div>
-                      <div className="text-xs text-gray-500">{latestRelease.date}</div>
+                      <div className="text-xs text-gray-500">{formatRelativeDate(latestRelease.date)}</div>
                     </div>
                   </div>
                 ) : null}
@@ -1249,7 +1256,7 @@ export default function Timeline() {
                                     <div key={idx} className="flex items-center justify-between gap-3">
                                       <div className="flex-1 min-w-0">
                                         <div className="text-xs text-gray-400 truncate">{release.name}</div>
-                                        <div className="text-xs text-gray-600">{release.date}</div>
+                                        <div className="text-xs text-gray-600">{formatRelativeDate(release.date)}</div>
                                       </div>
                                       <div className="text-xs font-normal text-gray-400 whitespace-nowrap">
                                         {release.daysSince !== null ? `${release.daysSince} days` : '-'}
@@ -1472,7 +1479,7 @@ export default function Timeline() {
                                 {/* Model name and date */}
                                 <div className="mb-3 pb-3 border-b border-white/10">
                                   <div className="text-sm font-semibold text-white mb-1">{release.name}</div>
-                                  <div className="text-xs text-gray-500">{release.date}</div>
+                                  <div className="text-xs text-gray-500">{formatRelativeDate(release.date)}</div>
                                 </div>
 
                                 <div className="space-y-2.5 text-xs">
@@ -1667,7 +1674,7 @@ export default function Timeline() {
                             {/* Model name and date */}
                             <div className="mb-3 pb-3 border-b border-white/10">
                               <div className="text-sm font-semibold text-white mb-1">{release.modelName}</div>
-                              <div className="text-xs text-gray-500">{release.date}</div>
+                              <div className="text-xs text-gray-500">{formatRelativeDate(release.date)}</div>
                             </div>
 
                             <div className="space-y-2.5 text-xs">
