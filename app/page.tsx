@@ -7,6 +7,9 @@ import { SignInButton, SignUpButton, UserButton, SignedIn, SignedOut } from '@cl
 import Logo from '../assets/Logo';
 import moment from 'moment';
 
+// Configure moment to use floor rounding for more accurate relative time
+moment.relativeTimeRounding(Math.floor);
+
 export default function Timeline() {
   const router = useRouter();
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
@@ -283,7 +286,7 @@ export default function Timeline() {
       company: 'openai',
       releases: [
         { date: 'Nov 30 2022', name: 'ChatGPT (GPT-3.5)', position: getMonthPosition('Nov 30 2022') },
-        { date: 'Mar 2023', name: 'GPT-4', position: getMonthPosition('Mar 2023') },
+        { date: 'Mar 14 2023', name: 'GPT-4', position: getMonthPosition('Mar 14 2023') },
         { date: 'May 2024', name: 'GPT-4o', position: getMonthPosition('May 2024') },
         { date: 'Jul 2024', name: 'GPT-4o mini', position: getMonthPosition('Jul 2024') },
         { date: 'Sep 2024', name: 'o1-preview', position: getMonthPosition('Sep 2024') },
