@@ -84,7 +84,7 @@ export default function SettingsPage() {
       {/* Header */}
       <header className="sticky top-0 bg-[#0A0A0A] z-50 py-3 md:py-8 px-4 md:px-8 border-b border-white/5">
         <div className="flex items-center justify-between">
-          <Link href="/" className="inline-block hover-transition hover:opacity-80">
+          <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
             <Logo className="cursor-pointer scale-50 md:scale-100 origin-left" />
           </Link>
         </div>
@@ -120,14 +120,14 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={() => setEmailNotifications(!emailNotifications)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full hover-transition border ${
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors border ${
                 emailNotifications
                   ? 'bg-white border-white'
                   : 'bg-white/5 border-white/30'
               }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full transform-transition ${
+                className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
                   emailNotifications
                     ? 'translate-x-6 bg-[#0A0A0A]'
                     : 'translate-x-1 bg-white'
@@ -143,7 +143,7 @@ export default function SettingsPage() {
                 Notification frequency
               </div>
               <div className="space-y-2 md:space-y-3">
-                <label className="flex items-start gap-2 md:gap-3 cursor-pointer group p-2 md:p-3 rounded-lg hover-transition hover:bg-white/5 border border-transparent hover:border-white/10">
+                <label className="flex items-start gap-2 md:gap-3 cursor-pointer group p-2 md:p-3 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/10">
                   <div className="relative flex items-center justify-center mt-0.5">
                     <input
                       type="radio"
@@ -158,7 +158,7 @@ export default function SettingsPage() {
                     )}
                   </div>
                   <div className="flex-1">
-                    <div className="text-xs md:text-sm font-medium text-white hover-transition group-hover:text-gray-200">
+                    <div className="text-xs md:text-sm font-medium text-white group-hover:text-gray-200 transition-colors">
                       Immediately
                     </div>
                     <div className="text-[10px] md:text-xs text-gray-400 mt-0.5">
@@ -167,7 +167,7 @@ export default function SettingsPage() {
                   </div>
                 </label>
 
-                <label className="flex items-start gap-2 md:gap-3 cursor-pointer group p-2 md:p-3 rounded-lg hover-transition hover:bg-white/5 border border-transparent hover:border-white/10">
+                <label className="flex items-start gap-2 md:gap-3 cursor-pointer group p-2 md:p-3 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/10">
                   <div className="relative flex items-center justify-center mt-0.5">
                     <input
                       type="radio"
@@ -182,7 +182,7 @@ export default function SettingsPage() {
                     )}
                   </div>
                   <div className="flex-1">
-                    <div className="text-xs md:text-sm font-medium text-white hover-transition group-hover:text-gray-200">
+                    <div className="text-xs md:text-sm font-medium text-white group-hover:text-gray-200 transition-colors">
                       Once a week
                     </div>
                     <div className="text-[10px] md:text-xs text-gray-400 mt-0.5">
@@ -191,7 +191,7 @@ export default function SettingsPage() {
                   </div>
                 </label>
 
-                <label className="flex items-start gap-2 md:gap-3 cursor-pointer group p-2 md:p-3 rounded-lg hover-transition hover:bg-white/5 border border-transparent hover:border-white/10">
+                <label className="flex items-start gap-2 md:gap-3 cursor-pointer group p-2 md:p-3 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/10">
                   <div className="relative flex items-center justify-center mt-0.5">
                     <input
                       type="radio"
@@ -206,7 +206,7 @@ export default function SettingsPage() {
                     )}
                   </div>
                   <div className="flex-1">
-                    <div className="text-xs md:text-sm font-medium text-white hover-transition group-hover:text-gray-200">
+                    <div className="text-xs md:text-sm font-medium text-white group-hover:text-gray-200 transition-colors">
                       Once a month
                     </div>
                     <div className="text-[10px] md:text-xs text-gray-400 mt-0.5">
@@ -223,7 +223,7 @@ export default function SettingsPage() {
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="px-4 md:px-6 py-2 bg-white text-black text-xs md:text-sm font-medium rounded-md hover-transition hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 md:px-6 py-2 bg-white text-black text-xs md:text-sm font-medium rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? 'Saving...' : 'Save changes'}
             </button>
