@@ -10,6 +10,28 @@ import moment from 'moment';
 // Configure moment to use floor rounding for more accurate relative time
 moment.relativeTimeRounding(Math.floor);
 
+// Configure moment to show "1 year ago" instead of "a year ago"
+moment.updateLocale('en', {
+  relativeTime: {
+    future: 'in %s',
+    past: '%s ago',
+    s: '1 second',
+    ss: '%d seconds',
+    m: '1 minute',
+    mm: '%d minutes',
+    h: '1 hour',
+    hh: '%d hours',
+    d: '1 day',
+    dd: '%d days',
+    w: '1 week',
+    ww: '%d weeks',
+    M: '1 month',
+    MM: '%d months',
+    y: '1 year',
+    yy: '%d years'
+  }
+});
+
 export default function Timeline() {
   const router = useRouter();
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
@@ -1490,16 +1512,6 @@ export default function Timeline() {
                                     </span>
                                   </div>
 
-                                  {/* Time since previous model */}
-                                  {modelStats.daysSincePrevious !== null && modelStats.previousModelName && (
-                                    <div className="flex items-start justify-between gap-2">
-                                      <span className="text-gray-400">After previous</span>
-                                      <span className="text-white font-medium text-right">
-                                        {modelStats.daysSincePrevious} days
-                                      </span>
-                                    </div>
-                                  )}
-
                                   {/* Comparison to average */}
                                   {modelStats.comparisonToAverage !== null && (
                                     <div className="flex items-center justify-between">
@@ -1671,16 +1683,6 @@ export default function Timeline() {
                                   {moment(parseReleaseDate(release.date)).fromNow()}
                                 </span>
                               </div>
-
-                              {/* Time since previous model */}
-                              {modelStats.daysSincePrevious !== null && modelStats.previousModelName && (
-                                <div className="flex items-start justify-between gap-2">
-                                  <span className="text-gray-400">After previous</span>
-                                  <span className="text-white font-medium text-right">
-                                    {modelStats.daysSincePrevious} days
-                                  </span>
-                                </div>
-                              )}
 
                               {/* Comparison to average */}
                               {modelStats.comparisonToAverage !== null && (
