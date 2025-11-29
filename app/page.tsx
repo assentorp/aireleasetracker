@@ -781,8 +781,35 @@ export default function Timeline() {
               </div>
             </div>
 
-            {/* Right: Auth buttons */}
+            {/* Right: Display toggle + Auth buttons */}
             <div className="flex-shrink-0 flex items-center gap-2 md:gap-3">
+              {/* Display Mode Toggle */}
+              <button
+                onClick={() => setDisplayMode(displayMode === 'timeline' ? 'list' : 'timeline')}
+                className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 bg-[#151515] border border-white/10 rounded-md text-gray-300 hover-transition hover:text-white hover:border-white/20"
+              >
+                {displayMode === 'timeline' ? (
+                  // List icon
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-4 md:h-4">
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                  </svg>
+                ) : (
+                  // Grab/cursor icon for horizontal scroll
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-4 md:h-4">
+                    <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                    <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"></path>
+                    <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path>
+                    <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
+                  </svg>
+                )}
+                <span className="hidden sm:inline text-xs md:text-sm font-medium">{displayMode === 'timeline' ? 'List view' : 'Timeline'}</span>
+              </button>
+
               <SignedOut>
                 <SignInButton mode="modal">
                   <button className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium text-gray-300 hover-transition hover:text-white">
@@ -832,33 +859,6 @@ export default function Timeline() {
             </div>
           </div>
       </header>
-
-      {/* Fixed Display Mode Toggle - Bottom Right Corner */}
-      <button
-        onClick={() => setDisplayMode(displayMode === 'timeline' ? 'list' : 'timeline')}
-        className="fixed bottom-8 right-8 z-50 flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-[#151515] border border-white/10 rounded-lg text-gray-300 hover-transition hover:text-white hover:border-white/20 shadow-lg"
-      >
-        {displayMode === 'timeline' ? (
-          // List icon
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-[18px] md:h-[18px]">
-            <line x1="8" y1="6" x2="21" y2="6"></line>
-            <line x1="8" y1="12" x2="21" y2="12"></line>
-            <line x1="8" y1="18" x2="21" y2="18"></line>
-            <line x1="3" y1="6" x2="3.01" y2="6"></line>
-            <line x1="3" y1="12" x2="3.01" y2="12"></line>
-            <line x1="3" y1="18" x2="3.01" y2="18"></line>
-          </svg>
-        ) : (
-          // Grab/cursor icon for horizontal scroll
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-[18px] md:h-[18px]">
-            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
-            <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"></path>
-            <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path>
-            <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
-          </svg>
-        )}
-        <span className="text-xs md:text-sm font-medium">{displayMode === 'timeline' ? 'List' : 'Horizontal scroll'}</span>
-      </button>
 
       {/* Conditional rendering based on display mode */}
       {displayMode === 'timeline' ? (
@@ -967,7 +967,7 @@ export default function Timeline() {
                     >
                       <div className="relative z-[100] h-full flex items-center justify-start px-2 md:px-4">
                         <div
-                          className="flex items-center gap-1 md:gap-2 cursor-pointer"
+                          className="flex items-center gap-1 md:gap-2 cursor-pointer px-2 md:px-3 py-1.5 md:py-2 border border-white/10 rounded-full hover-transition hover:border-white/20 hover:bg-white/[0.02]"
                             onClick={(e) => {
                             e.stopPropagation();
                             // Check if panel would overflow below viewport and calculate position
@@ -1044,7 +1044,7 @@ export default function Timeline() {
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className={`text-gray-600 md:w-[14px] md:h-[14px] transition-transform duration-200 ease-in-out ${isCompanyClicked ? 'rotate-180' : ''}`}
+                            className={`text-gray-400 hover:text-gray-300 md:w-[14px] md:h-[14px] transition-all duration-200 ease-in-out ${isCompanyClicked ? 'rotate-180' : ''}`}
                             style={{ transformOrigin: 'center' }}
                           >
                             <polyline points="6 9 12 15 18 9"></polyline>
