@@ -1476,14 +1476,6 @@ export default function Timeline() {
                                 </div>
 
                                 <div className="space-y-2.5 text-xs">
-                                  {/* Release position */}
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-gray-400">Release position</span>
-                                    <span className="text-white font-medium">
-                                      {modelStats.releasePosition} of {modelStats.totalReleases} from {modelStats.companyName}
-                                    </span>
-                                  </div>
-
                                   {/* Days since/until release */}
                                   <div className="flex items-center justify-between">
                                     <span className="text-gray-400">
@@ -1679,14 +1671,6 @@ export default function Timeline() {
                             </div>
 
                             <div className="space-y-2.5 text-xs">
-                              {/* Release position */}
-                              <div className="flex items-center justify-between">
-                                <span className="text-gray-400">Release position</span>
-                                <span className="text-white font-medium">
-                                  {modelStats.releasePosition} of {modelStats.totalReleases} from {modelStats.companyName}
-                                </span>
-                              </div>
-
                               {/* Days since/until release */}
                               <div className="flex items-center justify-between">
                                 <span className="text-gray-400">
