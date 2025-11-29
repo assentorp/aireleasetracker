@@ -1522,16 +1522,6 @@ export default function Timeline() {
                                       </span>
                                     </div>
                                   )}
-
-                                  {/* Release density */}
-                                  {modelStats.isInCluster && (
-                                    <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                                      <span className="text-gray-400">Release cluster</span>
-                                      <span className="text-yellow-400 font-medium">
-                                        {modelStats.clusterSize} within 30 days
-                                      </span>
-                                    </div>
-                                  )}
                                 </div>
 
                                 {/* Tooltip arrow - flips based on position */}
@@ -1714,16 +1704,6 @@ export default function Timeline() {
                                   }`}>
                                     {modelStats.comparisonToAverage > 0 && '+'}
                                     {modelStats.comparisonToAverage} days
-                                  </span>
-                                </div>
-                              )}
-
-                              {/* Release density */}
-                              {modelStats.isInCluster && (
-                                <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                                  <span className="text-gray-400">Release cluster</span>
-                                  <span className="text-yellow-400 font-medium">
-                                    {modelStats.clusterSize} within 30 days
                                   </span>
                                 </div>
                               )}
