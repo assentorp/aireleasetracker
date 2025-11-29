@@ -1110,7 +1110,7 @@ export default function Timeline() {
                                     }}
                                   />
                                 </div>
-                                <div className={`mt-1.5 text-xs ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/80' : 'text-white'}`}>
+                                <div className="mt-1.5 text-xs text-right text-gray-400">
                                   Average: {stats.avgDaysBetweenReleases} days
                                 </div>
                               </div>
@@ -1130,7 +1130,7 @@ export default function Timeline() {
                                   )}
                                 </div>
                                 <div className="flex items-center justify-between gap-3">
-                                  <div className={`text-lg font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/60 line-through' : 'text-gray-400'}`}>
+                                  <div className={`text-lg font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-white/60 line-through' : 'text-white'}`}>
                                     {stats.expectedNextReleaseDate}
                                   </div>
                                   {(() => {
@@ -1182,7 +1182,7 @@ export default function Timeline() {
                                         <div className="text-xs text-gray-400 truncate">{release.name}</div>
                                         <div className="text-xs text-gray-600">{release.date}</div>
                                       </div>
-                                      <div className="text-sm font-semibold text-gray-400 whitespace-nowrap">
+                                      <div className="text-xs font-normal text-gray-400 whitespace-nowrap">
                                         {release.daysSince !== null ? `${release.daysSince} days` : '-'}
                                       </div>
                                     </div>
