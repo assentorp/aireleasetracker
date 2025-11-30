@@ -1489,7 +1489,7 @@ export default function Timeline() {
                             </div>
 
                             {/* Enhanced stats tooltip */}
-                            {isReleaseActive && modelStats && (
+                            {false && isReleaseActive && modelStats && (
                               <div className={`absolute left-1/2 -translate-x-1/2 bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[10002] animate-fade-in-slide-up ${
                                 releaseTooltipPosition[releaseKey] === 'below'
                                   ? 'top-full mt-2'
