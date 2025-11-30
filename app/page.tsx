@@ -1505,9 +1505,9 @@ export default function Timeline() {
                                   {/* Days since/until release */}
                                   <div className="flex items-center justify-between">
                                     <span className="text-gray-400">
-                                      {modelStats.isFuture ? 'Releasing' : 'Released'}
+                                      {modelStats!.isFuture ? 'Releasing' : 'Released'}
                                     </span>
-                                    <span className={`font-medium ${modelStats.isFuture ? 'text-blue-400' : 'text-white'}`}>
+                                    <span className={`font-medium ${modelStats!.isFuture ? 'text-blue-400' : 'text-white'}`}>
                                       {moment(parseReleaseDate(release.date)).fromNow()}
                                     </span>
                                   </div>
