@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { SignInButton, SignUpButton, UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
 import Logo from '../assets/Logo';
 import moment from 'moment';
+import { timelineData as importedTimelineData, type Release } from '../lib/timeline-data';
 
 // Configure moment to use floor rounding for more accurate relative time
 moment.relativeTimeRounding(Math.floor);
@@ -40,6 +41,7 @@ export default function Timeline() {
   const [hoveredRelease, setHoveredRelease] = useState<string | null>(null);
   const [clickedRelease, setClickedRelease] = useState<string | null>(null);
   const [releaseTooltipPosition, setReleaseTooltipPosition] = useState<{ [key: string]: 'above' | 'below' }>({});
+  const [releaseTooltipAlign, setReleaseTooltipAlign] = useState<{ [key: string]: 'left' | 'center' | 'right' }>({});
   const [mounted, setMounted] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -138,11 +140,6 @@ export default function Timeline() {
       const year = currentMonth.getFullYear();
       const isJanuary = currentMonth.getMonth() === 0;
 
-      setMousePosition({
-        x: x, // Use the full timeline position for the line
-        viewportX: e.clientX, // Viewport position for the label
-        month: `${monthLabel} ${year}`
-      });
     }
 
     // Handle dragging
@@ -156,7 +153,6 @@ export default function Timeline() {
 
   const handleMouseUpOrLeave = () => {
     setIsDragging(false);
-    setMousePosition(null);
   };
 
   // Company configurations with subtle colors
@@ -238,8 +234,13 @@ export default function Timeline() {
     return monthsDiff;
   };
 
-  // Timeline data organized by company (comprehensive release data)
-  const timelineData = [
+  // Use imported timeline data
+  type ReleaseItem = Release;
+  const timelineData = importedTimelineData;
+
+  // Original local timeline data - REMOVED, now using imported data from lib/timeline-data.ts
+  /*
+  const timelineData: { company: string; releases: ReleaseItem[] }[] = [
     {
       company: 'xai',
       releases: [
@@ -377,6 +378,7 @@ export default function Timeline() {
       ]
     }
   ];
+  */
 
   // Generate month markers from Nov 2022 to Dec 2025
   const generateMonthMarkers = () => {
@@ -615,8 +617,6 @@ export default function Timeline() {
     };
   };
 
-  // Type for release items
-  type ReleaseItem = { date: string; name: string; position: number };
   type ReleaseWithRow = ReleaseItem & { row: number; alignedPosition: number };
 
   // Assign releases to rows to prevent horizontal overlap
@@ -691,9 +691,103 @@ export default function Timeline() {
     return rows;
   };
 
+  // Calculate row height for a company - shared function to ensure left and right columns stay aligned
+  const calculateCompanyRowHeight = (item: { company: string; releases: ReleaseItem[] }, companyIndex: number, totalMonths: number): number => {
+    const isEvenRow = companyIndex % 2 === 0;
+    const releasesWithRows = assignReleasesToRows(item.releases, totalMonths);
+    const maxRow = Math.max(...releasesWithRows.map(r => r.row), 0);
+
+    const rowHeights: number[] = [0];
+    for (let row = 1; row <= maxRow; row++) {
+      const rowRelease = releasesWithRows.find(r => r.row === row);
+      const prevRowRelease = releasesWithRows.find(r => r.row === row - 1);
+
+      if (rowRelease && prevRowRelease) {
+        const isConsecutiveSameDate = rowRelease.date === prevRowRelease.date;
+        if (isConsecutiveSameDate) {
+          rowHeights[row] = rowHeights[row - 1] + 40 + 4;
+        } else {
+          rowHeights[row] = rowHeights[row - 1] + 48;
+        }
+      } else {
+        rowHeights[row] = rowHeights[row - 1] + 48;
+      }
+    }
+
+    const baseHeight = maxRow >= 0 ? (rowHeights[maxRow] || 0) + 48 : 0;
+    // Note: Expected release section is shown in left column but doesn't affect height calculation
+    // as it's only visible on desktop and content flows naturally
+    const minHeight = maxRow === 0 ? 128 : 112;
+    const rowHeight = Math.max(baseHeight + 16, minHeight) + (isEvenRow ? 64 : 0);
+
+    // Round to avoid floating point precision issues that could cause misalignment
+    return Math.round(rowHeight);
+  };
+
   // Type definitions
   type NextExpectedRelease = { company: string; companyName: string; date: string; daysUntil: number };
   type LatestRelease = { company: string; companyName: string; model: string; date: string; releaseDate: Date; daysSince: number };
+
+  // Calculate next expected release for a specific company
+  const getCompanyNextExpectedRelease = (companyKey: string): { date: string; daysUntil: number } | null => {
+    const now = new Date();
+    const company = timelineData.find(c => c.company === companyKey);
+    if (!company || company.releases.length === 0) return null;
+
+    // Find the actual latest release by date (don't assume array is sorted)
+    const sortedReleases = [...company.releases].sort((a, b) => {
+      const dateA = parseReleaseDate(a.date);
+      const dateB = parseReleaseDate(b.date);
+      return dateB.getTime() - dateA.getTime(); // Sort newest first
+    });
+    const lastRelease = sortedReleases[0];
+    const lastReleaseDate = parseReleaseDate(lastRelease.date);
+    const daysSinceLastRelease = Math.floor((now.getTime() - lastReleaseDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    // Calculate average days between releases
+    const intervals: number[] = [];
+    for (let i = 1; i < sortedReleases.length; i++) {
+      const date1 = parseReleaseDate(sortedReleases[i].date);
+      const date2 = parseReleaseDate(sortedReleases[i - 1].date);
+      const days = Math.floor((date2.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24));
+      intervals.push(days);
+    }
+    const avgDaysBetweenReleases = intervals.length > 0
+      ? Math.floor(intervals.reduce((a, b) => a + b, 0) / intervals.length)
+      : 0;
+
+    if (avgDaysBetweenReleases === 0) return null;
+
+    // Calculate expected next release date
+    let expectedNextReleaseDate = new Date(lastReleaseDate);
+    expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
+
+    if (daysSinceLastRelease <= avgDaysBetweenReleases) {
+      while (expectedNextReleaseDate <= now && avgDaysBetweenReleases > 0) {
+        expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
+      }
+    }
+
+    // Normalize dates to midnight for accurate day calculation
+    const normalizedExpected = new Date(expectedNextReleaseDate);
+    normalizedExpected.setHours(0, 0, 0, 0);
+    const normalizedNow = new Date(now);
+    normalizedNow.setHours(0, 0, 0, 0);
+    const daysUntil = Math.floor((normalizedExpected.getTime() - normalizedNow.getTime()) / (1000 * 60 * 60 * 24));
+
+    // Format expected date
+    const formatExpectedDate = (date: Date) => {
+      const month = date.toLocaleString('default', { month: 'short' });
+      const day = date.getDate();
+      const year = date.getFullYear();
+      return `${month} ${day}, ${year}`;
+    };
+
+    return {
+      date: formatExpectedDate(expectedNextReleaseDate),
+      daysUntil
+    };
+  };
 
   // Calculate next expected release across all companies
   const getNextExpectedRelease = (): NextExpectedRelease | null => {
@@ -961,7 +1055,7 @@ export default function Timeline() {
       {/* Sticky month header - outside scroll container */}
       <div className="flex sticky top-[52px] md:top-[116px] z-40 bg-[#0A0A0A] border-b border-white/5">
           {/* Left spacer to align with company labels */}
-          <div className="flex-shrink-0 w-[120px] md:w-[180px]" />
+          <div className="flex-shrink-0 w-[120px] md:w-[240px]" />
 
           {/* Month header - scrollable */}
           <div
@@ -989,29 +1083,12 @@ export default function Timeline() {
           </div>
       </div>
 
-      {/* Fixed month label - follows mouse */}
-      {mousePosition && (
-        <div
-          className="fixed pointer-events-none z-[10000]"
-          style={{
-            left: `${mousePosition.viewportX + 8}px`, // Viewport position + small margin
-            top: '50vh',
-            transform: 'translateY(-50%)'
-          }}
-        >
-          <div className="px-2 py-1 bg-black text-white text-xs rounded whitespace-nowrap">
-            {mousePosition.month}
-          </div>
-        </div>
-      )}
-
       {/* Timeline container - fixed left column + scrollable right */}
-      <section className="flex" aria-label="AI Model Release Timeline">
+      <section className="flex items-start" aria-label="AI Model Release Timeline">
           {/* Fixed left column for company labels */}
-          <div className="flex-shrink-0 w-[120px] md:w-[180px] border-r border-white/5 bg-[#0A0A0A] z-30 overflow-visible">
-
+          <div className="flex-shrink-0 w-[120px] md:w-[240px] border-r border-white/5 bg-[#0A0A0A] z-30">
             {/* Company labels */}
-            <div className={`space-y-8 overflow-visible ${hoveredCompany || clickedCompany ? 'z-[1000] relative' : ''}`}>
+            <div className={`${hoveredCompany || clickedCompany ? 'z-[1000] relative' : ''}`}>
               {filteredData.map((item, companyIndex) => {
                 const companyInfo = companies[item.company as keyof typeof companies];
                 const stats = getCompanyStats(item.company);
@@ -1020,49 +1097,25 @@ export default function Timeline() {
                 const isCompanyActive = isCompanyHovered || isCompanyClicked;
                 const isEvenRow = companyIndex % 2 === 0;
 
-                // Calculate the same row height as the timeline row
-                const releasesWithRows = assignReleasesToRows(item.releases, totalMonths);
-                const maxRow = Math.max(...releasesWithRows.map(r => r.row), 0);
-
-                // Calculate height using same logic as timeline rows
-                const rowHeights: number[] = [0];
-                for (let row = 1; row <= maxRow; row++) {
-                  const rowRelease = releasesWithRows.find(r => r.row === row);
-                  const prevRowRelease = releasesWithRows.find(r => r.row === row - 1);
-
-                  if (rowRelease && prevRowRelease) {
-                    // Check if they're on the same date by comparing date strings
-                    const isConsecutiveSameDate = rowRelease.date === prevRowRelease.date;
-                    if (isConsecutiveSameDate) {
-                      rowHeights[row] = rowHeights[row - 1] + 40 + 4;
-                    } else {
-                      rowHeights[row] = rowHeights[row - 1] + 48;
-                    }
-                  } else {
-                    rowHeights[row] = rowHeights[row - 1] + 48;
-                  }
-                }
-                // Match the same height calculation as timeline rows
-                const baseHeight = maxRow >= 0 ? (rowHeights[maxRow] || 0) + 48 : 0;
-                // Ensure consistent minimum height - higher for single-row companies to match multi-row spacing
-                const minHeight = maxRow === 0 ? 128 : 112;
-                // Add py-8 padding (64px) for even rows
-                const rowHeight = Math.max(baseHeight + 16, minHeight) + (isEvenRow ? 64 : 0);
+                // Use shared height calculation to ensure alignment with timeline rows
+                const rowHeight = calculateCompanyRowHeight(item, companyIndex, totalMonths);
+                // Add 32px margin-top for spacing between rows (space-y-8 equivalent), except for first row
+                const marginTop = companyIndex > 0 ? 32 : 0;
 
                 return (
                   <div
                     key={item.company}
-                    className={`relative flex items-start ${isEvenRow ? 'bg-white/[0.015] py-8' : ''} ${isCompanyActive ? 'z-[500]' : 'z-auto'}`}
-                    style={{ height: `${rowHeight}px`, width: '100%' }}
+                    className={`relative ${isEvenRow ? 'bg-white/[0.015] py-8' : ''} ${isCompanyActive ? 'z-[500]' : 'z-auto'}`}
+                    style={{ height: `${rowHeight}px`, width: '100%', minHeight: `${rowHeight}px`, marginTop: `${marginTop}px`, boxSizing: 'border-box' }}
                   >
                     <div
                       className="pr-2 md:pr-4 w-full relative z-[100]"
                       onMouseEnter={() => setHoveredCompany(item.company)}
                       onMouseLeave={() => setHoveredCompany(null)}
                     >
-                      <div className="relative z-[100] h-full flex items-center justify-start px-2 md:px-4">
+                      <div className="relative z-[100] h-full flex items-start justify-start px-2 md:px-4 py-2">
                         <div
-                          className="flex items-center gap-1 md:gap-2 cursor-pointer px-2 md:px-3 py-1.5 md:py-2 border border-white/10 rounded-full hover-transition hover:border-white/20 hover:bg-white/[0.02]"
+                          className="flex items-center gap-1 md:gap-2 cursor-pointer px-2 md:px-3 py-1.5 md:py-2 hover-transition"
                             onClick={(e) => {
                             e.stopPropagation();
                             // Check if panel would overflow below viewport and calculate position
@@ -1125,25 +1178,55 @@ export default function Timeline() {
                             }
                           }}
                         >
-                          <div className={`w-1.5 md:w-2 h-1.5 md:h-2 rounded-full ${companyInfo.dotColor}`} />
-                          <span className="text-white text-[10px] md:text-base font-medium hover-transition hover:text-gray-200">
-                            {companyInfo.name}
-                          </span>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="10"
-                            height="10"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className={`text-gray-400 hover:text-gray-300 md:w-[14px] md:h-[14px] transition-all duration-200 ease-in-out ${isCompanyClicked ? 'rotate-180' : ''}`}
-                            style={{ transformOrigin: 'center' }}
-                          >
-                            <polyline points="6 9 12 15 18 9"></polyline>
-                          </svg>
+                          <div className="flex flex-col gap-1.5 w-full">
+                            {/* Company name and dropdown */}
+                            <div className="flex items-center gap-1.5 md:gap-2">
+                              <div className={`w-1.5 md:w-2 h-1.5 md:h-2 rounded-full ${companyInfo.dotColor}`} />
+                              <span className="text-white text-[10px] md:text-base font-medium hover-transition hover:text-gray-200">
+                                {companyInfo.name}
+                              </span>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="10"
+                                height="10"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className={`text-gray-400 hover:text-gray-300 md:w-[14px] md:h-[14px] transition-all duration-200 ease-in-out ${isCompanyClicked ? 'rotate-180' : ''}`}
+                                style={{ transformOrigin: 'center' }}
+                              >
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                              </svg>
+                            </div>
+
+                            {/* Company stats - desktop only */}
+                            <div className="hidden md:flex flex-col gap-0.5">
+                              {(() => {
+                                const nextRelease = getCompanyNextExpectedRelease(item.company);
+                                if (!nextRelease) return null;
+
+                                return (
+                                  <>
+                                    {/* Label */}
+                                    <span className="text-xs text-gray-500">Expected next release</span>
+                                    {/* Date and days */}
+                                    {nextRelease.daysUntil >= 0 ? (
+                                      <span className="text-xs text-gray-400">
+                                        {nextRelease.date} · In {nextRelease.daysUntil} {nextRelease.daysUntil === 1 ? 'day' : 'days'}
+                                      </span>
+                                    ) : (
+                                      <span className="text-xs text-orange-400">
+                                        <span className="line-through">{nextRelease.date}</span> · Overdue by {Math.abs(nextRelease.daysUntil)} {Math.abs(nextRelease.daysUntil) === 1 ? 'day' : 'days'}
+                                      </span>
+                                    )}
+                                  </>
+                                );
+                              })()}
+                            </div>
+                          </div>
                         </div>
 
                         {/* Stats panel - shows on hover (desktop) or click (mobile) */}
@@ -1298,7 +1381,7 @@ export default function Timeline() {
           {/* Scrollable timeline section */}
           <div
             ref={scrollContainerRef}
-            className={`flex-1 overflow-x-auto overflow-y-clip relative ${isDragging ? 'cursor-grabbing' : 'md:cursor-grab'}`}
+            className={`flex-1 overflow-x-auto overflow-y-visible relative ${isDragging ? 'cursor-grabbing' : 'md:cursor-grab'}`}
             style={{ isolation: 'isolate' }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
@@ -1310,30 +1393,8 @@ export default function Timeline() {
               {(() => {
                 const companyHeights: number[] = [];
                 filteredData.forEach((item, companyIndex) => {
-                  const isEvenRow = companyIndex % 2 === 0;
-                  const releasesWithRows = assignReleasesToRows(item.releases, totalMonths);
-                  const maxRow = Math.max(...releasesWithRows.map(r => r.row), 0);
-                  const rowHeights: number[] = [0];
-                  for (let row = 1; row <= maxRow; row++) {
-                    const rowRelease = releasesWithRows.find(r => r.row === row);
-                    const prevRowRelease = releasesWithRows.find(r => r.row === row - 1);
-                    if (rowRelease && prevRowRelease) {
-                      const isConsecutiveSameDate = rowRelease.date === prevRowRelease.date;
-                      if (isConsecutiveSameDate) {
-                        rowHeights[row] = rowHeights[row - 1] + 40 + 4;
-                      } else {
-                        rowHeights[row] = rowHeights[row - 1] + 48;
-                      }
-                    } else {
-                      rowHeights[row] = rowHeights[row - 1] + 48;
-                    }
-                  }
-                  // Match the same height calculation as timeline rows
-                  const baseHeight = maxRow >= 0 ? (rowHeights[maxRow] || 0) + 48 : 0;
-                  // Ensure consistent minimum height - higher for single-row companies to match multi-row spacing
-                  const minHeight = maxRow === 0 ? 128 : 112;
-                  // Add py-8 padding (64px) for even rows
-                  const totalHeight = Math.max(baseHeight + 16, minHeight) + (isEvenRow ? 64 : 0);
+                  // Use shared height calculation to ensure consistency
+                  const totalHeight = calculateCompanyRowHeight(item, companyIndex, totalMonths);
                   companyHeights.push(totalHeight);
                 });
                 // Sum all company heights + spacing between them (space-y-8 = 32px between each)
@@ -1354,26 +1415,12 @@ export default function Timeline() {
                     </div>
 
                     {/* Mouse tracker line */}
-                    {mousePosition && (
-                      <div
-                        className="absolute pointer-events-none"
-                        style={{
-                          left: `${mousePosition.x}px`,
-                          top: 0,
-                          height: `${totalTimelineHeight}px`,
-                          zIndex: 10
-                        }}
-                      >
-                        {/* Vertical line */}
-                        <div className="absolute top-0 w-[2px] bg-white opacity-30" style={{ height: `${totalTimelineHeight}px` }} />
-                      </div>
-                    )}
                   </>
                 );
               })()}
 
               {/* Company rows */}
-              <div className="space-y-8 relative">
+              <div className="relative">
                 {filteredData.map((item, companyIndex) => {
                   const companyInfo = companies[item.company as keyof typeof companies];
                   const stats = getCompanyStats(item.company);
@@ -1387,7 +1434,7 @@ export default function Timeline() {
                   const maxRow = Math.max(...releasesWithRows.map(r => r.row), 0);
                   const rowHeights: number[] = [0]; // Track cumulative height for each row
 
-                  // Calculate height for each row sequentially
+                  // Calculate height for each row sequentially (needed for positioning releases)
                   for (let row = 1; row <= maxRow; row++) {
                     const rowRelease = releasesWithRows.find(r => r.row === row);
                     const prevRowRelease = releasesWithRows.find(r => r.row === row - 1);
@@ -1409,19 +1456,16 @@ export default function Timeline() {
                     }
                   }
 
-                  // Calculate total height needed (last row height + item height + padding)
-                  // Add extra padding at bottom for better spacing
-                  const baseHeight = maxRow >= 0 ? (rowHeights[maxRow] || 0) + 48 : 0;
-                  // Ensure consistent minimum height - higher for single-row companies to match multi-row spacing
-                  const minHeight = maxRow === 0 ? 128 : 112;
-                  // Add py-8 padding (64px) for even rows
-                  const totalHeight = Math.max(baseHeight + 16, minHeight) + (isEvenRow ? 64 : 0);
+                  // Use shared height calculation to ensure alignment with left column
+                  const totalHeight = calculateCompanyRowHeight(item, companyIndex, totalMonths);
+                  // Add 32px margin-top for spacing between rows (space-y-8 equivalent), except for first row
+                  const marginTop = companyIndex > 0 ? 32 : 0;
 
                   return (
                     <div
                       key={item.company}
                       className={`relative ${isEvenRow ? 'bg-white/[0.015] py-8' : ''}`}
-                      style={{ height: `${totalHeight}px`, minWidth: `${totalMonths * 120}px` }}
+                      style={{ height: `${totalHeight}px`, minHeight: `${totalHeight}px`, marginTop: `${marginTop}px`, minWidth: `${totalMonths * 120}px`, boxSizing: 'border-box' }}
                     >
                       {/* Timeline releases */}
                       <div className="relative z-10" style={{ minWidth: `${totalMonths * 120}px`, height: `${totalHeight}px` }}>
@@ -1450,15 +1494,31 @@ export default function Timeline() {
                               const rect = e.currentTarget.getBoundingClientRect();
                               const headerHeight = window.innerWidth >= 768 ? 116 : 52;
                               const tooltipHeight = 320; // Approximate tooltip height with padding
-                              const minClearance = 20; // Minimum space from header
+                              const tooltipWidth = 280; // Min width of tooltip
+                              const minClearance = 20; // Minimum space from edges
                               const spaceAbove = rect.top - headerHeight;
 
-                              // Only position below if tooltip would overlap header (very close to top)
-                              // This prevents covering timeline items below in most cases
+                              // Check vertical position
                               if (spaceAbove < (tooltipHeight + minClearance)) {
                                 setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'below' }));
                               } else {
                                 setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'above' }));
+                              }
+
+                              // Calculate horizontal position to prevent overflow
+                              const distanceFromRightEdge = window.innerWidth - rect.right;
+                              const distanceFromLeftEdge = rect.left;
+                              const edgeThreshold = 200; // Open left/right when within 200px of edge
+
+                              if (distanceFromRightEdge < edgeThreshold) {
+                                // Within 200px of right edge - align tooltip to right edge (opens left)
+                                setReleaseTooltipAlign(prev => ({ ...prev, [releaseKey]: 'right' }));
+                              } else if (distanceFromLeftEdge < edgeThreshold) {
+                                // Within 200px of left edge - align tooltip to left edge (opens right)
+                                setReleaseTooltipAlign(prev => ({ ...prev, [releaseKey]: 'left' }));
+                              } else {
+                                // Far from edges - center it
+                                setReleaseTooltipAlign(prev => ({ ...prev, [releaseKey]: 'center' }));
                               }
                             }}
                             onMouseLeave={() => setHoveredRelease(null)}
@@ -1468,14 +1528,28 @@ export default function Timeline() {
                               const rect = e.currentTarget.getBoundingClientRect();
                               const headerHeight = window.innerWidth >= 768 ? 116 : 52;
                               const tooltipHeight = 320;
+                              const tooltipWidth = 280;
                               const minClearance = 20;
                               const spaceAbove = rect.top - headerHeight;
 
-                              // Only position below if tooltip would overlap header
+                              // Check vertical position
                               if (spaceAbove < (tooltipHeight + minClearance)) {
                                 setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'below' }));
                               } else {
                                 setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'above' }));
+                              }
+
+                              // Calculate horizontal position to prevent overflow
+                              const distanceFromRightEdge = window.innerWidth - rect.right;
+                              const distanceFromLeftEdge = rect.left;
+                              const edgeThreshold = 200; // Open left/right when within 200px of edge
+
+                              if (distanceFromRightEdge < edgeThreshold) {
+                                setReleaseTooltipAlign(prev => ({ ...prev, [releaseKey]: 'right' }));
+                              } else if (distanceFromLeftEdge < edgeThreshold) {
+                                setReleaseTooltipAlign(prev => ({ ...prev, [releaseKey]: 'left' }));
+                              } else {
+                                setReleaseTooltipAlign(prev => ({ ...prev, [releaseKey]: 'center' }));
                               }
 
                               setClickedRelease(isReleaseClicked ? null : releaseKey);
@@ -1488,6 +1562,90 @@ export default function Timeline() {
                               </div>
                             </div>
 
+                            {/* Enhanced stats tooltip */}
+                            {isReleaseActive && modelStats && (
+                              <div
+                                className={`absolute bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[10002] animate-fade-in-slide-up ${
+                                  releaseTooltipPosition[releaseKey] === 'below'
+                                    ? 'top-full mt-2'
+                                    : 'bottom-full mb-2'
+                                } ${
+                                  releaseTooltipAlign[releaseKey] === 'right'
+                                    ? 'right-0'
+                                    : releaseTooltipAlign[releaseKey] === 'left'
+                                    ? 'left-0'
+                                    : 'left-1/2 -translate-x-1/2'
+                                }`}
+                              >
+                                {/* Model name and date */}
+                                <div className="mb-3 pb-3 border-b border-white/10">
+                                  <div className="text-sm font-semibold text-white mb-1">{release.name}</div>
+                                  <div className="text-xs text-gray-500">{item.releases[idx].date}</div>
+                                </div>
+
+                                <div className="space-y-2.5 text-xs">
+                                  {/* Days since/until release */}
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-gray-400">
+                                      {modelStats.isFuture ? 'Releasing' : 'Released'}
+                                    </span>
+                                    <span className={`font-medium ${modelStats.isFuture ? 'text-blue-400' : 'text-white'}`}>
+                                      {moment(parseReleaseDate(item.releases[idx].date)).fromNow()}
+                                    </span>
+                                  </div>
+
+                                  {/* Parameters */}
+                                  {item.releases[idx].parameters && (
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-gray-400">Parameters</span>
+                                      <span className="font-medium text-white">{item.releases[idx].parameters}</span>
+                                    </div>
+                                  )}
+
+                                  {/* Context Window */}
+                                  {item.releases[idx].contextWindow && (
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-gray-400">Context Window</span>
+                                      <span className="font-medium text-white">
+                                        {item.releases[idx].contextWindow}
+                                        {item.releases[idx].contextWindowWords && ` (~${item.releases[idx].contextWindowWords} words)`}
+                                      </span>
+                                    </div>
+                                  )}
+
+                                  {/* Model Type */}
+                                  {item.releases[idx].type && (
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-gray-400">Type</span>
+                                      <span className="font-medium text-white">{item.releases[idx].type}</span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Tooltip arrow - flips based on position and alignment */}
+                                {releaseTooltipPosition[releaseKey] === 'below' ? (
+                                  <div
+                                    className={`absolute bottom-full w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-[#151515] ${
+                                      releaseTooltipAlign[releaseKey] === 'right'
+                                        ? 'right-4'
+                                        : releaseTooltipAlign[releaseKey] === 'left'
+                                        ? 'left-4'
+                                        : 'left-1/2 -translate-x-1/2'
+                                    }`}
+                                  ></div>
+                                ) : (
+                                  <div
+                                    className={`absolute top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-[#151515] ${
+                                      releaseTooltipAlign[releaseKey] === 'right'
+                                        ? 'right-4'
+                                        : releaseTooltipAlign[releaseKey] === 'left'
+                                        ? 'left-4'
+                                        : 'left-1/2 -translate-x-1/2'
+                                    }`}
+                                  ></div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         );
                       })}
@@ -1599,6 +1757,79 @@ export default function Timeline() {
                         {release.date}
                       </div>
 
+                      {/* Enhanced stats tooltip for list view */}
+                      {(() => {
+                        const listReleaseKey = `list-${release.company}-${release.modelName}`;
+                        const isListReleaseHovered = hoveredRelease === listReleaseKey;
+                        const isListReleaseClicked = clickedRelease === listReleaseKey;
+                        const isListReleaseActive = isListReleaseHovered || isListReleaseClicked;
+
+                        // Find the release index in the company's releases array
+                        const companyData = timelineData.find(c => c.company === release.company);
+                        const releaseIndex = companyData?.releases.findIndex(r => r.name === release.modelName) ?? -1;
+                        const modelStats = releaseIndex >= 0 ? getModelStats(release.company, releaseIndex) : null;
+                        const releaseData = releaseIndex >= 0 && companyData ? companyData.releases[releaseIndex] : null;
+
+                        return isListReleaseActive && modelStats && releaseData ? (
+                          <div className={`absolute left-full ml-4 bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[10002] animate-fade-in-slide-up ${
+                            releaseTooltipPosition[listReleaseKey] === 'below'
+                              ? 'top-0'
+                              : 'top-1/2 -translate-y-1/2'
+                          }`}>
+                            {/* Model name and date */}
+                            <div className="mb-3 pb-3 border-b border-white/10">
+                              <div className="text-sm font-semibold text-white mb-1">{release.modelName}</div>
+                              <div className="text-xs text-gray-500">{release.date}</div>
+                            </div>
+
+                            <div className="space-y-2.5 text-xs">
+                              {/* Days since/until release */}
+                              <div className="flex items-center justify-between">
+                                <span className="text-gray-400">
+                                  {modelStats.isFuture ? 'Releasing' : 'Released'}
+                                </span>
+                                <span className={`font-medium ${modelStats.isFuture ? 'text-blue-400' : 'text-white'}`}>
+                                  {moment(parseReleaseDate(release.date)).fromNow()}
+                                </span>
+                              </div>
+
+                              {/* Parameters */}
+                              {releaseData.parameters && (
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-400">Parameters</span>
+                                  <span className="font-medium text-white">{releaseData.parameters}</span>
+                                </div>
+                              )}
+
+                              {/* Context Window */}
+                              {releaseData.contextWindow && (
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-400">Context Window</span>
+                                  <span className="font-medium text-white">
+                                    {releaseData.contextWindow}
+                                    {releaseData.contextWindowWords && ` (~${releaseData.contextWindowWords} words)`}
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* Model Type */}
+                              {releaseData.type && (
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-400">Type</span>
+                                  <span className="font-medium text-white">{releaseData.type}</span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Tooltip arrow */}
+                            <div className={`absolute right-full w-0 h-0 border-t-4 border-b-4 border-r-4 border-t-transparent border-b-transparent border-r-[#151515] ${
+                              releaseTooltipPosition[listReleaseKey] === 'below'
+                                ? 'top-4'
+                                : 'top-1/2 -translate-y-1/2'
+                            }`}></div>
+                          </div>
+                        ) : null;
+                      })()}
                     </div>
                        );
                      })()}

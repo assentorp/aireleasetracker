@@ -4,6 +4,10 @@ export interface Release {
   date: string;
   name: string;
   position: number;
+  parameters?: string;
+  contextWindow?: string;
+  contextWindowWords?: string;
+  type?: string;
 }
 
 export interface TimelineCompany {
@@ -101,9 +105,9 @@ export const timelineData: TimelineCompany[] = [
   {
     company: 'xai',
     releases: [
-      { date: 'Nov 3 2023', name: 'Grok‑1', position: getMonthPosition('Nov 3 2023') },
-      { date: 'Mar 29 2024', name: 'Grok‑1.5', position: getMonthPosition('Mar 29 2024') },
-      { date: 'Aug 14 2024', name: 'Grok‑2', position: getMonthPosition('Aug 14 2024') },
+      { date: 'Nov 3 2023', name: 'Grok-1', position: getMonthPosition('Nov 3 2023') },
+      { date: 'Mar 29 2024', name: 'Grok-1.5', position: getMonthPosition('Mar 29 2024') },
+      { date: 'Aug 14 2024', name: 'Grok-2', position: getMonthPosition('Aug 14 2024') },
       { date: 'Feb 17 2025', name: 'Grok 3', position: getMonthPosition('Feb 17 2025') },
       { date: 'Aug 2025', name: 'Grok 2.5', position: getMonthPosition('Aug 2025') },
       { date: 'Jul 9 2025', name: 'Grok 4', position: getMonthPosition('Jul 9 2025') },
@@ -117,10 +121,40 @@ export const timelineData: TimelineCompany[] = [
     releases: [
       { date: 'Mar 14 2023', name: 'Claude 1', position: getMonthPosition('Mar 14 2023') },
       { date: 'Jul 11 2023', name: 'Claude 2', position: getMonthPosition('Jul 11 2023') },
-      { date: 'Mar 4 2024', name: 'Claude 3 Haiku', position: getMonthPosition('Mar 4 2024') },
-      { date: 'Mar 4 2024', name: 'Claude 3 Sonnet', position: getMonthPosition('Mar 4 2024') + 0.1 },
-      { date: 'Mar 4 2024', name: 'Claude 3 Opus', position: getMonthPosition('Mar 4 2024') + 0.2 },
-      { date: 'Jun 21 2024', name: 'Claude 3.5 Sonnet', position: getMonthPosition('Jun 21 2024') },
+
+      {
+        date: 'Mar 4 2024',
+        name: 'Claude 3 Haiku',
+        parameters: undefined,
+        contextWindow: '200K',
+        type: 'Chat',
+        position: getMonthPosition('Mar 4 2024')
+      },
+      {
+        date: 'Mar 4 2024',
+        name: 'Claude 3 Sonnet',
+        parameters: undefined,
+        contextWindow: '200K',
+        type: 'Chat',
+        position: getMonthPosition('Mar 4 2024') + 0.1
+      },
+      {
+        date: 'Mar 4 2024',
+        name: 'Claude 3 Opus',
+        parameters: undefined,
+        contextWindow: '200K',
+        type: 'Chat',
+        position: getMonthPosition('Mar 4 2024') + 0.2
+      },
+      {
+        date: 'Jun 21 2024',
+        name: 'Claude 3.5 Sonnet',
+        parameters: undefined,
+        contextWindow: '200K',
+        type: 'Chat',
+        position: getMonthPosition('Jun 21 2024')
+      },
+
       { date: 'Oct 2024', name: 'Claude 3.5 Haiku', position: getMonthPosition('Oct 2024') },
       { date: 'Feb 2025', name: 'Claude 3.7 Sonnet', position: getMonthPosition('Feb 2025') + 0.1 },
       { date: 'May 23 2025', name: 'Claude Sonnet 4', position: getMonthPosition('May 23 2025') },
@@ -133,14 +167,63 @@ export const timelineData: TimelineCompany[] = [
   {
     company: 'meta',
     releases: [
-      { date: 'Feb 24 2023', name: 'LLaMA 1', position: getMonthPosition('Feb 24 2023') },
-      { date: 'Jul 18 2023', name: 'LLaMA 2', position: getMonthPosition('Jul 18 2023') },
-      { date: 'Aug 24 2023', name: 'Code Llama', position: getMonthPosition('Aug 24 2023') },
+      {
+        date: 'Feb 24 2023',
+        name: 'LLaMA 1',
+        parameters: '7B/13B/33B/65B',
+        contextWindow: '2K',
+        type: 'Base',
+        position: getMonthPosition('Feb 24 2023')
+      },
+      {
+        date: 'Jul 18 2023',
+        name: 'LLaMA 2',
+        parameters: '7B/13B/70B',
+        contextWindow: '4K',
+        type: 'Base/Chat',
+        position: getMonthPosition('Jul 18 2023')
+      },
+      {
+        date: 'Aug 24 2023',
+        name: 'Code Llama',
+        parameters: '7B/13B/34B',
+        contextWindow: '100K',
+        type: 'Code',
+        position: getMonthPosition('Aug 24 2023')
+      },
       { date: 'Jan 29 2024', name: 'Code Llama 70B', position: getMonthPosition('Jan 29 2024') },
-      { date: 'Apr 18 2024', name: 'LLaMA 3 (8B/70B)', position: getMonthPosition('Apr 18 2024') },
-      { date: 'Jul 23 2024', name: 'LLaMA 3.1', position: getMonthPosition('Jul 23 2024') },
-      { date: 'Apr 5 2025', name: 'LLaMA 4 Scout', position: getMonthPosition('Apr 5 2025') },
-      { date: 'Apr 5 2025', name: 'LLaMA 4 Maverick', position: getMonthPosition('Apr 5 2025') + 0.1 }
+      {
+        date: 'Apr 18 2024',
+        name: 'LLaMA 3 (8B/70B)',
+        parameters: '8B/70B',
+        contextWindow: '8K',
+        type: 'Base/Instruct',
+        position: getMonthPosition('Apr 18 2024')
+      },
+      {
+        date: 'Jul 23 2024',
+        name: 'LLaMA 3.1',
+        parameters: '8B/70B/405B',
+        contextWindow: '128K',
+        type: 'Base/Instruct',
+        position: getMonthPosition('Jul 23 2024')
+      },
+      {
+        date: 'Apr 5 2025',
+        name: 'LLaMA 4 Scout',
+        parameters: '109B',
+        contextWindow: '10M',
+        type: 'Multimodal',
+        position: getMonthPosition('Apr 5 2025')
+      },
+      {
+        date: 'Apr 5 2025',
+        name: 'LLaMA 4 Maverick',
+        parameters: '400B',
+        contextWindow: '1M',
+        type: 'Multimodal',
+        position: getMonthPosition('Apr 5 2025') + 0.1
+      }
     ]
   },
   {
@@ -165,24 +248,115 @@ export const timelineData: TimelineCompany[] = [
   {
     company: 'openai',
     releases: [
-      { date: 'Nov 30 2022', name: 'ChatGPT (GPT-3.5)', position: getMonthPosition('Nov 30 2022') },
-      { date: 'Mar 2023', name: 'GPT-4', position: getMonthPosition('Mar 2023') },
-      { date: 'May 2024', name: 'GPT-4o', position: getMonthPosition('May 2024') },
-      { date: 'Jul 2024', name: 'GPT-4o mini', position: getMonthPosition('Jul 2024') },
+      { date: 'Nov 30 2022', name: 'ChatGPT (GPT-3.5)', parameters: undefined, contextWindow: '16,000', type: 'Chat', position: getMonthPosition('Nov 30 2022') },
+      {
+        date: 'Mar 2023',
+        name: 'GPT-4',
+        parameters: undefined,
+        contextWindow: '128,000',
+        type: 'Chat',
+        position: getMonthPosition('Mar 2023')
+      },
+      {
+        date: 'May 2024',
+        name: 'GPT-4o',
+        parameters: undefined,
+        contextWindow: '128K',
+        type: 'Chat/Multimodal',
+        position: getMonthPosition('May 2024')
+      },
+      {
+        date: 'Jul 2024',
+        name: 'GPT-4o mini',
+        parameters: undefined,
+        contextWindow: '128K',
+        type: 'Chat/Multimodal',
+        position: getMonthPosition('Jul 2024')
+      },
       { date: 'Sep 2024', name: 'o1-preview', position: getMonthPosition('Sep 2024') },
-      { date: 'Sep 2024', name: 'o1-mini', position: getMonthPosition('Sep 2024') + 0.1 },
-      { date: 'Dec 2024', name: 'o1', position: getMonthPosition('Dec 2024') },
-      { date: 'Dec 2024', name: 'o1-pro', position: getMonthPosition('Dec 2024') + 0.1 },
-      { date: 'Jan 2025', name: 'o3-mini', position: getMonthPosition('Jan 2025') },
+      {
+        date: 'Sep 2024',
+        name: 'o1-mini',
+        parameters: undefined,
+        contextWindow: '128K',
+        type: 'Reasoning',
+        position: getMonthPosition('Sep 2024') + 0.1
+      },
+      {
+        date: 'Dec 2024',
+        name: 'o1',
+        parameters: undefined,
+        contextWindow: '200K',
+        type: 'Reasoning',
+        position: getMonthPosition('Dec 2024')
+      },
+      {
+        date: 'Dec 2024',
+        name: 'o1-pro',
+        parameters: undefined,
+        contextWindow: '200K',
+        type: 'Reasoning',
+        position: getMonthPosition('Dec 2024') + 0.1
+      },
+      {
+        date: 'Jan 2025',
+        name: 'o3-mini',
+        parameters: undefined,
+        contextWindow: '200K',
+        type: 'Reasoning',
+        position: getMonthPosition('Jan 2025')
+      },
       { date: 'Jan 2025', name: 'o3-mini-high', position: getMonthPosition('Jan 2025') + 0.1 },
-      { date: 'Feb 2025', name: 'GPT-4.5', position: getMonthPosition('Feb 2025') },
+      {
+        date: 'Feb 2025',
+        name: 'GPT-4.5',
+        parameters: undefined,
+        contextWindow: '128K',
+        type: 'Chat',
+        position: getMonthPosition('Feb 2025')
+      },
       { date: 'Apr 2025', name: 'GPT-4.1', position: getMonthPosition('Apr 2025') },
-      { date: 'Apr 2025', name: 'GPT-4.1 mini', position: getMonthPosition('Apr 2025') + 0.1 },
-      { date: 'Apr 2025', name: 'o3', position: getMonthPosition('Apr 2025') + 0.2 },
-      { date: 'Apr 2025', name: 'o4-mini', position: getMonthPosition('Apr 2025') + 0.3 },
+      {
+        date: 'Apr 2025',
+        name: 'GPT-4.1 mini',
+        parameters: undefined,
+        contextWindow: '1M',
+        type: 'Chat',
+        position: getMonthPosition('Apr 2025') + 0.1
+      },
+      {
+        date: 'Apr 2025',
+        name: 'o3',
+        parameters: undefined,
+        contextWindow: '200K',
+        type: 'Reasoning',
+        position: getMonthPosition('Apr 2025') + 0.2
+      },
+      {
+        date: 'Apr 2025',
+        name: 'o4-mini',
+        parameters: undefined,
+        contextWindow: '200K',
+        type: 'Reasoning',
+        position: getMonthPosition('Apr 2025') + 0.3
+      },
       { date: 'Apr 2025', name: 'o4-mini-high', position: getMonthPosition('Apr 2025') + 0.4 },
-      { date: 'Jun 2025', name: 'o3-pro', position: getMonthPosition('Jun 2025') },
-      { date: 'Aug 7 2025', name: 'GPT-5', position: getMonthPosition('Aug 7 2025') },
+      {
+        date: 'Jun 2025',
+        name: 'o3-pro',
+        parameters: undefined,
+        contextWindow: '200K',
+        type: 'Reasoning',
+        position: getMonthPosition('Jun 2025')
+      },
+      {
+        date: 'Aug 7 2025',
+        name: 'GPT-5',
+        parameters: undefined,
+        contextWindow: '400K',
+        type: 'Chat',
+        position: getMonthPosition('Aug 7 2025')
+      },
       { date: 'Aug 7 2025', name: 'GPT-5 mini', position: getMonthPosition('Aug 7 2025') + 0.1 },
       { date: 'Nov 12 2025', name: 'GPT-5.1', position: getMonthPosition('Nov 12 2025') }
     ]
@@ -199,8 +373,22 @@ export const timelineData: TimelineCompany[] = [
       { date: 'Sep 2024', name: 'DeepSeek V2.5', position: getMonthPosition('Sep 2024') },
       { date: 'Nov 20 2024', name: 'DeepSeek-R1-Lite Preview', position: getMonthPosition('Nov 20 2024') },
       { date: 'Dec 2024', name: 'DeepSeek V2.5 (Revised)', position: getMonthPosition('Dec 2024') + 0.1 },
-      { date: 'Dec 2024', name: 'DeepSeek V3 Base', position: getMonthPosition('Dec 2024') },
-      { date: 'Dec 2024', name: 'DeepSeek V3 Chat', position: getMonthPosition('Dec 2024') + 0.2 },
+      {
+        date: 'Dec 2024',
+        name: 'DeepSeek V3 Base',
+        parameters: '671B (37B active)',
+        contextWindow: '128K',
+        type: 'Base',
+        position: getMonthPosition('Dec 2024')
+      },
+      {
+        date: 'Dec 2024',
+        name: 'DeepSeek V3 Chat',
+        parameters: '671B (37B active)',
+        contextWindow: '128K',
+        type: 'Chat',
+        position: getMonthPosition('Dec 2024') + 0.2
+      },
       { date: 'Jan 20 2025', name: 'DeepSeek Chat (R1-based)', position: getMonthPosition('Jan 20 2025') },
       { date: 'Mar 24 2025', name: 'DeepSeek V3-0324', position: getMonthPosition('Mar 24 2025') },
       { date: 'May 28 2025', name: 'DeepSeek R1-0528', position: getMonthPosition('May 28 2025') },
@@ -212,29 +400,107 @@ export const timelineData: TimelineCompany[] = [
   {
     company: 'mistral',
     releases: [
-      { date: 'Sep 27 2023', name: 'Mistral 7B', position: getMonthPosition('Sep 27 2023') },
-      { date: 'Dec 9 2023', name: 'Mixtral 8×7B', position: getMonthPosition('Dec 9 2023') },
+      {
+        date: 'Sep 27 2023',
+        name: 'Mistral 7B',
+        parameters: '7B',
+        contextWindow: '8K',
+        type: 'Base/Instruct',
+        position: getMonthPosition('Sep 27 2023')
+      },
+      {
+        date: 'Dec 9 2023',
+        name: 'Mixtral 8×7B',
+        parameters: '47B (13B active)',
+        contextWindow: '32K',
+        type: 'Base/Instruct',
+        position: getMonthPosition('Dec 9 2023')
+      },
       { date: 'Dec 2023', name: 'Mistral Medium', position: getMonthPosition('Dec 2023') + 0.1 },
       { date: 'Feb 26 2024', name: 'Mistral Large', position: getMonthPosition('Feb 26 2024') },
       { date: 'Feb 26 2024', name: 'Mistral Small', position: getMonthPosition('Feb 26 2024') + 0.1 },
-      { date: 'Apr 10 2024', name: 'Mixtral 8×22B', position: getMonthPosition('Apr 10 2024') },
-      { date: 'May 29 2024', name: 'Codestral 22B', position: getMonthPosition('May 29 2024') },
-      { date: 'Jul 16 2024', name: 'Codestral Mamba 7B', position: getMonthPosition('Jul 16 2024') },
-      { date: 'Jul 16 2024', name: 'Mathstral 7B', position: getMonthPosition('Jul 16 2024') + 0.1 },
+      {
+        date: 'Apr 10 2024',
+        name: 'Mixtral 8×22B',
+        parameters: '141B (39B active)',
+        contextWindow: '64K',
+        type: 'Base',
+        position: getMonthPosition('Apr 10 2024')
+      },
+      {
+        date: 'May 29 2024',
+        name: 'Codestral 22B',
+        parameters: '22B',
+        contextWindow: '32K',
+        type: 'Code',
+        position: getMonthPosition('May 29 2024')
+      },
+      {
+        date: 'Jul 16 2024',
+        name: 'Codestral Mamba 7B',
+        parameters: '7B',
+        contextWindow: '256K',
+        type: 'Code',
+        position: getMonthPosition('Jul 16 2024')
+      },
+      {
+        date: 'Jul 16 2024',
+        name: 'Mathstral 7B',
+        parameters: '7B',
+        contextWindow: '32K',
+        type: 'Math',
+        position: getMonthPosition('Jul 16 2024') + 0.1
+      },
       { date: 'Jul 24 2024', name: 'Mistral Large 2', position: getMonthPosition('Jul 24 2024') },
       { date: 'Sep 2024', name: 'Pixtral 24.09', position: getMonthPosition('Sep 2024') },
-      { date: 'Oct 2024', name: 'Ministral 8B', position: getMonthPosition('Oct 2024') },
-      { date: 'Oct 2024', name: 'Ministral 3B', position: getMonthPosition('Oct 2024') + 0.1 },
+      {
+        date: 'Oct 2024',
+        name: 'Ministral 8B',
+        parameters: '8B',
+        contextWindow: '128K',
+        type: 'Chat',
+        position: getMonthPosition('Oct 2024')
+      },
+      {
+        date: 'Oct 2024',
+        name: 'Ministral 3B',
+        parameters: '3B',
+        contextWindow: '128K',
+        type: 'Chat',
+        position: getMonthPosition('Oct 2024') + 0.1
+      },
       { date: 'Nov 19 2024', name: 'Mistral Large 2 24.11', position: getMonthPosition('Nov 19 2024') },
       { date: 'Nov 19 2024', name: 'Pixtral Large 24.11', position: getMonthPosition('Nov 19 2024') + 0.1 },
-      { date: 'Jan 2025', name: 'Mistral Small 3', position: getMonthPosition('Jan 2025') },
-      { date: 'Mar 17 2025', name: 'Mistral Small 3.1', position: getMonthPosition('Mar 17 2025') },
+      {
+        date: 'Jan 2025',
+        name: 'Mistral Small 3',
+        parameters: '24B',
+        contextWindow: '32K',
+        type: 'Base/Instruct',
+        position: getMonthPosition('Jan 2025')
+      },
+      {
+        date: 'Mar 17 2025',
+        name: 'Mistral Small 3.1',
+        parameters: undefined,
+        contextWindow: '128K',
+        type: 'Base/Instruct',
+        position: getMonthPosition('Mar 17 2025')
+      },
       { date: 'May 7 2025', name: 'Mistral Medium 3', position: getMonthPosition('May 7 2025') },
-      { date: 'Jun 10 2025', name: 'Magistral Small', position: getMonthPosition('Jun 10 2025') },
+      {
+        date: 'Jun 10 2025',
+        name: 'Magistral Small',
+        parameters: '24B',
+        contextWindow: '128K',
+        type: 'Reasoning',
+        position: getMonthPosition('Jun 10 2025')
+      },
       { date: 'Jun 10 2025', name: 'Magistral Medium', position: getMonthPosition('Jun 10 2025') + 0.1 }
     ]
   }
 ];
+
 
 // Parse release date string to Date object
 export function parseReleaseDate(dateStr: string): Date {
