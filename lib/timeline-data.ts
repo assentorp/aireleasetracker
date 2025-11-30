@@ -148,15 +148,19 @@ export const timelineData: TimelineCompany[] = [
   },
   {
     company: 'google',
-    releases: [
-      { date: 'Mar 21 2023', name: 'Bard (pre-Gemini)', position: getMonthPosition('Mar 21 2023') },
+    releases:[
+      { date: 'Mar 21 2023', name: 'Bard', position: getMonthPosition('Mar 21 2023') },
       { date: 'Dec 6 2023', name: 'Gemini 1.0 Nano', position: getMonthPosition('Dec 6 2023') },
       { date: 'Dec 13 2023', name: 'Gemini 1.0 Pro', position: getMonthPosition('Dec 13 2023') },
       { date: 'Feb 8 2024', name: 'Gemini 1.0 Ultra', position: getMonthPosition('Feb 8 2024') },
       { date: 'Feb 15 2024', name: 'Gemini 1.5 Pro', position: getMonthPosition('Feb 15 2024') },
       { date: 'May 14 2024', name: 'Gemini 1.5 Flash', position: getMonthPosition('May 14 2024') },
+      { date: 'Sep 24 2024', name: 'Gemini 1.5 Pro-002', position: getMonthPosition('Sep 24 2024') },
+      { date: 'Sep 24 2024', name: 'Gemini 1.5 Flash-002', position: getMonthPosition('Sep 24 2024') },
+      { date: 'Oct 3 2024', name: 'Gemini 1.5 Flash-8B', position: getMonthPosition('Oct 3 2024') },
       { date: 'Jan 30 2025', name: 'Gemini 2.0 Flash', position: getMonthPosition('Jan 30 2025') },
       { date: 'Feb 1 2025', name: 'Gemini 2.0 Flash-Lite', position: getMonthPosition('Feb 1 2025') },
+      { date: 'Feb 5 2025', name: 'Gemini 2.0 Pro', position: getMonthPosition('Feb 5 2025') },
       { date: 'Mar 25 2025', name: 'Gemini 2.5 Pro', position: getMonthPosition('Mar 25 2025') },
       { date: 'Apr 17 2025', name: 'Gemini 2.5 Flash', position: getMonthPosition('Apr 17 2025') },
       { date: 'Jun 17 2025', name: 'Gemini 2.5 Flash-Lite', position: getMonthPosition('Jun 17 2025') },
