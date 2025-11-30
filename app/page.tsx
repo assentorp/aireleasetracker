@@ -1488,39 +1488,6 @@ export default function Timeline() {
                               </div>
                             </div>
 
-                            {/* Enhanced stats tooltip */}
-                            {isReleaseActive && modelStats && (
-                              <div className={`absolute left-1/2 -translate-x-1/2 bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[10002] animate-fade-in-slide-up ${
-                                releaseTooltipPosition[releaseKey] === 'below'
-                                  ? 'top-full mt-2'
-                                  : 'bottom-full mb-2'
-                              }`}>
-                                {/* Model name and date */}
-                                <div className="mb-3 pb-3 border-b border-white/10">
-                                  <div className="text-sm font-semibold text-white mb-1">{release.name}</div>
-                                  <div className="text-xs text-gray-500">{release.date}</div>
-                                </div>
-
-                                <div className="space-y-2.5 text-xs">
-                                  {/* Days since/until release */}
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-gray-400">
-                                      {modelStats.isFuture ? 'Releasing' : 'Released'}
-                                    </span>
-                                    <span className={`font-medium ${modelStats.isFuture ? 'text-blue-400' : 'text-white'}`}>
-                                      {moment(parseReleaseDate(release.date)).fromNow()}
-                                    </span>
-                                  </div>
-                                </div>
-
-                                {/* Tooltip arrow - flips based on position */}
-                                {releaseTooltipPosition[releaseKey] === 'below' ? (
-                                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-[#151515]"></div>
-                                ) : (
-                                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-[#151515]"></div>
-                                )}
-                              </div>
-                            )}
                           </div>
                         );
                       })}
@@ -1632,51 +1599,6 @@ export default function Timeline() {
                         {release.date}
                       </div>
 
-                      {/* Enhanced stats tooltip for list view */}
-                      {(() => {
-                        const listReleaseKey = `list-${release.company}-${release.modelName}`;
-                        const isListReleaseHovered = hoveredRelease === listReleaseKey;
-                        const isListReleaseClicked = clickedRelease === listReleaseKey;
-                        const isListReleaseActive = isListReleaseHovered || isListReleaseClicked;
-
-                        // Find the release index in the company's releases array
-                        const companyData = timelineData.find(c => c.company === release.company);
-                        const releaseIndex = companyData?.releases.findIndex(r => r.name === release.modelName) ?? -1;
-                        const modelStats = releaseIndex >= 0 ? getModelStats(release.company, releaseIndex) : null;
-
-                        return isListReleaseActive && modelStats ? (
-                          <div className={`absolute left-full ml-4 bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[10002] animate-fade-in-slide-up ${
-                            releaseTooltipPosition[listReleaseKey] === 'below'
-                              ? 'top-0'
-                              : 'top-1/2 -translate-y-1/2'
-                          }`}>
-                            {/* Model name and date */}
-                            <div className="mb-3 pb-3 border-b border-white/10">
-                              <div className="text-sm font-semibold text-white mb-1">{release.modelName}</div>
-                              <div className="text-xs text-gray-500">{release.date}</div>
-                            </div>
-
-                            <div className="space-y-2.5 text-xs">
-                              {/* Days since/until release */}
-                              <div className="flex items-center justify-between">
-                                <span className="text-gray-400">
-                                  {modelStats.isFuture ? 'Releasing' : 'Released'}
-                                </span>
-                                <span className={`font-medium ${modelStats.isFuture ? 'text-blue-400' : 'text-white'}`}>
-                                  {moment(parseReleaseDate(release.date)).fromNow()}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Tooltip arrow */}
-                            <div className={`absolute right-full w-0 h-0 border-t-4 border-b-4 border-r-4 border-t-transparent border-b-transparent border-r-[#151515] ${
-                              releaseTooltipPosition[listReleaseKey] === 'below'
-                                ? 'top-4'
-                                : 'top-1/2 -translate-y-1/2'
-                            }`}></div>
-                          </div>
-                        ) : null;
-                      })()}
                     </div>
                        );
                      })()}
