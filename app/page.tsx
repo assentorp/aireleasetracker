@@ -695,6 +695,67 @@ export default function Timeline() {
   type NextExpectedRelease = { company: string; companyName: string; date: string; daysUntil: number };
   type LatestRelease = { company: string; companyName: string; model: string; date: string; releaseDate: Date; daysSince: number };
 
+  // Calculate next expected release for a specific company
+  const getCompanyNextExpectedRelease = (companyKey: string): { date: string; daysUntil: number } | null => {
+    const now = new Date();
+    const company = timelineData.find(c => c.company === companyKey);
+    if (!company || company.releases.length === 0) return null;
+
+    // Find the actual latest release by date (don't assume array is sorted)
+    const sortedReleases = [...company.releases].sort((a, b) => {
+      const dateA = parseReleaseDate(a.date);
+      const dateB = parseReleaseDate(b.date);
+      return dateB.getTime() - dateA.getTime(); // Sort newest first
+    });
+    const lastRelease = sortedReleases[0];
+    const lastReleaseDate = parseReleaseDate(lastRelease.date);
+    const daysSinceLastRelease = Math.floor((now.getTime() - lastReleaseDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    // Calculate average days between releases
+    const intervals: number[] = [];
+    for (let i = 1; i < sortedReleases.length; i++) {
+      const date1 = parseReleaseDate(sortedReleases[i].date);
+      const date2 = parseReleaseDate(sortedReleases[i - 1].date);
+      const days = Math.floor((date2.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24));
+      intervals.push(days);
+    }
+    const avgDaysBetweenReleases = intervals.length > 0
+      ? Math.floor(intervals.reduce((a, b) => a + b, 0) / intervals.length)
+      : 0;
+
+    if (avgDaysBetweenReleases === 0) return null;
+
+    // Calculate expected next release date
+    let expectedNextReleaseDate = new Date(lastReleaseDate);
+    expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
+
+    if (daysSinceLastRelease <= avgDaysBetweenReleases) {
+      while (expectedNextReleaseDate <= now && avgDaysBetweenReleases > 0) {
+        expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
+      }
+    }
+
+    // Normalize dates to midnight for accurate day calculation
+    const normalizedExpected = new Date(expectedNextReleaseDate);
+    normalizedExpected.setHours(0, 0, 0, 0);
+    const normalizedNow = new Date(now);
+    normalizedNow.setHours(0, 0, 0, 0);
+    const daysUntil = Math.floor((normalizedExpected.getTime() - normalizedNow.getTime()) / (1000 * 60 * 60 * 24));
+
+    // Format expected date
+    const formatExpectedDate = (date: Date) => {
+      const month = date.toLocaleString('default', { month: 'short' });
+      const day = date.getDate();
+      const year = date.getFullYear();
+      return `${month} ${day}, ${year}`;
+    };
+
+    return {
+      date: formatExpectedDate(expectedNextReleaseDate),
+      daysUntil
+    };
+  };
+
   // Calculate next expected release across all companies
   const getNextExpectedRelease = (): NextExpectedRelease | null => {
     const now = new Date();
@@ -961,7 +1022,7 @@ export default function Timeline() {
       {/* Sticky month header - outside scroll container */}
       <div className="flex sticky top-[52px] md:top-[116px] z-40 bg-[#0A0A0A] border-b border-white/5">
           {/* Left spacer to align with company labels */}
-          <div className="flex-shrink-0 w-[120px] md:w-[180px]" />
+          <div className="flex-shrink-0 w-[120px] md:w-[240px]" />
 
           {/* Month header - scrollable */}
           <div
@@ -1008,7 +1069,7 @@ export default function Timeline() {
       {/* Timeline container - fixed left column + scrollable right */}
       <section className="flex" aria-label="AI Model Release Timeline">
           {/* Fixed left column for company labels */}
-          <div className="flex-shrink-0 w-[120px] md:w-[180px] border-r border-white/5 bg-[#0A0A0A] z-30 overflow-visible">
+          <div className="flex-shrink-0 w-[120px] md:w-[240px] border-r border-white/5 bg-[#0A0A0A] z-30 overflow-visible">
 
             {/* Company labels */}
             <div className={`space-y-8 overflow-visible ${hoveredCompany || clickedCompany ? 'z-[1000] relative' : ''}`}>
@@ -1062,7 +1123,7 @@ export default function Timeline() {
                     >
                       <div className="relative z-[100] h-full flex items-center justify-start px-2 md:px-4">
                         <div
-                          className="flex items-center gap-1 md:gap-2 cursor-pointer px-2 md:px-3 py-1.5 md:py-2 border border-white/10 rounded-full hover-transition hover:border-white/20 hover:bg-white/[0.02]"
+                          className="cursor-pointer px-2 md:px-3 py-1.5 md:py-2 hover-transition hover:bg-white/[0.02]"
                             onClick={(e) => {
                             e.stopPropagation();
                             // Check if panel would overflow below viewport and calculate position
@@ -1125,25 +1186,58 @@ export default function Timeline() {
                             }
                           }}
                         >
-                          <div className={`w-1.5 md:w-2 h-1.5 md:h-2 rounded-full ${companyInfo.dotColor}`} />
-                          <span className="text-white text-[10px] md:text-base font-medium hover-transition hover:text-gray-200">
-                            {companyInfo.name}
-                          </span>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="10"
-                            height="10"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className={`text-gray-400 hover:text-gray-300 md:w-[14px] md:h-[14px] transition-all duration-200 ease-in-out ${isCompanyClicked ? 'rotate-180' : ''}`}
-                            style={{ transformOrigin: 'center' }}
-                          >
-                            <polyline points="6 9 12 15 18 9"></polyline>
-                          </svg>
+                          <div className="flex flex-col gap-1">
+                            {/* Company name and dropdown */}
+                            <div className="flex items-center gap-1 md:gap-2">
+                              <div className={`w-1.5 md:w-2 h-1.5 md:h-2 rounded-full ${companyInfo.dotColor}`} />
+                              <span className="text-white text-[10px] md:text-base font-medium hover-transition hover:text-gray-200">
+                                {companyInfo.name}
+                              </span>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="10"
+                                height="10"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className={`text-gray-400 hover:text-gray-300 md:w-[14px] md:h-[14px] transition-all duration-200 ease-in-out ${isCompanyClicked ? 'rotate-180' : ''}`}
+                                style={{ transformOrigin: 'center' }}
+                              >
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                              </svg>
+                            </div>
+
+                            {/* Expected next release - desktop only */}
+                            <div className="hidden md:flex flex-col gap-0.5">
+                              {(() => {
+                                const nextRelease = getCompanyNextExpectedRelease(item.company);
+                                if (!nextRelease) return null;
+
+                                return (
+                                  <>
+                                    <span className="text-xs text-gray-500">Expected next release</span>
+                                    {nextRelease.daysUntil >= 0 ? (
+                                      <span className="text-xs text-gray-400">
+                                        {nextRelease.date} · In {nextRelease.daysUntil} {nextRelease.daysUntil === 1 ? 'day' : 'days'}
+                                      </span>
+                                    ) : (
+                                      <div className="flex flex-col gap-0.5">
+                                        <span className="text-xs text-orange-400 line-through">
+                                          {nextRelease.date}
+                                        </span>
+                                        <span className="text-xs text-orange-400">
+                                          Overdue by {Math.abs(nextRelease.daysUntil)} {Math.abs(nextRelease.daysUntil) === 1 ? 'day' : 'days'}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </>
+                                );
+                              })()}
+                            </div>
+                          </div>
                         </div>
 
                         {/* Stats panel - shows on hover (desktop) or click (mobile) */}
