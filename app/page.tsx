@@ -40,11 +40,11 @@ export default function Timeline() {
   const [hoveredRelease, setHoveredRelease] = useState<string | null>(null);
   const [clickedRelease, setClickedRelease] = useState<string | null>(null);
   const [releaseTooltipPosition, setReleaseTooltipPosition] = useState<{ [key: string]: 'above' | 'below' }>({});
+  const [releaseTooltipAlign, setReleaseTooltipAlign] = useState<{ [key: string]: 'left' | 'center' | 'right' }>({});
   const [mounted, setMounted] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
-  const [mousePosition, setMousePosition] = useState<{ x: number; viewportX: number; month: string } | null>(null);
   const [displayMode, setDisplayMode] = useState<'timeline' | 'list'>('timeline');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const monthHeaderRef = useRef<HTMLDivElement>(null);
@@ -137,12 +137,6 @@ export default function Timeline() {
       const monthLabel = currentMonth.toLocaleString('default', { month: 'short' });
       const year = currentMonth.getFullYear();
       const isJanuary = currentMonth.getMonth() === 0;
-
-      setMousePosition({
-        x: x, // Use the full timeline position for the line
-        viewportX: e.clientX, // Viewport position for the label
-        month: `${monthLabel} ${year}`
-      });
     }
 
     // Handle dragging
@@ -156,7 +150,6 @@ export default function Timeline() {
 
   const handleMouseUpOrLeave = () => {
     setIsDragging(false);
-    setMousePosition(null);
   };
 
   // Company configurations with subtle colors
@@ -616,7 +609,15 @@ export default function Timeline() {
   };
 
   // Type for release items
-  type ReleaseItem = { date: string; name: string; position: number };
+  type ReleaseItem = {
+    date: string;
+    name: string;
+    position: number;
+    parameters?: string;
+    contextWindow?: string;
+    contextWindowWords?: string;
+    type?: string;
+  };
   type ReleaseWithRow = ReleaseItem & { row: number; alignedPosition: number };
 
   // Assign releases to rows to prevent horizontal overlap
@@ -1050,22 +1051,6 @@ export default function Timeline() {
           </div>
       </div>
 
-      {/* Fixed month label - follows mouse */}
-      {mousePosition && (
-        <div
-          className="fixed pointer-events-none z-[10000]"
-          style={{
-            left: `${mousePosition.viewportX + 8}px`, // Viewport position + small margin
-            top: '50vh',
-            transform: 'translateY(-50%)'
-          }}
-        >
-          <div className="px-2 py-1 bg-black text-white text-xs rounded whitespace-nowrap">
-            {mousePosition.month}
-          </div>
-        </div>
-      )}
-
       {/* Timeline container - fixed left column + scrollable right */}
       <section className="flex" aria-label="AI Model Release Timeline">
           {/* Fixed left column for company labels */}
@@ -1446,22 +1431,6 @@ export default function Timeline() {
                         />
                       ))}
                     </div>
-
-                    {/* Mouse tracker line */}
-                    {mousePosition && (
-                      <div
-                        className="absolute pointer-events-none"
-                        style={{
-                          left: `${mousePosition.x}px`,
-                          top: 0,
-                          height: `${totalTimelineHeight}px`,
-                          zIndex: 10
-                        }}
-                      >
-                        {/* Vertical line */}
-                        <div className="absolute top-0 w-[2px] bg-white opacity-30" style={{ height: `${totalTimelineHeight}px` }} />
-                      </div>
-                    )}
                   </>
                 );
               })()}
@@ -1527,6 +1496,7 @@ export default function Timeline() {
                         const isReleaseClicked = clickedRelease === releaseKey;
                         const isReleaseActive = isReleaseHovered || isReleaseClicked;
                         const modelStats = getModelStats(item.company, idx);
+                        const releaseData = item.releases[idx] as ReleaseItem | undefined;
 
                         return (
                           <div
@@ -1544,15 +1514,31 @@ export default function Timeline() {
                               const rect = e.currentTarget.getBoundingClientRect();
                               const headerHeight = window.innerWidth >= 768 ? 116 : 52;
                               const tooltipHeight = 320; // Approximate tooltip height with padding
-                              const minClearance = 20; // Minimum space from header
+                              const tooltipWidth = 280; // Min width of tooltip
+                              const minClearance = 20; // Minimum space from edges
                               const spaceAbove = rect.top - headerHeight;
 
-                              // Only position below if tooltip would overlap header (very close to top)
-                              // This prevents covering timeline items below in most cases
+                              // Check vertical position
                               if (spaceAbove < (tooltipHeight + minClearance)) {
                                 setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'below' }));
                               } else {
                                 setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'above' }));
+                              }
+
+                              // Calculate horizontal position to prevent overflow
+                              const distanceFromRightEdge = window.innerWidth - rect.right;
+                              const distanceFromLeftEdge = rect.left;
+                              const edgeThreshold = 200; // Open left/right when within 200px of edge
+
+                              if (distanceFromRightEdge < edgeThreshold) {
+                                // Within 200px of right edge - align tooltip to right edge (opens left)
+                                setReleaseTooltipAlign(prev => ({ ...prev, [releaseKey]: 'right' }));
+                              } else if (distanceFromLeftEdge < edgeThreshold) {
+                                // Within 200px of left edge - align tooltip to left edge (opens right)
+                                setReleaseTooltipAlign(prev => ({ ...prev, [releaseKey]: 'left' }));
+                              } else {
+                                // Far from edges - center it
+                                setReleaseTooltipAlign(prev => ({ ...prev, [releaseKey]: 'center' }));
                               }
                             }}
                             onMouseLeave={() => setHoveredRelease(null)}
@@ -1562,14 +1548,28 @@ export default function Timeline() {
                               const rect = e.currentTarget.getBoundingClientRect();
                               const headerHeight = window.innerWidth >= 768 ? 116 : 52;
                               const tooltipHeight = 320;
+                              const tooltipWidth = 280;
                               const minClearance = 20;
                               const spaceAbove = rect.top - headerHeight;
 
-                              // Only position below if tooltip would overlap header
+                              // Check vertical position
                               if (spaceAbove < (tooltipHeight + minClearance)) {
                                 setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'below' }));
                               } else {
                                 setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'above' }));
+                              }
+
+                              // Calculate horizontal position to prevent overflow
+                              const distanceFromRightEdge = window.innerWidth - rect.right;
+                              const distanceFromLeftEdge = rect.left;
+                              const edgeThreshold = 200; // Open left/right when within 200px of edge
+
+                              if (distanceFromRightEdge < edgeThreshold) {
+                                setReleaseTooltipAlign(prev => ({ ...prev, [releaseKey]: 'right' }));
+                              } else if (distanceFromLeftEdge < edgeThreshold) {
+                                setReleaseTooltipAlign(prev => ({ ...prev, [releaseKey]: 'left' }));
+                              } else {
+                                setReleaseTooltipAlign(prev => ({ ...prev, [releaseKey]: 'center' }));
                               }
 
                               setClickedRelease(isReleaseClicked ? null : releaseKey);
@@ -1582,6 +1582,90 @@ export default function Timeline() {
                               </div>
                             </div>
 
+                            {/* Enhanced stats tooltip */}
+                            {isReleaseActive && modelStats && (
+                              <div
+                                className={`absolute bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[10002] animate-fade-in-slide-up ${
+                                  releaseTooltipPosition[releaseKey] === 'below'
+                                    ? 'top-full mt-2'
+                                    : 'bottom-full mb-2'
+                                } ${
+                                  releaseTooltipAlign[releaseKey] === 'right'
+                                    ? 'right-0'
+                                    : releaseTooltipAlign[releaseKey] === 'left'
+                                    ? 'left-0'
+                                    : 'left-1/2 -translate-x-1/2'
+                                }`}
+                              >
+                                {/* Model name and date */}
+                                <div className="mb-3 pb-3 border-b border-white/10">
+                                  <div className="text-sm font-semibold text-white mb-1">{release.name}</div>
+                                  <div className="text-xs text-gray-500">{releaseData?.date || release.date}</div>
+                                </div>
+
+                                <div className="space-y-2.5 text-xs">
+                                  {/* Days since/until release */}
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-gray-400">
+                                      {modelStats.isFuture ? 'Releasing' : 'Released'}
+                                    </span>
+                                    <span className={`font-medium ${modelStats.isFuture ? 'text-blue-400' : 'text-white'}`}>
+                                      {moment(parseReleaseDate(releaseData?.date || release.date)).fromNow()}
+                                    </span>
+                                  </div>
+
+                                  {/* Parameters */}
+                                  {releaseData?.parameters && (
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-gray-400">Parameters</span>
+                                      <span className="font-medium text-white">{releaseData.parameters}</span>
+                                    </div>
+                                  )}
+
+                                  {/* Context Window */}
+                                  {releaseData?.contextWindow && (
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-gray-400">Context Window</span>
+                                      <span className="font-medium text-white">
+                                        {releaseData.contextWindow}
+                                        {releaseData.contextWindowWords && ` (~${releaseData.contextWindowWords} words)`}
+                                      </span>
+                                    </div>
+                                  )}
+
+                                  {/* Model Type */}
+                                  {releaseData?.type && (
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-gray-400">Type</span>
+                                      <span className="font-medium text-white">{releaseData.type}</span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Tooltip arrow - flips based on position and alignment */}
+                                {releaseTooltipPosition[releaseKey] === 'below' ? (
+                                  <div
+                                    className={`absolute bottom-full w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-[#151515] ${
+                                      releaseTooltipAlign[releaseKey] === 'right'
+                                        ? 'right-4'
+                                        : releaseTooltipAlign[releaseKey] === 'left'
+                                        ? 'left-4'
+                                        : 'left-1/2 -translate-x-1/2'
+                                    }`}
+                                  ></div>
+                                ) : (
+                                  <div
+                                    className={`absolute top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-[#151515] ${
+                                      releaseTooltipAlign[releaseKey] === 'right'
+                                        ? 'right-4'
+                                        : releaseTooltipAlign[releaseKey] === 'left'
+                                        ? 'left-4'
+                                        : 'left-1/2 -translate-x-1/2'
+                                    }`}
+                                  ></div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         );
                       })}
