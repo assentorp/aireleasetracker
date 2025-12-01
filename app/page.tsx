@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import moment from 'moment';
 import { timelineData, companies } from '../lib/timeline-data';
@@ -33,7 +33,7 @@ moment.updateLocale('en', {
   }
 });
 
-export default function Timeline() {
+function TimelineContent() {
   const searchParams = useSearchParams();
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const [hoveredCompany, setHoveredCompany] = useState<string | null>(null);
@@ -1639,5 +1639,17 @@ export default function Timeline() {
         </section>
       )}
     </main>
+  );
+}
+
+export default function Timeline() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0A0A0A] text-white p-8 flex items-center justify-center">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    }>
+      <TimelineContent />
+    </Suspense>
   );
 }
