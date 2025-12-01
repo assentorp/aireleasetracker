@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { SignInButton, SignUpButton, UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
-import Logo from '../assets/Logo';
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import moment from 'moment';
-import { timelineData } from '../lib/timeline-data';
+import { timelineData, companies } from '../lib/timeline-data';
+import { Header } from '../components/Header';
+import { ViewToggle } from '../components/ViewToggle';
+import { CompanyFilter } from '../components/CompanyFilter';
 
 // Configure moment to use floor rounding for more accurate relative time
 moment.relativeTimeRounding(Math.floor);
@@ -34,7 +34,7 @@ moment.updateLocale('en', {
 });
 
 export default function Timeline() {
-  const router = useRouter();
+  const searchParams = useSearchParams();
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const [hoveredCompany, setHoveredCompany] = useState<string | null>(null);
   const [clickedCompany, setClickedCompany] = useState<string | null>(null);
@@ -46,17 +46,34 @@ export default function Timeline() {
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
-  const [displayMode, setDisplayMode] = useState<'timeline' | 'list'>('timeline');
+  const [displayMode, setDisplayMode] = useState<'home' | 'analytics'>('home');
+  const [homeView, setHomeView] = useState<'timeline' | 'list'>('timeline');
+  const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Initialize selected companies after component mounts
+  useEffect(() => {
+    setSelectedCompanies(Object.keys(companies));
+  }, []);
   const monthHeaderRef = useRef<HTMLDivElement>(null);
   const hasScrolledOnLoadRef = useRef(false);
+  const savedScrollPositionRef = useRef<number>(0);
   const statsPanelRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-  const [statsPanelPosition, setStatsPanelPosition] = useState<{ [key: string]: 'above' | 'below' }>({});
   const [statsPanelCoords, setStatsPanelCoords] = useState<{ [key: string]: { top: number; left: number } }>({});
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Watch URL params to update display mode
+  useEffect(() => {
+    const view = searchParams?.get('view');
+    if (view === 'analytics') {
+      setDisplayMode('analytics');
+    } else {
+      setDisplayMode('home');
+    }
+  }, [searchParams]);
 
   // Close clicked company stats when clicking outside
   useEffect(() => {
@@ -94,12 +111,29 @@ export default function Timeline() {
     }
   }, [mounted]);
 
+  // Save scroll position when switching away from timeline view
+  useEffect(() => {
+    if (homeView !== 'timeline' && scrollContainerRef.current) {
+      savedScrollPositionRef.current = scrollContainerRef.current.scrollLeft;
+    }
+  }, [homeView]);
+
+  // Restore scroll position when switching back to timeline view
+  useEffect(() => {
+    if (homeView === 'timeline' && scrollContainerRef.current && monthHeaderRef.current && hasScrolledOnLoadRef.current) {
+      // Restore saved position
+      const savedPosition = savedScrollPositionRef.current;
+      scrollContainerRef.current.scrollLeft = savedPosition;
+      monthHeaderRef.current.scrollLeft = savedPosition;
+    }
+  }, [homeView]);
+
   // Sync scroll position between timeline and month header
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
     const monthHeader = monthHeaderRef.current;
 
-    if (!scrollContainer || !monthHeader) return;
+    if (!scrollContainer || !monthHeader || homeView !== 'timeline') return;
 
     const handleScroll = () => {
       monthHeader.scrollLeft = scrollContainer.scrollLeft;
@@ -107,7 +141,7 @@ export default function Timeline() {
 
     scrollContainer.addEventListener('scroll', handleScroll);
     return () => scrollContainer.removeEventListener('scroll', handleScroll);
-  }, [mounted]);
+  }, [mounted, homeView]);
 
   // Drag/pan handlers
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -132,13 +166,6 @@ export default function Timeline() {
     const timelineWidth = totalMonthsCount * 120;
     const monthIndex = Math.floor((x / timelineWidth) * totalMonthsCount);
 
-    if (monthIndex >= 0 && monthIndex < totalMonthsCount) {
-      const currentMonth = new Date(startDate);
-      currentMonth.setMonth(currentMonth.getMonth() + monthIndex);
-      const monthLabel = currentMonth.toLocaleString('default', { month: 'short' });
-      const year = currentMonth.getFullYear();
-      const isJanuary = currentMonth.getMonth() === 0;
-    }
 
     // Handle dragging
     if (isDragging) {
@@ -231,12 +258,14 @@ export default function Timeline() {
   const totalMonths = monthMarkers.length;
 
   // Use all timeline data (already starts from ChatGPT)
-  // Sort companies by their order property
-  const filteredData = [...timelineData].sort((a, b) => {
-    const orderA = companies[a.company as keyof typeof companies]?.order || 999;
-    const orderB = companies[b.company as keyof typeof companies]?.order || 999;
-    return orderA - orderB;
-  });
+  // Filter by selected companies and sort by their order property
+  const filteredData = [...timelineData]
+    .filter(item => selectedCompanies.includes(item.company))
+    .sort((a, b) => {
+      const orderA = companies[a.company as keyof typeof companies]?.order || 999;
+      const orderB = companies[b.company as keyof typeof companies]?.order || 999;
+      return orderA - orderB;
+    });
 
   // Calculate statistics for a company
   const getCompanyStats = (companyKey: string) => {
@@ -522,7 +551,6 @@ export default function Timeline() {
   };
 
   // Type definitions
-  type NextExpectedRelease = { company: string; companyName: string; date: string; daysUntil: number };
   type LatestRelease = { company: string; companyName: string; model: string; date: string; releaseDate: Date; daysSince: number };
 
   // Calculate next expected release for a specific company
@@ -586,81 +614,49 @@ export default function Timeline() {
     };
   };
 
-  // Calculate next expected release across all companies
-  const getNextExpectedRelease = (): NextExpectedRelease | null => {
-    const now = new Date();
-    let nextRelease: { company: string; companyName: string; date: string; daysUntil: number } | null = null;
-
+  // Calculate release data for analytics graphs
+  const getAnalyticsData = () => {
+    // Get all releases with dates
+    const allReleases: { date: Date; company: string; name: string }[] = [];
     timelineData.forEach((item) => {
-      const company = timelineData.find(c => c.company === item.company);
-      if (!company || company.releases.length === 0) return;
-
-      // Find the actual latest release by date (don't assume array is sorted)
-      const sortedReleases = [...company.releases].sort((a, b) => {
-        const dateA = parseReleaseDate(a.date);
-        const dateB = parseReleaseDate(b.date);
-        return dateB.getTime() - dateA.getTime(); // Sort newest first
+      item.releases.forEach((release) => {
+        allReleases.push({
+          date: parseReleaseDate(release.date),
+          company: item.company,
+          name: release.name
+        });
       });
-      const lastRelease = sortedReleases[0];
-      const lastReleaseDate = parseReleaseDate(lastRelease.date);
-      const daysSinceLastRelease = Math.floor((now.getTime() - lastReleaseDate.getTime()) / (1000 * 60 * 60 * 24));
-
-      // Calculate average days between releases
-      const intervals: number[] = [];
-      for (let i = 1; i < sortedReleases.length; i++) {
-        const date1 = parseReleaseDate(sortedReleases[i].date);
-        const date2 = parseReleaseDate(sortedReleases[i - 1].date);
-        const days = Math.floor((date2.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24));
-        intervals.push(days);
-      }
-      const avgDaysBetweenReleases = intervals.length > 0
-        ? Math.floor(intervals.reduce((a, b) => a + b, 0) / intervals.length)
-        : 0;
-
-      if (avgDaysBetweenReleases > 0) {
-        // Calculate expected next release date - use same logic as stats panel
-        let expectedNextReleaseDate = new Date(lastReleaseDate);
-        expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
-
-        // If we're overdue (past the first expected date), that date should have already happened
-        // So we keep it as the first expected date (which is in the past) to show when it was expected
-        // If not overdue, keep adding intervals until we get a date in the future
-        if (daysSinceLastRelease <= avgDaysBetweenReleases) {
-          // Not overdue yet - keep adding intervals until we get a date in the future
-          while (expectedNextReleaseDate <= now && avgDaysBetweenReleases > 0) {
-            expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
-          }
-        }
-        // If overdue, expectedNextReleaseDate stays as the first expected date (which is in the past)
-
-        // Normalize dates to midnight for accurate day calculation
-        const normalizedExpected = new Date(expectedNextReleaseDate);
-        normalizedExpected.setHours(0, 0, 0, 0);
-        const normalizedNow = new Date(now);
-        normalizedNow.setHours(0, 0, 0, 0);
-        const daysUntil = Math.floor((normalizedExpected.getTime() - normalizedNow.getTime()) / (1000 * 60 * 60 * 24));
-
-        // Format expected date
-        const formatExpectedDate = (date: Date) => {
-          const month = date.toLocaleString('default', { month: 'short' });
-          const day = date.getDate();
-          const year = date.getFullYear();
-          return `${month} ${day}, ${year}`;
-        };
-
-        if (!nextRelease || daysUntil < nextRelease.daysUntil) {
-          const companyInfo = companies[item.company as keyof typeof companies];
-          nextRelease = {
-            company: item.company,
-            companyName: companyInfo.name,
-            date: formatExpectedDate(expectedNextReleaseDate),
-            daysUntil,
-          };
-        }
-      }
     });
 
-    return nextRelease;
+    // Sort by date
+    allReleases.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    // Group by month for frequency graph
+    const monthlyData: { [key: string]: number } = {};
+    allReleases.forEach((release) => {
+      const monthKey = `${release.date.getFullYear()}-${String(release.date.getMonth() + 1).padStart(2, '0')}`;
+      monthlyData[monthKey] = (monthlyData[monthKey] || 0) + 1;
+    });
+
+    // Create cumulative data
+    const cumulativeData: { month: string; count: number }[] = [];
+    let cumulative = 0;
+    Object.keys(monthlyData).sort().forEach((monthKey) => {
+      cumulative += monthlyData[monthKey];
+      cumulativeData.push({ month: monthKey, count: cumulative });
+    });
+
+    // Create frequency data
+    const frequencyData: { month: string; count: number }[] = [];
+    Object.keys(monthlyData).sort().forEach((monthKey) => {
+      frequencyData.push({ month: monthKey, count: monthlyData[monthKey] });
+    });
+
+    return {
+      frequency: frequencyData,
+      cumulative: cumulativeData,
+      total: allReleases.length
+    };
   };
 
   // Get latest release across all companies
@@ -692,7 +688,6 @@ export default function Timeline() {
     return latestRelease;
   };
 
-  const nextExpected = getNextExpectedRelease();
   const latestRelease = getLatestRelease();
 
   // Get all releases sorted by date (newest first) for list view
@@ -706,19 +701,21 @@ export default function Timeline() {
       dateObj: Date;
     }> = [];
 
-    timelineData.forEach((item) => {
-      const companyInfo = companies[item.company as keyof typeof companies];
-      item.releases.forEach((release) => {
-        allReleases.push({
-          company: item.company,
-          companyName: companyInfo.name,
-          dotColor: companyInfo.dotColor,
-          modelName: release.name,
-          date: release.date,
-          dateObj: parseReleaseDate(release.date),
+    timelineData
+      .filter(item => selectedCompanies.includes(item.company))
+      .forEach((item) => {
+        const companyInfo = companies[item.company as keyof typeof companies];
+        item.releases.forEach((release) => {
+          allReleases.push({
+            company: item.company,
+            companyName: companyInfo.name,
+            dotColor: companyInfo.dotColor,
+            modelName: release.name,
+            date: release.date,
+            dateObj: parseReleaseDate(release.date),
+          });
         });
       });
-    });
 
     // Sort by date (newest first)
     return allReleases.sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime());
@@ -738,119 +735,27 @@ export default function Timeline() {
   return (
     <main className="min-h-screen bg-[#0A0A0A] text-white">
       {/* Header */}
-      <header className="sticky top-0 bg-[#0A0A0A] z-50 py-3 md:py-8 px-4 md:px-8 border-b border-white/5">
-        <h1 className="sr-only">AI Model Release Tracker - Timeline of Major AI Models from 2022-2025</h1>
-          <div className="flex items-center justify-between gap-2 md:gap-8">
-            <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
-              {/* Left: Logo and description */}
-              <div className="flex-shrink-0 flex flex-col justify-center gap-2 md:gap-3">
-                <Link href="/" className="inline-block hover-transition hover:opacity-80">
-                  <Logo className="cursor-pointer w-36 md:w-[217px] h-auto" />
-                </Link>
-                <p className="hidden md:block text-xs md:text-sm text-gray-500">
-                  Major AI model releases since ChatGPT (November 30, 2022)
-                </p>
-              </div>
-
-              {/* Middle-left: Release info - Hidden on mobile */}
-              <div className="hidden lg:flex gap-1 ml-8">
-                {latestRelease !== null ? (
-                  <div className="min-w-[180px]">
-                    <div className="text-xs text-gray-500 mb-2">Latest Release</div>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-1.5 h-1.5 rounded-full ${companies[latestRelease.company as keyof typeof companies]?.dotColor || 'bg-gray-500'}`} />
-                      <div className="text-sm font-medium text-gray-200">{latestRelease.model}</div>
-                      <div className="text-xs text-gray-500">{latestRelease.date}</div>
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            {/* Right: Display toggle + Auth buttons */}
-            <div className="flex-shrink-0 flex items-center gap-2 md:gap-3">
-              {/* Display Mode Toggle */}
-              <button
-                onClick={() => setDisplayMode(displayMode === 'timeline' ? 'list' : 'timeline')}
-                className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 bg-[#151515] border border-white/10 rounded-lg text-gray-300 hover-transition hover:text-white hover:border-white/20"
-              >
-                {displayMode === 'timeline' ? (
-                  // List icon
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-4 md:h-4">
-                    <line x1="8" y1="6" x2="21" y2="6"></line>
-                    <line x1="8" y1="12" x2="21" y2="12"></line>
-                    <line x1="8" y1="18" x2="21" y2="18"></line>
-                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                  </svg>
-                ) : (
-                  // Grab/cursor icon for horizontal scroll
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-4 md:h-4">
-                    <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
-                    <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"></path>
-                    <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path>
-                    <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
-                  </svg>
-                )}
-                <span className="hidden sm:inline text-xs md:text-sm font-medium">{displayMode === 'timeline' ? 'List view' : 'Timeline'}</span>
-              </button>
-
-              <SignedOut>
-                <SignInButton mode="modal">
-                  <button className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium text-gray-300 hover-transition hover:text-white">
-                    Log in
-                  </button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <button className="px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm font-medium bg-white text-black hover-transition hover:bg-gray-200 rounded-lg flex items-center gap-1.5 md:gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-4 md:h-4">
-                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                      <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                    </svg>
-                    <span className="hidden sm:inline">Sign up to receive updates</span>
-                    <span className="sm:hidden">Sign up</span>
-                  </button>
-                </SignUpButton>
-              </SignedOut>
-              <SignedIn>
-                <UserButton
-                  afterSignOutUrl="/"
-                  appearance={{
-                    elements: {
-                      userButtonPopoverCard: 'bg-[#151515] border border-white/20',
-                      userButtonPopoverActionButton: 'text-white hover:bg-white/10',
-                      userButtonPopoverActionButton__manageAccount: 'text-white hover:text-white',
-                      userButtonPopoverActionButton__signOut: 'text-white hover:text-white',
-                      userButtonPopoverActionButtonText: 'text-white hover:text-white',
-                      userButtonPopoverActionButtonIcon: 'text-gray-400',
-                      userButtonPopoverFooter: 'hidden',
-                    },
-                  }}
-                >
-                  <UserButton.MenuItems>
-                    <UserButton.Action
-                      label="Notifications"
-                      onClick={() => router.push('/settings')}
-                      labelIcon={
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
-                          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                        </svg>
-                      }
-                    />
-                  </UserButton.MenuItems>
-                </UserButton>
-              </SignedIn>
-            </div>
-          </div>
-      </header>
+      <Header
+        currentPage="home"
+        latestRelease={latestRelease}
+      />
 
       {/* Conditional rendering based on display mode */}
-      {displayMode === 'timeline' ? (
+      {displayMode === 'home' ? (
+        <>
+      {/* View Controls - Toggle and Filter */}
+      <div className="flex items-center justify-between px-4 md:px-8 py-3 border-b border-white/5">
+        <ViewToggle currentView={homeView} onViewChange={setHomeView} />
+        <CompanyFilter
+          selectedCompanies={selectedCompanies}
+          onFilterChange={setSelectedCompanies}
+        />
+      </div>
+
+      {homeView === 'timeline' ? (
         <>
       {/* Sticky month header - outside scroll container */}
-      <div className="flex sticky top-[52px] md:top-[116px] z-40 bg-[#0A0A0A] border-b border-white/5">
+      <div className="flex sticky top-[52px] md:top-[104px] z-40 bg-[#0A0A0A] border-b border-white/5">
           {/* Left spacer to align with company labels */}
           <div className="flex-shrink-0 w-[120px] md:w-[240px]" />
 
@@ -949,7 +854,6 @@ export default function Timeline() {
                             const spaceAbove = rect.top - headerHeight; // Account for header
 
                             if (spaceBelow < panelHeight && spaceAbove > spaceBelow) {
-                              setStatsPanelPosition(prev => ({ ...prev, [item.company]: 'above' }));
                               setStatsPanelCoords(prev => ({
                                 ...prev,
                                 [item.company]: {
@@ -958,7 +862,6 @@ export default function Timeline() {
                                 }
                               }));
                             } else {
-                              setStatsPanelPosition(prev => ({ ...prev, [item.company]: 'below' }));
                               setStatsPanelCoords(prev => ({
                                 ...prev,
                                 [item.company]: {
@@ -980,7 +883,6 @@ export default function Timeline() {
                             const spaceAbove = rect.top - headerHeight; // Account for header
 
                             if (spaceBelow < panelHeight && spaceAbove > spaceBelow) {
-                              setStatsPanelPosition(prev => ({ ...prev, [item.company]: 'above' }));
                               setStatsPanelCoords(prev => ({
                                 ...prev,
                                 [item.company]: {
@@ -989,7 +891,6 @@ export default function Timeline() {
                                 }
                               }));
                             } else {
-                              setStatsPanelPosition(prev => ({ ...prev, [item.company]: 'below' }));
                               setStatsPanelCoords(prev => ({
                                 ...prev,
                                 [item.company]: {
@@ -1548,7 +1449,7 @@ export default function Timeline() {
                        return (
                      <div
                       className={`relative flex items-center gap-3 md:gap-4 py-3 md:py-4 px-3 md:px-4 border-b border-white/5 hover-transition hover:bg-white/[0.02] cursor-pointer ${
-                        isListReleaseActive ? 'z-[10001]' : ''
+                        isListReleaseActive ? 'z-40' : ''
                       }`}
                       onMouseEnter={(e) => {
                         const listReleaseKey = `list-${release.company}-${release.modelName}`;
@@ -1613,6 +1514,127 @@ export default function Timeline() {
                 );
               })}
             </div>
+          </div>
+        </section>
+      )}
+        </>
+      ) : (
+        /* Analytics View */
+        <section className="flex justify-center px-4 md:px-8 py-8 min-h-screen" aria-label="Release Analytics">
+          <div className="w-full max-w-6xl space-y-8">
+            {(() => {
+              const analyticsData = getAnalyticsData();
+              const maxCumulative = Math.max(...analyticsData.cumulative.map(d => d.count), 1);
+              const maxFrequency = Math.max(...analyticsData.frequency.map(d => d.count), 1);
+
+              return (
+                <>
+                  {/* Header */}
+                  <div className="text-center">
+                    <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Release Analytics</h2>
+                    <p className="text-sm md:text-base text-gray-400">
+                      Tracking {analyticsData.total} AI model releases since November 2022
+                    </p>
+                  </div>
+
+                  {/* Cumulative Releases Graph */}
+                  <div className="bg-[#151515] border border-white/10 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold text-white mb-2">Cumulative Releases Over Time</h3>
+                    <p className="text-sm text-gray-400 mb-6">Total number of AI models released (exponential growth)</p>
+
+                    <div className="relative h-64 md:h-80">
+                      {/* Y-axis labels */}
+                      <div className="absolute left-0 top-0 bottom-0 w-12 flex flex-col justify-between text-xs text-gray-500">
+                        <span>{maxCumulative}</span>
+                        <span>{Math.floor(maxCumulative * 0.75)}</span>
+                        <span>{Math.floor(maxCumulative * 0.5)}</span>
+                        <span>{Math.floor(maxCumulative * 0.25)}</span>
+                        <span>0</span>
+                      </div>
+
+                      {/* Graph area */}
+                      <div className="absolute left-14 right-0 top-0 bottom-8 flex items-end gap-0.5">
+                        {analyticsData.cumulative.length > 0 ? analyticsData.cumulative.map((data, idx) => {
+                          const height = (data.count / maxCumulative) * 100;
+
+                          return (
+                            <div key={data.month} className="flex-1 group relative" style={{ minWidth: '4px' }}>
+                              <div
+                                className="w-full bg-blue-500 hover:bg-blue-600 transition-all duration-200"
+                                style={{ height: `${Math.max(height, 0.5)}%` }}
+                              >
+                                {/* Tooltip on hover */}
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#1a1a1a] border border-white/20 rounded px-2 py-1 text-xs whitespace-nowrap pointer-events-none z-10">
+                                  <div className="font-medium text-white">{data.count} models</div>
+                                  <div className="text-gray-400">{data.month}</div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        }) : <div className="text-center text-gray-500 text-sm">No data available</div>}
+                      </div>
+
+                      {/* X-axis */}
+                      <div className="absolute left-14 right-0 bottom-0 h-8 flex items-center justify-between text-xs text-gray-500">
+                        {analyticsData.cumulative
+                          .filter((_, idx) => idx % Math.ceil(analyticsData.cumulative.length / 8) === 0)
+                          .map((data) => (
+                            <span key={data.month}>{data.month}</span>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Release Frequency Graph */}
+                  <div className="bg-[#151515] border border-white/10 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold text-white mb-2">Release Frequency (Per Month)</h3>
+                    <p className="text-sm text-gray-400 mb-6">Number of new models released each month</p>
+
+                    <div className="relative h-64 md:h-80">
+                      {/* Y-axis labels */}
+                      <div className="absolute left-0 top-0 bottom-0 w-12 flex flex-col justify-between text-xs text-gray-500">
+                        <span>{maxFrequency}</span>
+                        <span>{Math.floor(maxFrequency * 0.75)}</span>
+                        <span>{Math.floor(maxFrequency * 0.5)}</span>
+                        <span>{Math.floor(maxFrequency * 0.25)}</span>
+                        <span>0</span>
+                      </div>
+
+                      {/* Graph area */}
+                      <div className="absolute left-14 right-0 top-0 bottom-8 flex items-end gap-0.5">
+                        {analyticsData.frequency.length > 0 ? analyticsData.frequency.map((data, idx) => {
+                          const height = (data.count / maxFrequency) * 100;
+
+                          return (
+                            <div key={data.month} className="flex-1 group relative" style={{ minWidth: '4px' }}>
+                              <div
+                                className="w-full bg-green-500 hover:bg-green-600 transition-all duration-200"
+                                style={{ height: `${Math.max(height, 0.5)}%` }}
+                              >
+                                {/* Tooltip on hover */}
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#1a1a1a] border border-white/20 rounded px-2 py-1 text-xs whitespace-nowrap pointer-events-none z-10">
+                                  <div className="font-medium text-white">{data.count} releases</div>
+                                  <div className="text-gray-400">{data.month}</div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        }) : <div className="text-center text-gray-500 text-sm">No data available</div>}
+                      </div>
+
+                      {/* X-axis */}
+                      <div className="absolute left-14 right-0 bottom-0 h-8 flex items-center justify-between text-xs text-gray-500">
+                        {analyticsData.frequency
+                          .filter((_, idx) => idx % Math.ceil(analyticsData.frequency.length / 8) === 0)
+                          .map((data) => (
+                            <span key={data.month}>{data.month}</span>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </section>
       )}

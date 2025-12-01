@@ -64,10 +64,23 @@
   }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* Animation utilities with proper durations and easing */
 .animate-fade-in-slide-up {
   animation: fadeInSlideUp 200ms ease-out forwards;
   will-change: transform;
+}
+
+.animate-fade-in {
+  animation: fadeIn 200ms ease-out forwards;
 }
 
 /* Button press feedback - apply to buttons without complex transforms */
