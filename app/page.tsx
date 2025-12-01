@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import moment from 'moment';
-import { timelineData, companies } from '../lib/timeline-data';
+import { timelineData, companies, getLatestRelease } from '../lib/timeline-data';
 import { Header } from '../components/Header';
 import { ViewToggle } from '../components/ViewToggle';
 import { CompanyFilter } from '../components/CompanyFilter';
@@ -550,9 +550,6 @@ function TimelineContent() {
     return rows;
   };
 
-  // Type definitions
-  type LatestRelease = { company: string; companyName: string; model: string; date: string; releaseDate: Date; daysSince: number };
-
   // Calculate next expected release for a specific company
   const getCompanyNextExpectedRelease = (companyKey: string): { date: string; daysUntil: number } | null => {
     const now = new Date();
@@ -659,35 +656,7 @@ function TimelineContent() {
     };
   };
 
-  // Get latest release across all companies
-  const getLatestRelease = (): LatestRelease | null => {
-    let latestRelease: { company: string; companyName: string; model: string; date: string; releaseDate: Date; daysSince: number } | null = null;
-    const now = new Date();
-
-    timelineData.forEach((item) => {
-      const releases = item.releases;
-      if (releases.length > 0) {
-        const lastRelease = releases[releases.length - 1];
-        const releaseDate = parseReleaseDate(lastRelease.date);
-        const daysSince = Math.floor((now.getTime() - releaseDate.getTime()) / (1000 * 60 * 60 * 24));
-
-        if (!latestRelease || releaseDate > latestRelease.releaseDate) {
-          const companyInfo = companies[item.company as keyof typeof companies];
-          latestRelease = {
-            company: item.company,
-            companyName: companyInfo.name,
-            model: lastRelease.name,
-            date: lastRelease.date,
-            releaseDate,
-            daysSince,
-          };
-        }
-      }
-    });
-
-    return latestRelease;
-  };
-
+  // Get latest release using shared utility
   const latestRelease = getLatestRelease();
 
   // Get all releases sorted by date (newest first) for list view

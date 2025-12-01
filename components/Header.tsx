@@ -8,7 +8,7 @@ import Logo from '../assets/Logo';
 import { LatestRelease } from './LatestRelease';
 
 interface HeaderProps {
-  currentPage: 'home' | 'analytics';
+  currentPage: 'home' | 'analytics' | 'contact' | 'settings';
   latestRelease: {
     company: string;
     model: string;
@@ -102,6 +102,18 @@ export function Header({ currentPage, latestRelease }: HeaderProps) {
                 }`}
               >
                 Analytics
+              </Link>
+
+              {/* Contact */}
+              <Link
+                href="/contact"
+                className={`text-sm font-medium transition-colors ${
+                  currentPage === 'contact'
+                    ? 'text-white'
+                    : 'text-gray-500 hover:text-gray-300'
+                }`}
+              >
+                Contact
               </Link>
             </div>
           </div>
@@ -260,6 +272,32 @@ export function Header({ currentPage, latestRelease }: HeaderProps) {
                     <line x1="6" y1="20" x2="6" y2="14"></line>
                   </svg>
                   <span className="text-base font-medium">Analytics</span>
+                </Link>
+
+                <Link
+                  href="/contact"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                    currentPage === 'contact'
+                      ? 'bg-white/10 text-white'
+                      : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                  </svg>
+                  <span className="text-base font-medium">Contact</span>
                 </Link>
               </div>
             </div>

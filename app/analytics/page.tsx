@@ -1,7 +1,6 @@
 'use client';
 
-import { timelineData, companies } from '../../lib/timeline-data';
-import moment from 'moment';
+import { timelineData, companies, getLatestRelease } from '../../lib/timeline-data';
 import { Header } from '../../components/Header';
 import { LineChart } from '../../components/LineChart';
 
@@ -80,36 +79,7 @@ export default function AnalyticsPage() {
 
   const companyBreakdown = getCompanyBreakdown();
 
-  // Get latest release across all companies
-  type LatestRelease = { company: string; companyName: string; model: string; date: string; releaseDate: Date; daysSince: number };
-
-  const getLatestRelease = (): LatestRelease | null => {
-    let latestRelease: { company: string; companyName: string; model: string; date: string; releaseDate: Date; daysSince: number } | null = null;
-
-    timelineData.forEach(({ company, releases }) => {
-      releases.forEach((release) => {
-        const releaseDate = parseReleaseDate(release.date);
-        const now = new Date();
-        const diffTime = Math.abs(now.getTime() - releaseDate.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (!latestRelease || releaseDate > latestRelease.releaseDate) {
-          const companyInfo = companies[company as keyof typeof companies];
-          latestRelease = {
-            company,
-            companyName: companyInfo?.name || company,
-            model: release.name,
-            date: moment(releaseDate).fromNow(),
-            releaseDate,
-            daysSince: diffDays
-          };
-        }
-      });
-    });
-
-    return latestRelease;
-  };
-
+  // Get latest release using shared utility
   const latestRelease = getLatestRelease();
 
   return (
@@ -121,7 +91,7 @@ export default function AnalyticsPage() {
       />
 
       {/* Analytics Content */}
-      <main className="max-w-5xl mx-auto px-4 md:px-8 py-8 space-y-8">
+      <main className="max-w-[800px] mx-auto px-4 md:px-6 py-16 space-y-8">
         {/* Header */}
         <div>
           <h1 className="text-xl md:text-3xl font-medium text-white">Release Analytics</h1>

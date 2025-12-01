@@ -297,3 +297,40 @@ export function getRecentReleases(cutoffDate: Date): ReleaseWithCompany[] {
   const allReleases = getAllReleases();
   return allReleases.filter(release => release.dateObj >= cutoffDate);
 }
+
+// Get the latest release across all companies
+export function getLatestRelease(): { company: string; model: string; date: string } | null {
+  let latestRelease: { company: string; model: string; date: string; releaseDate: Date } | null = null;
+  const now = new Date();
+
+  timelineData.forEach((item) => {
+    const releases = item.releases;
+    if (releases.length > 0) {
+      // Find the actual latest release by date (don't assume array is sorted)
+      const sortedReleases = [...releases].sort((a, b) => {
+        const dateA = parseReleaseDate(a.date);
+        const dateB = parseReleaseDate(b.date);
+        return dateB.getTime() - dateA.getTime(); // Sort newest first
+      });
+      const lastRelease = sortedReleases[0];
+      const releaseDate = parseReleaseDate(lastRelease.date);
+
+      if (!latestRelease || releaseDate > latestRelease.releaseDate) {
+        latestRelease = {
+          company: item.company,
+          model: lastRelease.name,
+          date: lastRelease.date,
+          releaseDate,
+        };
+      }
+    }
+  });
+
+  if (!latestRelease) return null;
+
+  return {
+    company: latestRelease.company,
+    model: latestRelease.model,
+    date: latestRelease.date,
+  };
+}

@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Logo from '../../assets/Logo';
+import { Header } from '../../components/Header';
+import { getLatestRelease } from '../../lib/timeline-data';
 
 export default function SettingsPage() {
   const { user, isLoaded } = useUser();
@@ -14,6 +14,7 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const latestRelease = getLatestRelease();
 
   // Redirect if not signed in
   useEffect(() => {
@@ -82,13 +83,10 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white">
       {/* Header */}
-      <header className="sticky top-0 bg-[#0A0A0A] z-50 py-3 md:py-8 px-4 md:px-8 border-b border-white/5">
-        <div className="flex items-center justify-between">
-          <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
-            <Logo className="cursor-pointer scale-50 md:scale-100 origin-left" />
-          </Link>
-        </div>
-      </header>
+      <Header
+        currentPage="settings"
+        latestRelease={latestRelease}
+      />
 
       {/* Settings Content */}
       <main className="max-w-3xl mx-auto px-4 md:px-8 py-6 md:py-12">
