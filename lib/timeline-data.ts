@@ -109,7 +109,8 @@ export const timelineData: TimelineCompany[] = [
       { date: 'Jul 9 2025', name: 'Grok 4', position: getMonthPosition('Jul 9 2025') },
       { date: 'Sep 2025', name: 'Grok 4 Fast', position: getMonthPosition('Sep 2025') },
       { date: 'Aug 28 2025', name: 'Grok Code Fast 1', position: getMonthPosition('Aug 28 2025') },
-      { date: 'Nov 17 2025', name: 'Grok 4.1', position: getMonthPosition('Nov 17 2025') }
+      { date: 'Nov 17 2025', name: 'Grok 4.1', position: getMonthPosition('Nov 17 2025') },
+      { date: 'Nov 19 2025', name: 'Grok 4.1 Fast', position: getMonthPosition('Nov 19 2025') }
     ]
   },
   {
@@ -218,7 +219,8 @@ export const timelineData: TimelineCompany[] = [
       { date: 'May 28 2025', name: 'DeepSeek R1-0528', position: getMonthPosition('May 28 2025') },
       { date: 'Aug 21 2025', name: 'DeepSeek V3.1', position: getMonthPosition('Aug 21 2025') },
       { date: 'Sep 22 2025', name: 'DeepSeek V3.1 Terminus', position: getMonthPosition('Sep 22 2025') },
-      { date: 'Sep 29 2025', name: 'DeepSeek V3.2 Exp', position: getMonthPosition('Sep 29 2025') }
+      { date: 'Sep 29 2025', name: 'DeepSeek V3.2 Exp', position: getMonthPosition('Sep 29 2025') },
+      { date: 'Dec 1 2025', name: 'DeepSeek-V3.2', position: getMonthPosition('Dec 1 2025') }
     ]
   },
   {
