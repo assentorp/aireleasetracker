@@ -734,7 +734,7 @@ function TimelineContent() {
             className="flex-1 overflow-x-auto scrollbar-hide relative"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            <div className="relative h-8 py-2" style={{ paddingRight: '200px', minWidth: `${totalMonths * 120}px` }}>
+            <div className="relative h-8 py-2" style={{ paddingRight: '200px', minWidth: `${totalMonths * 120 + 200}px` }}>
               {/* Timeline line */}
 
               {/* Month markers */}
@@ -742,7 +742,7 @@ function TimelineContent() {
                 <div
                   key={idx}
                   className="absolute top-2"
-                  style={{ left: `${(marker.position / totalMonths) * 100}%` }}
+                  style={{ left: `${marker.position * 120}px` }}
                 >
                   {/* Month label */}
                   <div className={`text-[10px] md:text-xs font-medium ${marker.isJanuary ? 'text-white' : 'text-gray-400'}`}>
@@ -1121,12 +1121,12 @@ function TimelineContent() {
                 return (
                   <>
                     {/* Dotted vertical lines spanning full height */}
-                    <div className="absolute top-0 left-0 right-0 pointer-events-none" style={{ height: `${totalTimelineHeight}px`, minWidth: `${totalMonths * 120}px` }}>
+                    <div className="absolute top-0 left-0 right-0 pointer-events-none" style={{ height: `${totalTimelineHeight}px`, minWidth: `${totalMonths * 120 + 200}px` }}>
                       {monthMarkers.map((marker, idx) => (
                         <div
                           key={idx}
                           className="absolute top-0 bottom-0 w-[1px] border-l border-dotted border-white/5"
-                          style={{ left: `${(marker.position / totalMonths) * 100}%` }}
+                          style={{ left: `${marker.position * 120}px` }}
                         />
                       ))}
                     </div>
@@ -1183,10 +1183,10 @@ function TimelineContent() {
                     <div
                       key={item.company}
                       className={`relative ${isEvenRow ? 'bg-white/[0.015] py-8' : ''}`}
-                      style={{ height: `${totalHeight}px`, minWidth: `${totalMonths * 120}px` }}
+                      style={{ height: `${totalHeight}px`, minWidth: `${totalMonths * 120 + 200}px` }}
                     >
                       {/* Timeline releases */}
-                      <div className="relative z-10" style={{ minWidth: `${totalMonths * 120}px`, height: `${totalHeight}px` }}>
+                      <div className="relative z-10" style={{ minWidth: `${totalMonths * 120 + 200}px`, height: `${totalHeight}px` }}>
                       {releasesWithRows.map((release, idx) => {
                         const topOffset = rowHeights[release.row] || 0;
 
@@ -1204,7 +1204,7 @@ function TimelineContent() {
                               isReleaseActive ? 'z-[10001]' : 'z-10'
                             }`}
                             style={{
-                              left: `${(release.alignedPosition / totalMonths) * 100}%`,
+                              left: `${release.alignedPosition * 120}px`,
                               top: `${topOffset}px`,
                             }}
                             onMouseEnter={(e) => {
