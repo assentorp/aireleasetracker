@@ -300,7 +300,7 @@ export function getRecentReleases(cutoffDate: Date): ReleaseWithCompany[] {
 
 // Get the latest release across all companies
 export function getLatestRelease(): { company: string; model: string; date: string } | null {
-  let latestRelease: { company: string; model: string; date: string; releaseDate: Date } | null = null;
+  let latestRelease: { company: string; model: string; date: string; releaseDate: Date } | undefined = undefined;
   const now = new Date();
 
   timelineData.forEach((item) => {
@@ -328,9 +328,10 @@ export function getLatestRelease(): { company: string; model: string; date: stri
 
   if (!latestRelease) return null;
 
+  const { company, model, date } = latestRelease;
   return {
-    company: latestRelease.company,
-    model: latestRelease.model,
-    date: latestRelease.date,
+    company,
+    model,
+    date,
   };
 }
