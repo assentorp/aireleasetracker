@@ -4,7 +4,7 @@ import { timelineData } from '@/lib/timeline-data';
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://aireleasetracker.com';
 
-  // Home page
+  // Main pages
   const routes: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
@@ -13,9 +13,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: `${baseUrl}?view=analytics`,
+      url: `${baseUrl}/analytics`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/contact`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
       priority: 0.8,
     },
   ];
