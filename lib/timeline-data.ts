@@ -4,6 +4,10 @@ export interface Release {
   date: string;
   name: string;
   position: number;
+  parameters?: string;
+  contextWindow?: string;
+  contextWindowWords?: string;
+  type?: string;
 }
 
 export interface TimelineCompany {
