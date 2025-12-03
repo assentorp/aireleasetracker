@@ -61,168 +61,6 @@ function TimelineContent() {
   const statsPanelRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const [statsPanelCoords, setStatsPanelCoords] = useState<{ [key: string]: { top: number; left: number } }>({});
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Watch URL params to update display mode
-  useEffect(() => {
-    const view = searchParams?.get('view');
-    if (view === 'analytics') {
-      setDisplayMode('analytics');
-    } else {
-      setDisplayMode('home');
-    }
-  }, [searchParams]);
-
-  // Close clicked company stats when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => {
-      if (clickedCompany) {
-        setClickedCompany(null);
-      }
-      if (clickedRelease) {
-        setClickedRelease(null);
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [clickedCompany, clickedRelease]);
-
-  // Scroll to end of timeline smoothly on initial page load
-  useEffect(() => {
-    if (mounted && scrollContainerRef.current && monthHeaderRef.current && !hasScrolledOnLoadRef.current) {
-      // Small delay to ensure DOM is fully rendered
-      setTimeout(() => {
-        if (scrollContainerRef.current && monthHeaderRef.current) {
-          const scrollWidth = scrollContainerRef.current.scrollWidth;
-          scrollContainerRef.current.scrollTo({
-            left: scrollWidth,
-            behavior: 'smooth'
-          });
-          monthHeaderRef.current.scrollTo({
-            left: scrollWidth,
-            behavior: 'smooth'
-          });
-          hasScrolledOnLoadRef.current = true;
-        }
-      }, 100);
-    }
-  }, [mounted]);
-
-  // Save scroll position when switching away from timeline view
-  useEffect(() => {
-    if (homeView !== 'timeline' && scrollContainerRef.current) {
-      savedScrollPositionRef.current = scrollContainerRef.current.scrollLeft;
-    }
-  }, [homeView]);
-
-  // Restore scroll position when switching back to timeline view
-  useEffect(() => {
-    if (homeView === 'timeline' && scrollContainerRef.current && monthHeaderRef.current && hasScrolledOnLoadRef.current) {
-      // Restore saved position
-      const savedPosition = savedScrollPositionRef.current;
-      scrollContainerRef.current.scrollLeft = savedPosition;
-      monthHeaderRef.current.scrollLeft = savedPosition;
-    }
-  }, [homeView]);
-
-  // Sync scroll position between timeline and month header
-  useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    const monthHeader = monthHeaderRef.current;
-
-    if (!scrollContainer || !monthHeader || homeView !== 'timeline') return;
-
-    const handleScroll = () => {
-      monthHeader.scrollLeft = scrollContainer.scrollLeft;
-    };
-
-    scrollContainer.addEventListener('scroll', handleScroll);
-    return () => scrollContainer.removeEventListener('scroll', handleScroll);
-  }, [mounted, homeView]);
-
-  // Drag/pan handlers
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!scrollContainerRef.current) return;
-    setIsDragging(true);
-    setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
-    setScrollLeft(scrollContainerRef.current.scrollLeft);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!scrollContainerRef.current) return;
-
-    // Calculate mouse position and month
-    const rect = scrollContainerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left + scrollContainerRef.current.scrollLeft;
-
-    // Calculate which month based on position (dynamic based on data)
-    const timelineWidth = totalMonths * 120;
-    const monthIndex = Math.floor((x / timelineWidth) * totalMonths);
-
-
-    // Handle dragging
-    if (isDragging) {
-      e.preventDefault();
-      const pageX = e.pageX - scrollContainerRef.current.offsetLeft;
-      const walk = (pageX - startX) * 2;
-      scrollContainerRef.current.scrollLeft = scrollLeft - walk;
-    }
-  };
-
-  const handleMouseUpOrLeave = () => {
-    setIsDragging(false);
-  };
-
-  // Company configurations with subtle colors
-  // Change the 'order' property to reorder companies in the timeline
-  const companies = {
-    anthropic: {
-      name: 'Anthropic',
-      dotColor: 'bg-orange-500',
-      initial: 'A',
-      order: 2,
-    },
-    openai: {
-      name: 'OpenAI',
-      dotColor: 'bg-emerald-500',
-      initial: 'O',
-      order: 1,
-    },
-    google: {
-      name: 'Google',
-      dotColor: 'bg-blue-500',
-      initial: 'G',
-      order: 3,
-    },
-    meta: {
-      name: 'Meta',
-      dotColor: 'bg-sky-500',
-      initial: 'M',
-      order: 4,
-    },
-    xai: {
-      name: 'xAI',
-      dotColor: 'bg-purple-500',
-      initial: 'X',
-      order: 5,
-    },
-    deepseek: {
-      name: 'DeepSeek',
-      dotColor: 'bg-pink-500',
-      initial: 'D',
-      order: 6,
-    },
-    mistral: {
-      name: 'Mistral',
-      dotColor: 'bg-amber-500',
-      initial: 'Mi',
-      order: 7,
-    },
-  };
-
   // Parse release date helper function
   const parseReleaseDate = (dateStr: string): Date => {
     const parts = dateStr.split(' ');
@@ -393,6 +231,193 @@ function TimelineContent() {
 
   const monthMarkers = generateMonthMarkers();
   const totalMonths = monthMarkers.length;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Watch URL params to update display mode
+  useEffect(() => {
+    const view = searchParams?.get('view');
+    if (view === 'analytics') {
+      setDisplayMode('analytics');
+    } else {
+      setDisplayMode('home');
+    }
+  }, [searchParams]);
+
+  // Close clicked company stats when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (clickedCompany) {
+        setClickedCompany(null);
+      }
+      if (clickedRelease) {
+        setClickedRelease(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [clickedCompany, clickedRelease]);
+
+  // Scroll to end of timeline smoothly on initial page load
+  useEffect(() => {
+    if (mounted && scrollContainerRef.current && monthHeaderRef.current && !hasScrolledOnLoadRef.current) {
+      // Small delay to ensure DOM is fully rendered
+      setTimeout(() => {
+        if (scrollContainerRef.current && monthHeaderRef.current) {
+          const scrollWidth = scrollContainerRef.current.scrollWidth;
+          scrollContainerRef.current.scrollTo({
+            left: scrollWidth,
+            behavior: 'smooth'
+          });
+          monthHeaderRef.current.scrollTo({
+            left: scrollWidth,
+            behavior: 'smooth'
+          });
+          hasScrolledOnLoadRef.current = true;
+        }
+      }, 100);
+    }
+  }, [mounted]);
+
+  // Save scroll position when switching away from timeline view
+  useEffect(() => {
+    if (homeView !== 'timeline' && scrollContainerRef.current) {
+      savedScrollPositionRef.current = scrollContainerRef.current.scrollLeft;
+    }
+  }, [homeView]);
+
+  // Restore scroll position when switching back to timeline view
+  useEffect(() => {
+    if (homeView === 'timeline' && scrollContainerRef.current && monthHeaderRef.current && hasScrolledOnLoadRef.current) {
+      // Restore saved position
+      const savedPosition = savedScrollPositionRef.current;
+      scrollContainerRef.current.scrollLeft = savedPosition;
+      monthHeaderRef.current.scrollLeft = savedPosition;
+    }
+  }, [homeView]);
+
+  // Sync scroll position between timeline and month header
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    const monthHeader = monthHeaderRef.current;
+
+    if (!scrollContainer || !monthHeader || homeView !== 'timeline') return;
+
+    const handleScroll = () => {
+      monthHeader.scrollLeft = scrollContainer.scrollLeft;
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, [mounted, homeView]);
+
+  // Auto-scroll to latest releases on mobile
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    const monthHeader = monthHeaderRef.current;
+
+    if (!scrollContainer || !monthHeader || homeView !== 'timeline' || !mounted) return;
+
+    // Only auto-scroll on mobile (viewport width < 768px)
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile) return;
+
+    // Calculate scroll position to show recent releases (last ~6 months visible)
+    const timelineWidth = totalMonths * 120;
+    const viewportWidth = scrollContainer.clientWidth;
+    const scrollToPosition = Math.max(0, timelineWidth - viewportWidth - 120 * 3); // Show last 3 months + viewport
+
+    // Smooth scroll to position
+    setTimeout(() => {
+      scrollContainer.scrollTo({
+        left: scrollToPosition,
+        behavior: 'smooth'
+      });
+    }, 100);
+  }, [mounted, homeView, totalMonths]);
+
+  // Drag/pan handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollContainerRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
+    setScrollLeft(scrollContainerRef.current.scrollLeft);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!scrollContainerRef.current) return;
+
+    // Calculate mouse position and month
+    const rect = scrollContainerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left + scrollContainerRef.current.scrollLeft;
+
+    // Calculate which month based on position (dynamic based on data)
+    const timelineWidth = totalMonths * 120;
+    const monthIndex = Math.floor((x / timelineWidth) * totalMonths);
+
+
+    // Handle dragging
+    if (isDragging) {
+      e.preventDefault();
+      const pageX = e.pageX - scrollContainerRef.current.offsetLeft;
+      const walk = (pageX - startX) * 2;
+      scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+    }
+  };
+
+  const handleMouseUpOrLeave = () => {
+    setIsDragging(false);
+  };
+
+  // Company configurations with subtle colors
+  // Change the 'order' property to reorder companies in the timeline
+  const companies = {
+    anthropic: {
+      name: 'Anthropic',
+      dotColor: 'bg-orange-500',
+      initial: 'A',
+      order: 2,
+    },
+    openai: {
+      name: 'OpenAI',
+      dotColor: 'bg-emerald-500',
+      initial: 'O',
+      order: 1,
+    },
+    google: {
+      name: 'Google',
+      dotColor: 'bg-blue-500',
+      initial: 'G',
+      order: 3,
+    },
+    meta: {
+      name: 'Meta',
+      dotColor: 'bg-sky-500',
+      initial: 'M',
+      order: 4,
+    },
+    xai: {
+      name: 'xAI',
+      dotColor: 'bg-purple-500',
+      initial: 'X',
+      order: 5,
+    },
+    deepseek: {
+      name: 'DeepSeek',
+      dotColor: 'bg-pink-500',
+      initial: 'D',
+      order: 6,
+    },
+    mistral: {
+      name: 'Mistral',
+      dotColor: 'bg-amber-500',
+      initial: 'Mi',
+      order: 7,
+    },
+  };
 
   // Use all timeline data (already starts from ChatGPT)
   // Filter by selected companies and sort by their order property
@@ -1539,7 +1564,13 @@ function TimelineContent() {
                                 <div className="text-xs space-y-2">
                                   <div className="text-gray-400">Expected Release Date</div>
                                   <div className="text-white font-semibold">{expectedRelease.date}</div>
-                                  <div className={`${isOverdue ? 'text-orange-400' : 'text-gray-400'}`}>
+                                  <div className={`${
+                                    isOverdue
+                                      ? 'text-orange-400'
+                                      : expectedRelease.daysUntil <= 7
+                                        ? 'text-yellow-400'
+                                        : 'text-gray-400'
+                                  }`}>
                                     {isOverdue
                                       ? `Overdue by ${Math.abs(expectedRelease.daysUntil)} days`
                                       : `In ${expectedRelease.daysUntil} days`
