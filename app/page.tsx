@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import moment from 'moment';
 import { timelineData, companies, getLatestRelease } from '../lib/timeline-data';
 import { Header } from '../components/Header';
@@ -35,11 +35,11 @@ moment.updateLocale('en', {
 
 function TimelineContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const [hoveredCompany, setHoveredCompany] = useState<string | null>(null);
   const [clickedCompany, setClickedCompany] = useState<string | null>(null);
   const [hoveredRelease, setHoveredRelease] = useState<string | null>(null);
-  const [clickedRelease, setClickedRelease] = useState<string | null>(null);
   const [releaseTooltipPosition, setReleaseTooltipPosition] = useState<{ [key: string]: 'above' | 'below' }>({});
   const [releaseTooltipAlign, setReleaseTooltipAlign] = useState<{ [key: string]: 'left' | 'center' | 'right' }>({});
   const [mounted, setMounted] = useState(false);
@@ -252,14 +252,11 @@ function TimelineContent() {
       if (clickedCompany) {
         setClickedCompany(null);
       }
-      if (clickedRelease) {
-        setClickedRelease(null);
-      }
     };
 
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
-  }, [clickedCompany, clickedRelease]);
+  }, [clickedCompany]);
 
   // Scroll to end of timeline smoothly on initial page load
   useEffect(() => {
@@ -792,6 +789,17 @@ function TimelineContent() {
 
   const sortedReleases = getAllReleasesSorted();
 
+  // Helper function to create URL slug from model name
+  const createModelSlug = (modelName: string) => {
+    return modelName.toLowerCase().replace(/\s+/g, '-');
+  };
+
+  // Helper function to navigate to model detail page
+  const navigateToModel = (companyKey: string, modelName: string) => {
+    const modelSlug = createModelSlug(modelName);
+    router.push(`/model/${companyKey}/${modelSlug}`);
+  };
+
   // Prevent hydration mismatch by only rendering on client
   if (!mounted) {
     return (
@@ -1292,8 +1300,7 @@ function TimelineContent() {
 
                         const releaseKey = `${item.company}-${idx}`;
                         const isReleaseHovered = hoveredRelease === releaseKey;
-                        const isReleaseClicked = clickedRelease === releaseKey;
-                        const isReleaseActive = isReleaseHovered || isReleaseClicked;
+                        const isReleaseActive = isReleaseHovered;
                         const modelStats = getModelStats(item.company, idx);
                         const releaseData = item.releases[idx] as ReleaseItem | undefined;
 
@@ -1343,35 +1350,7 @@ function TimelineContent() {
                             onMouseLeave={() => setHoveredRelease(null)}
                             onClick={(e) => {
                               e.stopPropagation();
-                              // Calculate tooltip position on click - prefer above to avoid covering items below
-                              const rect = e.currentTarget.getBoundingClientRect();
-                              const headerHeight = window.innerWidth >= 768 ? 116 : 52;
-                              const tooltipHeight = 320;
-                              const tooltipWidth = 280;
-                              const minClearance = 20;
-                              const spaceAbove = rect.top - headerHeight;
-
-                              // Check vertical position
-                              if (spaceAbove < (tooltipHeight + minClearance)) {
-                                setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'below' }));
-                              } else {
-                                setReleaseTooltipPosition(prev => ({ ...prev, [releaseKey]: 'above' }));
-                              }
-
-                              // Calculate horizontal position to prevent overflow
-                              const distanceFromRightEdge = window.innerWidth - rect.right;
-                              const distanceFromLeftEdge = rect.left;
-                              const edgeThreshold = 200; // Open left/right when within 200px of edge
-
-                              if (distanceFromRightEdge < edgeThreshold) {
-                                setReleaseTooltipAlign(prev => ({ ...prev, [releaseKey]: 'right' }));
-                              } else if (distanceFromLeftEdge < edgeThreshold) {
-                                setReleaseTooltipAlign(prev => ({ ...prev, [releaseKey]: 'left' }));
-                              } else {
-                                setReleaseTooltipAlign(prev => ({ ...prev, [releaseKey]: 'center' }));
-                              }
-
-                              setClickedRelease(isReleaseClicked ? null : releaseKey);
+                              navigateToModel(item.company, release.name);
                             }}
                           >
                             <div className="flex items-center gap-1 md:gap-2">
@@ -1633,7 +1612,7 @@ function TimelineContent() {
                     {/* Release item */}
                      {(() => {
                        const listReleaseKey = `list-${release.company}-${release.modelName}`;
-                       const isListReleaseActive = hoveredRelease === listReleaseKey || clickedRelease === listReleaseKey;
+                       const isListReleaseActive = hoveredRelease === listReleaseKey;
 
                        return (
                      <div
@@ -1661,21 +1640,7 @@ function TimelineContent() {
                       onMouseLeave={() => setHoveredRelease(null)}
                       onClick={(e) => {
                         e.stopPropagation();
-                        const listReleaseKey = `list-${release.company}-${release.modelName}`;
-                        // Calculate tooltip position on click - prefer centered to avoid covering items
-                        const rect = e.currentTarget.getBoundingClientRect();
-                        const headerHeight = window.innerWidth >= 768 ? 116 : 52;
-                        const tooltipHeight = 320;
-                        const minClearance = 20;
-                        const spaceAbove = rect.top - headerHeight;
-
-                        // Only position at top if very close to header
-                        if (spaceAbove < (tooltipHeight / 2 + minClearance)) {
-                          setReleaseTooltipPosition(prev => ({ ...prev, [listReleaseKey]: 'below' }));
-                        } else {
-                          setReleaseTooltipPosition(prev => ({ ...prev, [listReleaseKey]: 'above' }));
-                        }
-                        setClickedRelease(clickedRelease === listReleaseKey ? null : listReleaseKey);
+                        navigateToModel(release.company, release.modelName);
                       }}
                     >
                       {/* Company indicator */}

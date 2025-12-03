@@ -55,17 +55,17 @@ export function Header({ currentPage, latestRelease }: HeaderProps) {
               aria-expanded={isMobileMenuOpen}
             >
               <span
-                className={`block w-4 h-[1.5px] bg-white transition-all duration-300 ease-out ${
+                className={`block w-4 h-[1px] bg-white transition-all duration-300 ease-out ${
                   isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''
                 }`}
               />
               <span
-                className={`block w-4 h-[1.5px] bg-white transition-all duration-300 ease-out ${
+                className={`block w-4 h-[1px] bg-white transition-all duration-300 ease-out ${
                   isMobileMenuOpen ? 'opacity-0' : ''
                 }`}
               />
               <span
-                className={`block w-4 h-[1.5px] bg-white transition-all duration-300 ease-out ${
+                className={`block w-4 h-[1px] bg-white transition-all duration-300 ease-out ${
                   isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''
                 }`}
               />
@@ -190,61 +190,19 @@ export function Header({ currentPage, latestRelease }: HeaderProps) {
             aria-label="Mobile navigation"
           >
             <div className="flex flex-col h-full">
-              {/* Menu Header */}
-              <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Logo className="w-32 h-auto" />
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-2 rounded-md hover:bg-white/5 transition-colors"
-                  aria-label="Close menu"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-gray-400"
-                  >
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                </button>
-              </div>
 
               {/* Menu Items */}
-              <div className="flex-1 px-4 py-6 space-y-2">
+              <div className="flex-1 px-4 py-4 space-y-2">
                 <Link
                   href="/"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                     currentPage === 'home'
-                      ? 'bg-white/10 text-white'
-                      : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                      ? 'text-white'
+                      : 'text-gray-400 hover:text-white'
                   }`}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                  </svg>
-                  <span className="text-base font-medium">Home</span>
+                  <span className="text-sm font-medium">Home</span>
                 </Link>
 
                 <Link
@@ -252,26 +210,11 @@ export function Header({ currentPage, latestRelease }: HeaderProps) {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                     currentPage === 'analytics'
-                      ? 'bg-white/10 text-white'
-                      : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                      ? 'text-white'
+                      : 'text-gray-400 hover:text-white'
                   }`}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <line x1="18" y1="20" x2="18" y2="10"></line>
-                    <line x1="12" y1="20" x2="12" y2="4"></line>
-                    <line x1="6" y1="20" x2="6" y2="14"></line>
-                  </svg>
-                  <span className="text-base font-medium">Analytics</span>
+                  <span className="text-sm font-medium">Analytics</span>
                 </Link>
 
                 <Link
@@ -279,25 +222,11 @@ export function Header({ currentPage, latestRelease }: HeaderProps) {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                     currentPage === 'contact'
-                      ? 'bg-white/10 text-white'
-                      : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                      ? 'text-white'
+                      : 'text-gray-400 hover:text-white'
                   }`}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-                  </svg>
-                  <span className="text-base font-medium">Contact</span>
+                  <span className="text-sm font-medium">Contact</span>
                 </Link>
               </div>
             </div>

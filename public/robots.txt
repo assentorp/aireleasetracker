@@ -1,10 +1,25 @@
-# *
+# robots.txt for AI Release Tracker
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /_next/
+Disallow: /sign-in
+Disallow: /sign-up
 
 # Sitemaps
 Sitemap: https://aireleasetracker.com/sitemap.xml
 
-# Disallow admin or private paths (if any in the future)
-# Disallow: /admin/
-# Disallow: /api/
+# Crawl-delay for polite crawling
+Crawl-delay: 1
+
+# Google-specific rules
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+
+# Bing-specific rules
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /_next/

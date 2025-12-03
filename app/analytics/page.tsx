@@ -91,7 +91,7 @@ export default function AnalyticsPage() {
       />
 
       {/* Analytics Content */}
-      <main className="max-w-[800px] mx-auto px-4 md:px-6 py-16 space-y-8">
+      <main className="max-w-[800px] mx-auto px-4 md:px-6 py-8 sm:py-16 space-y-8">
         {/* Header */}
         <div>
           <h1 className="text-xl md:text-3xl font-medium text-white">Release Analytics</h1>
