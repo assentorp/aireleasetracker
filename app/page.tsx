@@ -158,13 +158,9 @@ function TimelineContent() {
     const rect = scrollContainerRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left + scrollContainerRef.current.scrollLeft;
 
-    // Calculate which month based on position (Nov 2022 to Dec 2025 = 38 months)
-    const startDate = new Date('2022-11-01');
-    const endDate = new Date('2025-12-01');
-    const totalMonthsCount = ((endDate.getFullYear() - startDate.getFullYear()) * 12 +
-                               endDate.getMonth() - startDate.getMonth() + 1);
-    const timelineWidth = totalMonthsCount * 120;
-    const monthIndex = Math.floor((x / timelineWidth) * totalMonthsCount);
+    // Calculate which month based on position (dynamic based on data)
+    const timelineWidth = totalMonths * 120;
+    const monthIndex = Math.floor((x / timelineWidth) * totalMonths);
 
 
     // Handle dragging
@@ -227,11 +223,152 @@ function TimelineContent() {
     },
   };
 
-  // Generate month markers from Nov 2022 to Dec 2025
+  // Parse release date helper function
+  const parseReleaseDate = (dateStr: string): Date => {
+    const parts = dateStr.split(' ');
+    const monthMap: { [key: string]: number } = {
+      Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+      Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+    };
+
+    if (parts.length === 3) {
+      // "Mar 14 2023"
+      const month = monthMap[parts[0]] || 0;
+      const day = parseInt(parts[1]);
+      const year = parseInt(parts[2]);
+      return new Date(year, month, day);
+    } else if (parts.length === 2) {
+      // "May 2024" - use first day of month
+      const month = monthMap[parts[0]] || 0;
+      const year = parseInt(parts[1]);
+      return new Date(year, month, 1);
+    }
+    return new Date();
+  };
+
+  // Calculate next expected release for a specific company
+  const getCompanyNextExpectedRelease = (companyKey: string): { date: string; daysUntil: number } | null => {
+    const now = new Date();
+    const company = timelineData.find(c => c.company === companyKey);
+    if (!company || company.releases.length === 0) return null;
+
+    // Find the actual latest release by date (don't assume array is sorted)
+    const sortedReleases = [...company.releases].sort((a, b) => {
+      const dateA = parseReleaseDate(a.date);
+      const dateB = parseReleaseDate(b.date);
+      return dateB.getTime() - dateA.getTime(); // Sort newest first
+    });
+    const lastRelease = sortedReleases[0];
+    const lastReleaseDate = parseReleaseDate(lastRelease.date);
+    const daysSinceLastRelease = Math.floor((now.getTime() - lastReleaseDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    // Group releases within 14 days (2 weeks) as a single release event
+    const releaseGroups: Date[] = [];
+    for (let i = 0; i < sortedReleases.length; i++) {
+      const currentDate = parseReleaseDate(sortedReleases[i].date);
+
+      // Check if this release is within 14 days of the last group
+      if (releaseGroups.length === 0) {
+        releaseGroups.push(currentDate);
+      } else {
+        const lastGroupDate = releaseGroups[releaseGroups.length - 1];
+        const daysDiff = Math.floor((lastGroupDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        // If more than 14 days apart, it's a new group
+        if (daysDiff > 14) {
+          releaseGroups.push(currentDate);
+        }
+        // Otherwise, skip it (part of the same release event)
+      }
+    }
+
+    // Calculate average days between release groups using only the last 5 intervals
+    const intervals: number[] = [];
+    const intervalsToUse = Math.min(5, releaseGroups.length - 1);
+    for (let i = 0; i < intervalsToUse; i++) {
+      const date1 = releaseGroups[i];
+      const date2 = releaseGroups[i + 1];
+      const days = Math.floor((date1.getTime() - date2.getTime()) / (1000 * 60 * 60 * 24));
+      intervals.push(days);
+    }
+    const avgDaysBetweenReleases = intervals.length > 0
+      ? Math.floor(intervals.reduce((a, b) => a + b, 0) / intervals.length)
+      : 0;
+
+    if (avgDaysBetweenReleases === 0) return null;
+
+    // Calculate expected next release date
+    let expectedNextReleaseDate = new Date(lastReleaseDate);
+    expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
+
+    if (daysSinceLastRelease <= avgDaysBetweenReleases) {
+      while (expectedNextReleaseDate <= now && avgDaysBetweenReleases > 0) {
+        expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
+      }
+    }
+
+    // Normalize dates to midnight for accurate day calculation
+    const normalizedExpected = new Date(expectedNextReleaseDate);
+    normalizedExpected.setHours(0, 0, 0, 0);
+    const normalizedNow = new Date(now);
+    normalizedNow.setHours(0, 0, 0, 0);
+    const daysUntil = Math.floor((normalizedExpected.getTime() - normalizedNow.getTime()) / (1000 * 60 * 60 * 24));
+
+    // Format expected date
+    const formatExpectedDate = (date: Date) => {
+      const month = date.toLocaleString('default', { month: 'short' });
+      const day = date.getDate();
+      const year = date.getFullYear();
+      return `${month} ${day}, ${year}`;
+    };
+
+    return {
+      date: formatExpectedDate(expectedNextReleaseDate),
+      daysUntil
+    };
+  };
+
+  // Generate month markers from Nov 2022 to dynamic end date
   const generateMonthMarkers = () => {
     const markers = [];
     const startDate = new Date('2022-11-01');
-    const endDate = new Date('2025-12-01');
+
+    // Find the latest date among all releases and expected releases
+    let latestDate = new Date('2025-12-01'); // Default to Dec 2025
+
+    timelineData.forEach((company) => {
+      // Check actual releases
+      company.releases.forEach((release) => {
+        const releaseDate = parseReleaseDate(release.date);
+        if (releaseDate > latestDate) {
+          latestDate = releaseDate;
+        }
+      });
+
+      // Check expected releases
+      const expectedRelease = getCompanyNextExpectedRelease(company.company);
+      if (expectedRelease) {
+        const dateParts = expectedRelease.date.match(/(\w+) (\d+), (\d+)/);
+        if (dateParts) {
+          const monthMap: { [key: string]: number } = {
+            Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+            Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+          };
+          const expectedDate = new Date(
+            parseInt(dateParts[3]),
+            monthMap[dateParts[1]],
+            parseInt(dateParts[2])
+          );
+          if (expectedDate > latestDate) {
+            latestDate = expectedDate;
+          }
+        }
+      }
+    });
+
+    // Add 1 extra month padding
+    const endDate = new Date(latestDate);
+    endDate.setMonth(endDate.getMonth() + 1);
 
     let current = new Date(startDate);
     let position = 0;
@@ -285,19 +422,40 @@ function TimelineContent() {
     const lastReleaseDate = parseReleaseDate(lastRelease.date);
     const daysSinceLastRelease = Math.floor((now.getTime() - lastReleaseDate.getTime()) / (1000 * 60 * 60 * 24));
 
-    // Calculate average days between releases
+    // Group releases within 14 days (2 weeks) as a single release event
+    const releaseGroups: Date[] = [];
+    for (let i = 0; i < sortedReleases.length; i++) {
+      const currentDate = parseReleaseDate(sortedReleases[i].date);
+
+      // Check if this release is within 14 days of the last group
+      if (releaseGroups.length === 0) {
+        releaseGroups.push(currentDate);
+      } else {
+        const lastGroupDate = releaseGroups[releaseGroups.length - 1];
+        const daysDiff = Math.floor((lastGroupDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        // If more than 14 days apart, it's a new group
+        if (daysDiff > 14) {
+          releaseGroups.push(currentDate);
+        }
+        // Otherwise, skip it (part of the same release event)
+      }
+    }
+
+    // Calculate average days between release groups using only the last 5 intervals
     const intervals: number[] = [];
-    for (let i = 1; i < releases.length; i++) {
-      const date1 = parseReleaseDate(releases[i - 1].date);
-      const date2 = parseReleaseDate(releases[i].date);
-      const days = Math.floor((date2.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24));
+    const intervalsToUse = Math.min(5, releaseGroups.length - 1);
+    for (let i = 0; i < intervalsToUse; i++) {
+      const date1 = releaseGroups[i];
+      const date2 = releaseGroups[i + 1];
+      const days = Math.floor((date1.getTime() - date2.getTime()) / (1000 * 60 * 60 * 24));
       intervals.push(days);
     }
     const avgDaysBetweenReleases = intervals.length > 0
       ? Math.floor(intervals.reduce((a, b) => a + b, 0) / intervals.length)
       : 0;
 
-    // Get recent releases (last 5 unique dates) - combine releases on same day
+    // Get recent releases (last 3 unique dates) - combine releases on same day
     // Group releases by date
     const dateGroups: { [dateStr: string]: typeof releases } = {};
     releases.forEach(release => {
@@ -314,8 +472,8 @@ function TimelineContent() {
       return posA - posB;
     });
 
-    // Get last 5 date groups and reverse to show newest first
-    const recentDateGroups = sortedDateGroups.slice(-5).reverse();
+    // Get last 3 date groups and reverse to show newest first
+    const recentDateGroups = sortedDateGroups.slice(-3).reverse();
 
     const recentReleases = recentDateGroups.map(([dateStr, sameDateReleases], index) => {
       const releaseDate = parseReleaseDate(dateStr);
@@ -378,28 +536,6 @@ function TimelineContent() {
       expectedNextReleaseDate: formatExpectedDate(expectedNextReleaseDate),
       daysUntilExpected,
     };
-  };
-
-  const parseReleaseDate = (dateStr: string): Date => {
-    const parts = dateStr.split(' ');
-    const monthMap: { [key: string]: number } = {
-      Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
-      Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
-    };
-
-    if (parts.length === 3) {
-      // "Mar 14 2023"
-      const month = monthMap[parts[0]] || 0;
-      const day = parseInt(parts[1]);
-      const year = parseInt(parts[2]);
-      return new Date(year, month, day);
-    } else if (parts.length === 2) {
-      // "May 2024" - use first day of month
-      const month = monthMap[parts[0]] || 0;
-      const year = parseInt(parts[1]);
-      return new Date(year, month, 1);
-    }
-    return new Date();
   };
 
   // Calculate model-specific stats
@@ -550,67 +686,6 @@ function TimelineContent() {
     return rows;
   };
 
-  // Calculate next expected release for a specific company
-  const getCompanyNextExpectedRelease = (companyKey: string): { date: string; daysUntil: number } | null => {
-    const now = new Date();
-    const company = timelineData.find(c => c.company === companyKey);
-    if (!company || company.releases.length === 0) return null;
-
-    // Find the actual latest release by date (don't assume array is sorted)
-    const sortedReleases = [...company.releases].sort((a, b) => {
-      const dateA = parseReleaseDate(a.date);
-      const dateB = parseReleaseDate(b.date);
-      return dateB.getTime() - dateA.getTime(); // Sort newest first
-    });
-    const lastRelease = sortedReleases[0];
-    const lastReleaseDate = parseReleaseDate(lastRelease.date);
-    const daysSinceLastRelease = Math.floor((now.getTime() - lastReleaseDate.getTime()) / (1000 * 60 * 60 * 24));
-
-    // Calculate average days between releases
-    const intervals: number[] = [];
-    for (let i = 1; i < sortedReleases.length; i++) {
-      const date1 = parseReleaseDate(sortedReleases[i].date);
-      const date2 = parseReleaseDate(sortedReleases[i - 1].date);
-      const days = Math.floor((date2.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24));
-      intervals.push(days);
-    }
-    const avgDaysBetweenReleases = intervals.length > 0
-      ? Math.floor(intervals.reduce((a, b) => a + b, 0) / intervals.length)
-      : 0;
-
-    if (avgDaysBetweenReleases === 0) return null;
-
-    // Calculate expected next release date
-    let expectedNextReleaseDate = new Date(lastReleaseDate);
-    expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
-
-    if (daysSinceLastRelease <= avgDaysBetweenReleases) {
-      while (expectedNextReleaseDate <= now && avgDaysBetweenReleases > 0) {
-        expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
-      }
-    }
-
-    // Normalize dates to midnight for accurate day calculation
-    const normalizedExpected = new Date(expectedNextReleaseDate);
-    normalizedExpected.setHours(0, 0, 0, 0);
-    const normalizedNow = new Date(now);
-    normalizedNow.setHours(0, 0, 0, 0);
-    const daysUntil = Math.floor((normalizedExpected.getTime() - normalizedNow.getTime()) / (1000 * 60 * 60 * 24));
-
-    // Format expected date
-    const formatExpectedDate = (date: Date) => {
-      const month = date.toLocaleString('default', { month: 'short' });
-      const day = date.getDate();
-      const year = date.getFullYear();
-      return `${month} ${day}, ${year}`;
-    };
-
-    return {
-      date: formatExpectedDate(expectedNextReleaseDate),
-      daysUntil
-    };
-  };
-
   // Calculate release data for analytics graphs
   const getAnalyticsData = () => {
     // Get all releases with dates
@@ -734,7 +809,7 @@ function TimelineContent() {
             className="flex-1 overflow-x-auto scrollbar-hide relative"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            <div className="relative h-8 py-2" style={{ paddingRight: '200px', minWidth: `${totalMonths * 120 + 200}px` }}>
+            <div className="relative h-8 py-2" style={{ paddingRight: '60px', minWidth: `${totalMonths * 120 + 60}px` }}>
               {/* Timeline line */}
 
               {/* Month markers */}
@@ -1083,7 +1158,7 @@ function TimelineContent() {
             onMouseUp={handleMouseUpOrLeave}
             onMouseLeave={handleMouseUpOrLeave}
           >
-            <div className="relative" style={{ paddingRight: '200px' }}>
+            <div className="relative" style={{ paddingRight: '60px' }}>
               {/* Calculate total height of all company rows for dotted lines */}
               {(() => {
                 const companyHeights: number[] = [];
@@ -1121,7 +1196,7 @@ function TimelineContent() {
                 return (
                   <>
                     {/* Dotted vertical lines spanning full height */}
-                    <div className="absolute top-0 left-0 right-0 pointer-events-none" style={{ height: `${totalTimelineHeight}px`, minWidth: `${totalMonths * 120 + 200}px` }}>
+                    <div className="absolute top-0 left-0 right-0 pointer-events-none" style={{ height: `${totalTimelineHeight}px`, minWidth: `${totalMonths * 120 + 60}px` }}>
                       {monthMarkers.map((marker, idx) => (
                         <div
                           key={idx}
@@ -1183,10 +1258,10 @@ function TimelineContent() {
                     <div
                       key={item.company}
                       className={`relative ${isEvenRow ? 'bg-white/[0.015] py-8' : ''}`}
-                      style={{ height: `${totalHeight}px`, minWidth: `${totalMonths * 120 + 200}px` }}
+                      style={{ height: `${totalHeight}px`, minWidth: `${totalMonths * 120 + 60}px` }}
                     >
                       {/* Timeline releases */}
-                      <div className="relative z-10" style={{ minWidth: `${totalMonths * 120 + 200}px`, height: `${totalHeight}px` }}>
+                      <div className="relative z-10" style={{ minWidth: `${totalMonths * 120 + 60}px`, height: `${totalHeight}px` }}>
                       {releasesWithRows.map((release, idx) => {
                         const topOffset = rowHeights[release.row] || 0;
 
@@ -1368,6 +1443,120 @@ function TimelineContent() {
                           </div>
                         );
                       })}
+
+                      {/* Expected next release marker */}
+                      {(() => {
+                        const expectedRelease = getCompanyNextExpectedRelease(item.company);
+                        if (!expectedRelease) return null;
+
+                        // Calculate position in months from Nov 2022
+                        const startDate = new Date('2022-11-01');
+                        const dateParts = expectedRelease.date.match(/(\w+) (\d+), (\d+)/);
+                        if (!dateParts) return null;
+
+                        const monthMap: { [key: string]: number } = {
+                          Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+                          Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+                        };
+                        const expectedDate = new Date(
+                          parseInt(dateParts[3]),
+                          monthMap[dateParts[1]],
+                          parseInt(dateParts[2])
+                        );
+                        const monthsDiff = (expectedDate.getFullYear() - startDate.getFullYear()) * 12 +
+                                         (expectedDate.getMonth() - startDate.getMonth());
+
+                        // Position at the expected month
+                        const position = monthsDiff;
+
+                        // Check if expected date is in the past (overdue)
+                        const isOverdue = expectedRelease.daysUntil < 0;
+
+                        // Find the best row to place the expected release
+                        // Check all rows to find one without nearby releases
+                        let targetRow = 0;
+                        const minDistance = 2.5; // Minimum 2.5 months distance (~300px)
+
+                        // Try to find a row without nearby releases
+                        for (let checkRow = 0; checkRow <= maxRow + 1; checkRow++) {
+                          const rowReleases = releasesWithRows.filter(r => r.row === checkRow);
+                          const hasConflict = rowReleases.some(r => {
+                            const distance = Math.abs(r.alignedPosition - position);
+                            return distance < minDistance;
+                          });
+
+                          if (!hasConflict) {
+                            targetRow = checkRow;
+                            break;
+                          }
+                        }
+
+                        // Calculate vertical position based on row
+                        const topPosition = targetRow * 48;
+
+                        // Get the month name for display
+                        const monthName = dateParts[1];
+
+                        const expectedKey = `${item.company}-expected`;
+                        const isExpectedHovered = hoveredRelease === expectedKey;
+                        const tooltipPosition = releaseTooltipPosition[expectedKey] || 'below';
+
+                        return (
+                          <div
+                            className="absolute border border-dashed border-white/20 rounded-md px-1.5 md:px-3 py-1 md:py-2 bg-transparent whitespace-nowrap hover:bg-white/[0.02] cursor-pointer transition-colors duration-200"
+                            style={{
+                              left: `${position * 120}px`,
+                              top: `${topPosition}px`,
+                            }}
+                            onMouseEnter={(e) => {
+                              setHoveredRelease(expectedKey);
+                              // Calculate tooltip position
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              const viewportHeight = window.innerHeight;
+                              const tooltipHeight = 150; // Approximate height
+                              const spaceBelow = viewportHeight - rect.bottom;
+
+                              if (spaceBelow < tooltipHeight + 20) {
+                                setReleaseTooltipPosition(prev => ({ ...prev, [expectedKey]: 'above' }));
+                              } else {
+                                setReleaseTooltipPosition(prev => ({ ...prev, [expectedKey]: 'below' }));
+                              }
+                            }}
+                            onMouseLeave={() => setHoveredRelease(null)}
+                          >
+                            <div className="flex items-center gap-1 md:gap-2">
+                              <div className={`w-1 md:w-1.5 h-1 md:h-1.5 rounded-full ${companyInfo.dotColor} opacity-40`} />
+                              <div className={`text-[10px] md:text-sm font-medium ${isOverdue ? 'text-orange-400/60' : 'text-gray-500'}`}>
+                                Expected
+                              </div>
+                            </div>
+
+                            {/* Tooltip on hover */}
+                            {isExpectedHovered && (
+                              <div className={`absolute bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[200px] z-[10002] animate-fade-in-slide-up left-1/2 -translate-x-1/2 ${
+                                tooltipPosition === 'below' ? 'top-full mt-2' : 'bottom-full mb-2'
+                              }`}>
+                                <div className="text-xs space-y-2">
+                                  <div className="text-gray-400">Expected Release Date</div>
+                                  <div className="text-white font-semibold">{expectedRelease.date}</div>
+                                  <div className={`${isOverdue ? 'text-orange-400' : 'text-gray-400'}`}>
+                                    {isOverdue
+                                      ? `Overdue by ${Math.abs(expectedRelease.daysUntil)} days`
+                                      : `In ${expectedRelease.daysUntil} days`
+                                    }
+                                  </div>
+                                </div>
+                                {/* Tooltip arrow */}
+                                {tooltipPosition === 'below' ? (
+                                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-[#151515]"></div>
+                                ) : (
+                                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-[#151515]"></div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 );
