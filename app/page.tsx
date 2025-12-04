@@ -43,6 +43,7 @@ function TimelineContent() {
   const [releaseTooltipPosition, setReleaseTooltipPosition] = useState<{ [key: string]: 'above' | 'below' }>({});
   const [releaseTooltipAlign, setReleaseTooltipAlign] = useState<{ [key: string]: 'left' | 'center' | 'right' }>({});
   const [mounted, setMounted] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
@@ -234,6 +235,8 @@ function TimelineContent() {
 
   useEffect(() => {
     setMounted(true);
+    // Detect if device supports touch
+    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
   }, []);
 
   // Watch URL params to update display mode
@@ -935,15 +938,15 @@ function TimelineContent() {
                                 ...prev,
                                 [item.company]: {
                                   top: Math.max(headerHeight + 8, rect.top - panelHeight - 8), // Ensure it's below header
-                                  left: rect.left + (window.innerWidth >= 768 ? 32 : 8)
+                                  left: rect.right + 8
                                 }
                               }));
                             } else {
                               setStatsPanelCoords(prev => ({
                                 ...prev,
                                 [item.company]: {
-                                  top: rect.bottom + 8,
-                                  left: rect.left + (window.innerWidth >= 768 ? 32 : 8)
+                                  top: rect.top,
+                                  left: rect.right + 8
                                 }
                               }));
                             }
@@ -964,15 +967,15 @@ function TimelineContent() {
                                 ...prev,
                                 [item.company]: {
                                   top: Math.max(headerHeight + 8, rect.top - panelHeight - 8), // Ensure it's below header
-                                  left: rect.left + (window.innerWidth >= 768 ? 32 : 8)
+                                  left: rect.right + 8
                                 }
                               }));
                             } else {
                               setStatsPanelCoords(prev => ({
                                 ...prev,
                                 [item.company]: {
-                                  top: rect.bottom + 8,
-                                  left: rect.left + (window.innerWidth >= 768 ? 32 : 8)
+                                  top: rect.top,
+                                  left: rect.right + 8
                                 }
                               }));
                             }
@@ -1038,7 +1041,7 @@ function TimelineContent() {
                             ref={(el) => {
                               if (el) statsPanelRefs.current[item.company] = el;
                             }}
-                            className="fixed bg-[#151515] border border-white/10 rounded-lg p-3 md:p-4 shadow-xl w-[280px] md:min-w-[320px] max-h-[500px] overflow-y-auto animate-fade-in-slide-up"
+                            className="fixed bg-[#151515] border border-white/10 rounded-lg p-2.5 md:p-4 shadow-xl w-[240px] md:min-w-[320px] max-h-[500px] overflow-y-auto animate-fade-in-slide-up"
                             style={{
                               zIndex: 10000,
                               top: `${statsPanelCoords[item.company].top}px`,
@@ -1046,23 +1049,23 @@ function TimelineContent() {
                             }}
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <div className="space-y-3">
+                            <div className="space-y-2.5 md:space-y-3">
                               <div>
                                 <div className="flex items-center justify-between mb-1">
-                                  <div className="text-xs text-gray-500">Days since last release</div>
+                                  <div className="text-[10px] md:text-xs text-gray-500">Days since last release</div>
                                   {stats.daysSinceLastRelease > stats.avgDaysBetweenReleases && (
-                                    <div className="flex items-center gap-1 px-1.5 py-0.5 bg-orange-500/20 border border-orange-500/30 rounded text-xs text-orange-400 font-medium">
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <div className="flex items-center gap-0.5 md:gap-1 px-1 md:px-1.5 py-0.5 bg-orange-500/20 border border-orange-500/30 rounded text-[9px] md:text-xs text-orange-400 font-medium">
+                                      <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5 md:w-3 md:h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M12 9v4"></path>
                                         <path d="M12 17h.01"></path>
                                         <circle cx="12" cy="12" r="10"></circle>
                                       </svg>
-                                      Over average
+                                      Over avg
                                     </div>
                                   )}
                                 </div>
                                 <div className="flex items-center justify-between gap-3">
-                                  <div className={`text-xl font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400' : 'text-white'}`}>
+                                  <div className={`text-lg md:text-xl font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400' : 'text-white'}`}>
                                     {stats.daysSinceLastRelease}
                                   </div>
                                 </div>
@@ -1091,17 +1094,17 @@ function TimelineContent() {
                                     }}
                                   />
                                 </div>
-                                <div className="mt-1.5 text-xs text-right text-gray-400">
+                                <div className="mt-1 md:mt-1.5 text-[10px] md:text-xs text-right text-gray-400">
                                   Average: {stats.avgDaysBetweenReleases} days
                                 </div>
                               </div>
 
-                              <div className="pt-3 border-t border-white/5">
+                              <div className="pt-2 md:pt-3 border-t border-white/5">
                                 <div className="flex items-center justify-between mb-1">
-                                  <div className="text-xs text-gray-500">Expected next release</div>
+                                  <div className="text-[10px] md:text-xs text-gray-500">Expected next release</div>
                                   {stats.daysSinceLastRelease > stats.avgDaysBetweenReleases && (
-                                    <div className="flex items-center gap-1 px-1.5 py-0.5 bg-orange-500/20 border border-orange-500/30 rounded text-xs text-orange-400 font-medium">
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <div className="flex items-center gap-0.5 md:gap-1 px-1 md:px-1.5 py-0.5 bg-orange-500/20 border border-orange-500/30 rounded text-[9px] md:text-xs text-orange-400 font-medium">
+                                      <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5 md:w-3 md:h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M12 9v4"></path>
                                         <path d="M12 17h.01"></path>
                                         <circle cx="12" cy="12" r="10"></circle>
@@ -1110,8 +1113,8 @@ function TimelineContent() {
                                     </div>
                                   )}
                                 </div>
-                                <div className="flex items-center justify-between gap-3">
-                                  <div className={`text-lg font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-white/60 line-through' : 'text-white'}`}>
+                                <div className="flex items-center justify-between gap-2 md:gap-3">
+                                  <div className={`text-sm md:text-lg font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-white/60 line-through' : 'text-white'}`}>
                                     {stats.expectedNextReleaseDate}
                                   </div>
                                   {(() => {
@@ -1133,7 +1136,7 @@ function TimelineContent() {
                                       const daysDiff = Math.floor((expectedDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
                                       return (
-                                        <div className={`text-xs font-medium ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/60' : daysDiff < 0 ? 'text-gray-500' : daysDiff < 30 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                                        <div className={`text-[10px] md:text-xs font-medium ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/60' : daysDiff < 0 ? 'text-gray-500' : daysDiff <= 7 ? 'text-yellow-400' : 'text-gray-400'}`}>
                                           {daysDiff < 0
                                             ? `${Math.abs(daysDiff)} days ago`
                                             : `in ${daysDiff} days`
@@ -1143,7 +1146,7 @@ function TimelineContent() {
                                     }
                                     // Fallback to original calculation
                                     return (
-                                      <div className={`text-xs font-medium ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/60' : stats.daysUntilExpected < 0 ? 'text-gray-500' : stats.daysUntilExpected < 30 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                                      <div className={`text-[10px] md:text-xs font-medium ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/60' : stats.daysUntilExpected < 0 ? 'text-gray-500' : stats.daysUntilExpected <= 7 ? 'text-yellow-400' : 'text-gray-400'}`}>
                                         {stats.daysUntilExpected < 0
                                           ? `${Math.abs(stats.daysUntilExpected)} days ago`
                                           : `in ${stats.daysUntilExpected} days`
@@ -1154,16 +1157,16 @@ function TimelineContent() {
                                 </div>
                               </div>
 
-                              <div className="pt-3 border-t border-white/5">
-                                <div className="text-xs text-gray-500 mb-2">Recent releases</div>
-                                <div className="space-y-2">
+                              <div className="pt-2 md:pt-3 border-t border-white/5">
+                                <div className="text-[10px] md:text-xs text-gray-500 mb-1.5 md:mb-2">Recent releases</div>
+                                <div className="space-y-1.5 md:space-y-2">
                                   {stats.recentReleases.map((release, idx) => (
-                                    <div key={idx} className="flex items-center justify-between gap-3">
+                                    <div key={idx} className="flex items-center justify-between gap-2 md:gap-3">
                                       <div className="flex-1 min-w-0">
-                                        <div className="text-xs text-gray-400 truncate">{release.name}</div>
-                                        <div className="text-xs text-gray-600">{release.date}</div>
+                                        <div className="text-[10px] md:text-xs text-gray-400 truncate">{release.name}</div>
+                                        <div className="text-[9px] md:text-xs text-gray-600">{release.date}</div>
                                       </div>
-                                      <div className="text-xs font-normal text-gray-400 whitespace-nowrap">
+                                      <div className="text-[10px] md:text-xs font-normal text-gray-400 whitespace-nowrap">
                                         {release.daysSince !== null ? `${release.daysSince} days` : '-'}
                                       </div>
                                     </div>
@@ -1360,8 +1363,8 @@ function TimelineContent() {
                               </div>
                             </div>
 
-                            {/* Enhanced stats tooltip */}
-                            {isReleaseActive && modelStats && (
+                            {/* Enhanced stats tooltip - only show on non-touch devices */}
+                            {isReleaseActive && modelStats && !isTouchDevice && (
                               <div
                                 className={`absolute bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[280px] z-[10002] animate-fade-in-slide-up ${
                                   releaseTooltipPosition[releaseKey] === 'below'
@@ -1535,8 +1538,8 @@ function TimelineContent() {
                               </div>
                             </div>
 
-                            {/* Tooltip on hover */}
-                            {isExpectedHovered && (
+                            {/* Tooltip on hover - only show on non-touch devices */}
+                            {isExpectedHovered && !isTouchDevice && (
                               <div className={`absolute bg-[#151515] border border-white/10 rounded-lg p-3 shadow-xl min-w-[200px] z-[10002] animate-fade-in-slide-up left-1/2 -translate-x-1/2 ${
                                 tooltipPosition === 'below' ? 'top-full mt-2' : 'bottom-full mb-2'
                               }`}>
