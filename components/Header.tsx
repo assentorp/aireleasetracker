@@ -74,7 +74,7 @@ export function Header({ currentPage, latestRelease }: HeaderProps) {
             {/* Left: Logo */}
             <div className="flex-shrink-0 flex flex-col justify-center gap-2 md:gap-3">
               <Link href="/" className="inline-block hover-transition hover:opacity-80" onClick={() => setIsMobileMenuOpen(false)}>
-                <Logo className="cursor-pointer w-36 md:w-[217px] h-auto" />
+                <Logo className="cursor-pointer w-36 md:w-[220px] h-auto" />
               </Link>
             </div>
 

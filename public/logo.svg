@@ -1,14 +1,9 @@
-import React from 'react';
-
-export default function Logo({ className }: { className?: string }) {
-  return (
-<svg viewBox="0 0 240 25" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="AI Model Release Tracker" className={className}>
-<title>AI Model Release Tracker</title>
+<svg width="240" height="25" viewBox="0 0 240 25" fill="none" xmlns="http://www.w3.org/2000/svg">
 <rect width="24.2968" height="24.2962" rx="12.1481" fill="#171616"/>
 <g filter="url(#filter0_d_1647_224)">
 <rect x="7.59375" y="7.5918" width="9.1113" height="9.11107" rx="4.55553" fill="url(#paint0_linear_1647_224)"/>
 </g>
-<rect x="1" y="1" width="22.2968" height="22.2962" rx="11.1481" stroke="url(#paint1_linear_1647_224)" strokeWidth="2"/>
+<rect x="1" y="1" width="22.2968" height="22.2962" rx="11.1481" stroke="url(#paint1_linear_1647_224)" stroke-width="2"/>
 <path d="M235.648 7.62109L235.745 11.1197L235.526 10.9497C235.688 9.79965 236.028 8.95738 236.547 8.42287C237.065 7.88835 237.81 7.62109 238.782 7.62109H239.997V9.75916H238.758C238.093 9.75916 237.543 9.88064 237.105 10.1236C236.684 10.3666 236.368 10.731 236.158 11.2169C235.963 11.6867 235.866 12.2779 235.866 12.9905V20.4981H233.242V7.62109H235.648Z" fill="white"/>
 <path d="M219.258 14.0621C219.258 12.7015 219.509 11.5191 220.011 10.5148C220.529 9.49439 221.25 8.70882 222.173 8.1581C223.097 7.60739 224.174 7.33203 225.405 7.33203C226.458 7.33203 227.413 7.57499 228.272 8.06092C229.147 8.53064 229.843 9.26763 230.361 10.2719C230.896 11.2599 231.188 12.4909 231.236 13.9649V14.8153H222.028C222.109 15.9977 222.441 16.9209 223.024 17.585C223.607 18.2329 224.401 18.5569 225.405 18.5569C226.053 18.5569 226.636 18.3868 227.154 18.0466C227.673 17.7065 228.069 17.2287 228.345 16.6132L231.066 16.8075C230.677 18.0224 229.965 18.9942 228.928 19.7231C227.907 20.4358 226.733 20.7921 225.405 20.7921C224.174 20.7921 223.097 20.5168 222.173 19.966C221.25 19.4153 220.529 18.6379 220.011 17.6336C219.509 16.6132 219.258 15.4227 219.258 14.0621ZM228.491 12.8473C228.329 11.7134 227.972 10.8874 227.422 10.3691C226.871 9.83454 226.199 9.56728 225.405 9.56728C224.482 9.56728 223.728 9.85883 223.145 10.4419C222.578 11.0089 222.214 11.8106 222.052 12.8473H228.491Z" fill="white"/>
 <path d="M209.905 3.24805V13.9384L215.566 7.62136H218.895L213.866 13.0151L219.138 20.4983H216.077L212.141 14.6673L209.905 17.0969V20.4983H207.281V3.24805H209.905Z" fill="white"/>
@@ -26,8 +21,8 @@ export default function Logo({ className }: { className?: string }) {
 <path d="M57.368 3.24805V20.4983H54.6953V3.24805H57.368Z" fill="white"/>
 <path d="M43.2044 3.24805H46.5816L52.8016 20.4983H49.9589L48.4039 16.0278H41.3821L39.8271 20.4983H36.9844L43.2044 3.24805ZM47.5778 13.5982L44.9051 5.79915L42.2082 13.5982H47.5778Z" fill="white"/>
 <defs>
-<filter id="filter0_d_1647_224" x="3.59375" y="7.5918" width="17.1094" height="17.1113" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-<feFlood floodOpacity="0" result="BackgroundImageFix"/>
+<filter id="filter0_d_1647_224" x="3.59375" y="7.5918" width="17.1094" height="17.1113" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
 <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 <feOffset dy="4"/>
 <feGaussianBlur stdDeviation="2"/>
@@ -37,14 +32,12 @@ export default function Logo({ className }: { className?: string }) {
 <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1647_224" result="shape"/>
 </filter>
 <linearGradient id="paint0_linear_1647_224" x1="12.1494" y1="7.5918" x2="12.1494" y2="16.7029" gradientUnits="userSpaceOnUse">
-<stop stopColor="white"/>
-<stop offset="1" stopColor="#999999"/>
+<stop stop-color="white"/>
+<stop offset="1" stop-color="#999999"/>
 </linearGradient>
 <linearGradient id="paint1_linear_1647_224" x1="12.1484" y1="0" x2="12.1484" y2="24.2962" gradientUnits="userSpaceOnUse">
-<stop stopColor="white"/>
-<stop offset="1" stopColor="#999999"/>
+<stop stop-color="white"/>
+<stop offset="1" stop-color="#999999"/>
 </linearGradient>
 </defs>
 </svg>
-
-)}
