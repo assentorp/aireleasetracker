@@ -73,6 +73,25 @@
   }
 }
 
+@keyframes morphIn {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.1) translateX(-200%);
+    filter: blur(20px);
+    border-radius: 50%;
+  }
+  50% {
+    opacity: 0.8;
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) translateX(0);
+    filter: blur(0px);
+    border-radius: 1rem;
+  }
+}
+
 /* Animation utilities with proper durations and easing */
 .animate-fade-in-slide-up {
   animation: fadeInSlideUp 200ms ease-out forwards;

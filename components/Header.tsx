@@ -40,11 +40,11 @@ export function Header({ currentPage, latestRelease }: HeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 bg-[#0A0A0A] z-50 py-3 md:py-8 px-4 md:px-8 border-b border-white/5">
+      <header className="sticky top-0 bg-[#0A0A0A] z-50 h-[52px] md:h-[104px] px-4 md:px-8 border-b border-white/5">
         <h1 className="sr-only">
           AI Model Release Tracker - {currentPage === 'home' ? 'Timeline of Major AI Models from 2022-2025' : 'Analytics'}
         </h1>
-        <div className="flex items-center justify-between gap-2 md:gap-8">
+        <div className="flex items-center justify-between gap-2 md:gap-8 h-full">
           <div className="flex items-center gap-3 md:flex-row md:items-center md:gap-8">
             {/* Mobile Burger Menu Button */}
             <button

@@ -60,7 +60,7 @@ function TimelineContent() {
   const hasScrolledOnLoadRef = useRef(false);
   const savedScrollPositionRef = useRef<number>(0);
   const statsPanelRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-  const [statsPanelCoords, setStatsPanelCoords] = useState<{ [key: string]: { top: number; left: number } }>({});
+  const [statsPanelCoords, setStatsPanelCoords] = useState<{ [key: string]: { top: number; left: number; triggerY: number } }>({});
 
   // Parse release date helper function
   const parseReleaseDate = (dateStr: string): Date => {
@@ -917,68 +917,27 @@ function TimelineContent() {
                   >
                     <div
                       className="pr-2 md:pr-4 w-full relative z-[100]"
-                      onMouseEnter={() => setHoveredCompany(item.company)}
-                      onMouseLeave={() => setHoveredCompany(null)}
                     >
                       <div className="relative z-[100] h-full flex items-center justify-start px-2 md:px-4">
                         <div
                           className="cursor-pointer px-2 md:px-3 py-1.5 md:py-2 hover-transition hover:bg-white/[0.02]"
                             onClick={(e) => {
                             e.stopPropagation();
-                            // Check if panel would overflow below viewport and calculate position
                             const rect = e.currentTarget.getBoundingClientRect();
-                            const viewportHeight = window.innerHeight;
-                            const panelHeight = 500; // max-h-[500px]
-                            const headerHeight = window.innerWidth >= 768 ? 116 : 52; // md:top-[116px] or top-[52px]
-                            const spaceBelow = viewportHeight - rect.bottom;
-                            const spaceAbove = rect.top - headerHeight; // Account for header
 
-                            if (spaceBelow < panelHeight && spaceAbove > spaceBelow) {
-                              setStatsPanelCoords(prev => ({
-                                ...prev,
-                                [item.company]: {
-                                  top: Math.max(headerHeight + 8, rect.top - panelHeight - 8), // Ensure it's below header
-                                  left: rect.right + 8
-                                }
-                              }));
-                            } else {
-                              setStatsPanelCoords(prev => ({
-                                ...prev,
-                                [item.company]: {
-                                  top: rect.top,
-                                  left: rect.right + 8
-                                }
-                              }));
-                            }
+                            // Store the origin position for the morph animation
+                            const triggerX = rect.left + (rect.width / 2);
+                            const triggerY = rect.top + (rect.height / 2);
 
+                            setStatsPanelCoords(prev => ({
+                              ...prev,
+                              [item.company]: {
+                                top: triggerY,
+                                left: triggerX,
+                                triggerY
+                              }
+                            }));
                             setClickedCompany(isCompanyClicked ? null : item.company);
-                          }}
-                          onMouseEnter={(e) => {
-                            // Check if panel would overflow below viewport and calculate position
-                            const rect = e.currentTarget.getBoundingClientRect();
-                            const viewportHeight = window.innerHeight;
-                            const panelHeight = 500; // max-h-[500px]
-                            const headerHeight = window.innerWidth >= 768 ? 116 : 52; // md:top-[116px] or top-[52px]
-                            const spaceBelow = viewportHeight - rect.bottom;
-                            const spaceAbove = rect.top - headerHeight; // Account for header
-
-                            if (spaceBelow < panelHeight && spaceAbove > spaceBelow) {
-                              setStatsPanelCoords(prev => ({
-                                ...prev,
-                                [item.company]: {
-                                  top: Math.max(headerHeight + 8, rect.top - panelHeight - 8), // Ensure it's below header
-                                  left: rect.right + 8
-                                }
-                              }));
-                            } else {
-                              setStatsPanelCoords(prev => ({
-                                ...prev,
-                                [item.company]: {
-                                  top: rect.top,
-                                  left: rect.right + 8
-                                }
-                              }));
-                            }
                           }}
                         >
                           <div className="flex flex-col gap-1">
@@ -1035,27 +994,61 @@ function TimelineContent() {
                           </div>
                         </div>
 
-                        {/* Stats panel - shows on hover (desktop) or click (mobile) */}
-                        {isCompanyActive && stats && statsPanelCoords[item.company] && (
-                          <div
-                            ref={(el) => {
-                              if (el) statsPanelRefs.current[item.company] = el;
-                            }}
-                            className="fixed bg-[#151515] border border-white/10 rounded-lg p-2.5 md:p-4 shadow-xl w-[240px] md:min-w-[320px] max-h-[500px] overflow-y-auto animate-fade-in-slide-up"
-                            style={{
-                              zIndex: 10000,
-                              top: `${statsPanelCoords[item.company].top}px`,
-                              left: `${statsPanelCoords[item.company].left}px`,
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <div className="space-y-2.5 md:space-y-3">
+                        {/* Stats modal - morphs from company position to center */}
+                        {isCompanyClicked && stats && statsPanelCoords[item.company] && (
+                          <>
+                            {/* Backdrop */}
+                            <div
+                              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998] animate-fade-in"
+                              onClick={() => {
+                                setClickedCompany(null);
+                              }}
+                            />
+
+                            {/* Morphing modal */}
+                            <div
+                              className="fixed bg-[#151515]/95 backdrop-blur-xl border border-white/20 rounded-2xl p-4 md:p-6 shadow-2xl z-[9999]"
+                              style={{
+                                left: '50%',
+                                top: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                width: 'min(90vw, 420px)',
+                                maxHeight: 'min(80vh, 600px)',
+                                animation: 'morphIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+                              }}
+                              ref={(el) => {
+                                if (el) statsPanelRefs.current[item.company] = el;
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {/* Close button */}
+                              <button
+                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors"
+                                onClick={() => {
+                                  setClickedCompany(null);
+                                }}
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+                                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                              </button>
+
+                              {/* Company header */}
+                              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
+                                <div className={`w-3 h-3 rounded-full ${companyInfo.dotColor}`} />
+                                <h3 className="text-xl font-semibold text-white">{companyInfo.name}</h3>
+                              </div>
+
+                              {/* Scrollable content */}
+                              <div className="overflow-y-auto pr-2" style={{ maxHeight: 'calc(min(80vh, 600px) - 120px)' }}>
+                                <div className="space-y-4 md:space-y-5">
                               <div>
-                                <div className="flex items-center justify-between mb-1">
-                                  <div className="text-[10px] md:text-xs text-gray-500">Days since last release</div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="text-sm text-gray-400">Days since last release</div>
                                   {stats.daysSinceLastRelease > stats.avgDaysBetweenReleases && (
-                                    <div className="flex items-center gap-0.5 md:gap-1 px-1 md:px-1.5 py-0.5 bg-orange-500/20 border border-orange-500/30 rounded text-[9px] md:text-xs text-orange-400 font-medium">
-                                      <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5 md:w-3 md:h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <div className="flex items-center gap-1 px-2 py-1 bg-orange-500/20 border border-orange-500/30 rounded text-xs text-orange-400 font-medium">
+                                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M12 9v4"></path>
                                         <path d="M12 17h.01"></path>
                                         <circle cx="12" cy="12" r="10"></circle>
@@ -1065,11 +1058,11 @@ function TimelineContent() {
                                   )}
                                 </div>
                                 <div className="flex items-center justify-between gap-3">
-                                  <div className={`text-lg md:text-xl font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400' : 'text-white'}`}>
+                                  <div className={`text-3xl font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400' : 'text-white'}`}>
                                     {stats.daysSinceLastRelease}
                                   </div>
                                 </div>
-                                <div className="mt-2 h-1.5 bg-white/5 rounded-full overflow-hidden relative">
+                                <div className="mt-3 h-2 bg-white/5 rounded-full overflow-hidden relative">
                                   {/* Average marker line - shows where average is */}
                                   {stats.daysSinceLastRelease > stats.avgDaysBetweenReleases && (
                                     <div
@@ -1094,17 +1087,17 @@ function TimelineContent() {
                                     }}
                                   />
                                 </div>
-                                <div className="mt-1 md:mt-1.5 text-[10px] md:text-xs text-right text-gray-400">
+                                <div className="mt-2 text-sm text-right text-gray-400">
                                   Average: {stats.avgDaysBetweenReleases} days
                                 </div>
                               </div>
 
-                              <div className="pt-2 md:pt-3 border-t border-white/5">
-                                <div className="flex items-center justify-between mb-1">
-                                  <div className="text-[10px] md:text-xs text-gray-500">Expected next release</div>
+                              <div className="pt-4 border-t border-white/10">
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="text-sm text-gray-400">Expected next release</div>
                                   {stats.daysSinceLastRelease > stats.avgDaysBetweenReleases && (
-                                    <div className="flex items-center gap-0.5 md:gap-1 px-1 md:px-1.5 py-0.5 bg-orange-500/20 border border-orange-500/30 rounded text-[9px] md:text-xs text-orange-400 font-medium">
-                                      <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5 md:w-3 md:h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <div className="flex items-center gap-1 px-2 py-1 bg-orange-500/20 border border-orange-500/30 rounded text-xs text-orange-400 font-medium">
+                                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M12 9v4"></path>
                                         <path d="M12 17h.01"></path>
                                         <circle cx="12" cy="12" r="10"></circle>
@@ -1113,8 +1106,8 @@ function TimelineContent() {
                                     </div>
                                   )}
                                 </div>
-                                <div className="flex items-center justify-between gap-2 md:gap-3">
-                                  <div className={`text-sm md:text-lg font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-white/60 line-through' : 'text-white'}`}>
+                                <div className="flex items-center justify-between gap-3">
+                                  <div className={`text-lg font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-white/60 line-through' : 'text-white'}`}>
                                     {stats.expectedNextReleaseDate}
                                   </div>
                                   {(() => {
@@ -1157,24 +1150,26 @@ function TimelineContent() {
                                 </div>
                               </div>
 
-                              <div className="pt-2 md:pt-3 border-t border-white/5">
-                                <div className="text-[10px] md:text-xs text-gray-500 mb-1.5 md:mb-2">Recent releases</div>
-                                <div className="space-y-1.5 md:space-y-2">
+                              <div className="pt-4 border-t border-white/10">
+                                <div className="text-sm text-gray-400 mb-3">Recent releases</div>
+                                <div className="space-y-3">
                                   {stats.recentReleases.map((release, idx) => (
-                                    <div key={idx} className="flex items-center justify-between gap-2 md:gap-3">
+                                    <div key={idx} className="flex items-center justify-between gap-3">
                                       <div className="flex-1 min-w-0">
-                                        <div className="text-[10px] md:text-xs text-gray-400 truncate">{release.name}</div>
-                                        <div className="text-[9px] md:text-xs text-gray-600">{release.date}</div>
+                                        <div className="text-sm text-gray-200 truncate">{release.name}</div>
+                                        <div className="text-xs text-gray-500 mt-0.5">{release.date}</div>
                                       </div>
-                                      <div className="text-[10px] md:text-xs font-normal text-gray-400 whitespace-nowrap">
+                                      <div className="text-sm font-medium text-gray-400 whitespace-nowrap">
                                         {release.daysSince !== null ? `${release.daysSince} days` : '-'}
                                       </div>
                                     </div>
                                   ))}
                                 </div>
                               </div>
+                              </div>
                             </div>
-                          </div>
+                            </div>
+                          </>
                         )}
                       </div>
                     </div>
