@@ -26,17 +26,6 @@ export function Header({ currentPage, latestRelease }: HeaderProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
-  // Prevent body scroll when menu is open
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isMobileMenuOpen]);
 
   return (
     <>
@@ -46,36 +35,39 @@ export function Header({ currentPage, latestRelease }: HeaderProps) {
         </h1>
         <div className="flex items-center justify-between gap-2 md:gap-8 h-full">
           <div className="flex items-center gap-3 md:flex-row md:items-center md:gap-8">
-            {/* Mobile Burger Menu Button */}
-            <button
-              type="button"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden flex flex-col justify-center items-center w-6 h-6 gap-1 p-0.5 rounded-md hover:bg-white/5 transition-colors"
-              aria-label="Toggle menu"
-              aria-expanded={isMobileMenuOpen}
-            >
-              <span
-                className={`block w-4 h-[1px] bg-white transition-all duration-300 ease-out ${
-                  isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''
-                }`}
-              />
-              <span
-                className={`block w-4 h-[1px] bg-white transition-all duration-300 ease-out ${
-                  isMobileMenuOpen ? 'opacity-0' : ''
-                }`}
-              />
-              <span
-                className={`block w-4 h-[1px] bg-white transition-all duration-300 ease-out ${
-                  isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''
-                }`}
-              />
-            </button>
+            {/* Left: Logo with Chevron for Mobile */}
+            <div className="flex items-center gap-2">
+              <div className="flex-shrink-0 flex flex-col justify-center gap-2 md:gap-3">
+                <Link href="/" className="inline-block hover-transition hover:opacity-80" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Logo className="cursor-pointer w-36 md:w-[220px] h-auto" />
+                </Link>
+              </div>
 
-            {/* Left: Logo */}
-            <div className="flex-shrink-0 flex flex-col justify-center gap-2 md:gap-3">
-              <Link href="/" className="inline-block hover-transition hover:opacity-80" onClick={() => setIsMobileMenuOpen(false)}>
-                <Logo className="cursor-pointer w-36 md:w-[220px] h-auto" />
-              </Link>
+              {/* Mobile Chevron Button */}
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="md:hidden flex items-center justify-center w-6 h-6 rounded-md hover:bg-white/5 transition-colors"
+                aria-label="Toggle menu"
+                aria-expanded={isMobileMenuOpen}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`text-white transition-transform duration-300 ease-out ${
+                    isMobileMenuOpen ? 'rotate-180' : ''
+                  }`}
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
             </div>
 
             {/* Navigation - Desktop only */}
@@ -172,66 +164,50 @@ export function Header({ currentPage, latestRelease }: HeaderProps) {
         </div>
       </header>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Dropdown Menu */}
       {isMobileMenuOpen && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] md:hidden animate-fade-in"
-            onClick={() => setIsMobileMenuOpen(false)}
-            aria-hidden="true"
-          />
+        <nav
+          className="md:hidden absolute top-[52px] left-0 right-0 bg-[#0A0A0A] border-b border-white/10 z-40 animate-fade-in"
+          aria-label="Mobile navigation"
+        >
+          <div className="px-4 py-3 space-y-1">
+            <Link
+              href="/"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`block px-4 py-3 rounded-lg transition-all duration-200 ${
+                currentPage === 'home'
+                  ? 'text-white bg-white/5'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <span className="text-sm font-medium">Home</span>
+            </Link>
 
-          {/* Slide-in Menu */}
-          <nav
-            className={`fixed top-0 left-0 h-full w-72 bg-[#0A0A0A] border-r border-white/10 z-[70] md:hidden transform transition-transform duration-300 ease-out ${
-              isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-            }`}
-            aria-label="Mobile navigation"
-          >
-            <div className="flex flex-col h-full">
+            <Link
+              href="/analytics"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`block px-4 py-3 rounded-lg transition-all duration-200 ${
+                currentPage === 'analytics'
+                  ? 'text-white bg-white/5'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <span className="text-sm font-medium">Analytics</span>
+            </Link>
 
-              {/* Menu Items */}
-              <div className="flex-1 px-4 py-4 space-y-2">
-                <Link
-                  href="/"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                    currentPage === 'home'
-                      ? 'text-white'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <span className="text-sm font-medium">Home</span>
-                </Link>
-
-                <Link
-                  href="/analytics"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                    currentPage === 'analytics'
-                      ? 'text-white'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <span className="text-sm font-medium">Analytics</span>
-                </Link>
-
-                <Link
-                  href="/contact"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                    currentPage === 'contact'
-                      ? 'text-white'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  <span className="text-sm font-medium">Contact</span>
-                </Link>
-              </div>
-            </div>
-          </nav>
-        </>
+            <Link
+              href="/contact"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`block px-4 py-3 rounded-lg transition-all duration-200 ${
+                currentPage === 'contact'
+                  ? 'text-white bg-white/5'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <span className="text-sm font-medium">Contact</span>
+            </Link>
+          </div>
+        </nav>
       )}
     </>
   );
