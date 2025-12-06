@@ -148,18 +148,18 @@ export function Header({ currentPage, latestRelease }: HeaderProps) {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden flex flex-col justify-center items-center w-6 h-6 gap-1.5 p-0.5 rounded-md hover:bg-white/5 transition-colors"
+              className="md:hidden relative flex justify-center items-center w-6 h-6 rounded-md hover:bg-white/5 transition-colors"
               aria-label="Toggle menu"
               aria-expanded={isMobileMenuOpen}
             >
               <span
-                className={`block w-4 h-[1px] bg-white transition-all duration-300 ease-out ${
-                  isMobileMenuOpen ? 'rotate-45 translate-y-[3px]' : ''
+                className={`absolute block w-4 h-[1.5px] bg-white transition-all duration-300 ease-out ${
+                  isMobileMenuOpen ? 'rotate-45' : '-translate-y-[3px]'
                 }`}
               />
               <span
-                className={`block w-4 h-[1px] bg-white transition-all duration-300 ease-out ${
-                  isMobileMenuOpen ? '-rotate-45 -translate-y-[3px]' : ''
+                className={`absolute block w-4 h-[1.5px] bg-white transition-all duration-300 ease-out ${
+                  isMobileMenuOpen ? '-rotate-45' : 'translate-y-[3px]'
                 }`}
               />
             </button>
@@ -167,66 +167,56 @@ export function Header({ currentPage, latestRelease }: HeaderProps) {
         </div>
       </header>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu - Full screen overlay below header */}
       {isMobileMenuOpen && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] md:hidden animate-fade-in"
-            onClick={() => setIsMobileMenuOpen(false)}
-            aria-hidden="true"
-          />
-
-          {/* Slide-in Menu */}
-          <nav
-            className={`fixed top-0 left-0 h-full w-72 bg-[#0A0A0A] border-r border-white/10 z-[70] md:hidden transform transition-transform duration-300 ease-out ${
-              isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-            }`}
-            aria-label="Mobile navigation"
-          >
-            <div className="flex flex-col h-full">
-
-              {/* Menu Items */}
-              <div className="flex-1 px-4 py-4 space-y-2">
+        <nav
+          className="fixed top-[52px] left-0 right-0 bottom-0 bg-[#0A0A0A] z-[60] md:hidden overflow-y-auto"
+          aria-label="Mobile navigation"
+        >
+          <div className="px-6 py-8">
+            {/* Navigation Section */}
+            <div className="mb-10">
+              <p className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-3">
+                MENU
+              </p>
+              <div className="space-y-0">
                 <Link
                   href="/"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                  className={`block text-[28px] font-medium py-1 transition-colors ${
                     currentPage === 'home'
                       ? 'text-white'
-                      : 'text-gray-400 hover:text-white'
+                      : 'text-white/90 hover:text-white'
                   }`}
                 >
-                  <span className="text-sm font-medium">Home</span>
+                  Home
                 </Link>
-
                 <Link
                   href="/analytics"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                  className={`block text-[28px] font-medium py-1 transition-colors ${
                     currentPage === 'analytics'
                       ? 'text-white'
-                      : 'text-gray-400 hover:text-white'
+                      : 'text-white/90 hover:text-white'
                   }`}
                 >
-                  <span className="text-sm font-medium">Analytics</span>
+                  Analytics
                 </Link>
-
                 <Link
                   href="/contact"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                  className={`block text-[28px] font-medium py-1 transition-colors ${
                     currentPage === 'contact'
                       ? 'text-white'
-                      : 'text-gray-400 hover:text-white'
+                      : 'text-white/90 hover:text-white'
                   }`}
                 >
-                  <span className="text-sm font-medium">Contact</span>
+                  Contact
                 </Link>
               </div>
             </div>
-          </nav>
-        </>
+          </div>
+        </nav>
       )}
     </>
   );
