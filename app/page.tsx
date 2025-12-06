@@ -837,7 +837,7 @@ function TimelineContent() {
       {/* Sticky month header - outside scroll container */}
       <div className="flex sticky top-[52px] md:top-[104px] z-40 bg-[#0A0A0A] border-b border-white/5">
           {/* Left spacer to align with company labels */}
-          <div className="flex-shrink-0 w-[120px] md:w-[240px]" />
+          <div className="flex-shrink-0 w-[150px] md:w-[240px]" />
 
           {/* Month header - scrollable */}
           <div
@@ -868,7 +868,7 @@ function TimelineContent() {
       {/* Timeline container - fixed left column + scrollable right */}
       <section className="flex" aria-label="AI Model Release Timeline">
           {/* Fixed left column for company labels */}
-          <div className="flex-shrink-0 w-[120px] md:w-[240px] border-r border-white/5 bg-[#0A0A0A] z-30 overflow-visible">
+          <div className="flex-shrink-0 w-[150px] md:w-[240px] border-r border-white/5 bg-[#0A0A0A] z-30 overflow-visible">
 
             {/* Company labels */}
             <div className={`space-y-8 overflow-visible ${hoveredCompany || clickedCompany ? 'z-[1000] relative' : ''}`}>
@@ -1012,7 +1012,7 @@ function TimelineContent() {
                           <>
                             {/* Backdrop */}
                             <div
-                              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998] animate-fade-in"
+                              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[10000] animate-fade-in"
                               onClick={() => {
                                 setClickedCompany(null);
                               }}
@@ -1020,7 +1020,7 @@ function TimelineContent() {
 
                             {/* Morphing modal */}
                             <div
-                              className="fixed bg-[#151515]/95 backdrop-blur-xl border border-white/20 rounded-2xl p-4 md:p-6 shadow-2xl z-[9999]"
+                              className="fixed bg-[#151515]/95 backdrop-blur-xl border border-white/20 rounded-2xl p-4 md:p-6 shadow-2xl z-[10001]"
                               style={{
                                 left: '50%',
                                 top: '50%',
