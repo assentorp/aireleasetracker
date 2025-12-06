@@ -837,7 +837,7 @@ function TimelineContent() {
       {/* Sticky month header - outside scroll container */}
       <div className="flex sticky top-[52px] md:top-[104px] z-40 bg-[#0A0A0A] border-b border-white/5">
           {/* Left spacer to align with company labels */}
-          <div className="flex-shrink-0 w-[120px] md:w-[240px]" />
+          <div className="flex-shrink-0 w-[150px] md:w-[240px]" />
 
           {/* Month header - scrollable */}
           <div
@@ -868,7 +868,7 @@ function TimelineContent() {
       {/* Timeline container - fixed left column + scrollable right */}
       <section className="flex" aria-label="AI Model Release Timeline">
           {/* Fixed left column for company labels */}
-          <div className="flex-shrink-0 w-[120px] md:w-[240px] border-r border-white/5 bg-[#0A0A0A] z-30 overflow-visible">
+          <div className={`flex-shrink-0 w-[150px] md:w-[240px] border-r border-white/5 bg-[#0A0A0A] overflow-visible ${clickedCompany ? 'z-[100000]' : 'z-30'}`}>
 
             {/* Company labels */}
             <div className={`space-y-8 overflow-visible ${hoveredCompany || clickedCompany ? 'z-[1000] relative' : ''}`}>
@@ -919,49 +919,62 @@ function TimelineContent() {
                       className="pr-2 md:pr-4 w-full relative z-[100]"
                     >
                       <div className="relative z-[100] h-full flex items-center justify-start px-2 md:px-4">
-                        <div
-                          className="cursor-pointer px-2 md:px-3 py-1.5 md:py-2 hover-transition hover:bg-white/[0.02]"
-                            onClick={(e) => {
-                            e.stopPropagation();
-                            const rect = e.currentTarget.getBoundingClientRect();
-
-                            // Store the origin position for the morph animation
-                            const triggerX = rect.left + (rect.width / 2);
-                            const triggerY = rect.top + (rect.height / 2);
-
-                            setStatsPanelCoords(prev => ({
-                              ...prev,
-                              [item.company]: {
-                                top: triggerY,
-                                left: triggerX,
-                                triggerY
-                              }
-                            }));
-                            setClickedCompany(isCompanyClicked ? null : item.company);
-                          }}
-                        >
+                        <div className="px-2 md:px-3 py-1.5 md:py-2">
                           <div className="flex flex-col gap-1">
-                            {/* Company name and dropdown */}
+                            {/* Company name */}
                             <div className="flex items-center gap-1 md:gap-2">
                               <div className={`w-1.5 md:w-2 h-1.5 md:h-2 rounded-full ${companyInfo.dotColor}`} />
-                              <span className="text-white text-[10px] md:text-base font-medium hover-transition hover:text-gray-200">
+                              <span className="text-white text-[10px] md:text-base font-medium">
                                 {companyInfo.name}
                               </span>
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="10"
-                                height="10"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className={`text-gray-400 hover:text-gray-300 md:w-[14px] md:h-[14px] transition-all duration-200 ease-in-out ${isCompanyClicked ? 'rotate-180' : ''}`}
-                                style={{ transformOrigin: 'center' }}
-                              >
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                              </svg>
+                            </div>
+
+                            {/* Expected next release - shown on mobile at 8px, desktop stays the same */}
+                            <div className="flex flex-col gap-0.5 md:hidden">
+                              {(() => {
+                                const nextRelease = getCompanyNextExpectedRelease(item.company);
+                                if (!nextRelease) return null;
+
+                                return (
+                                  <>
+                                    <span className="text-[8px] text-gray-500">Expected next release</span>
+                                    {nextRelease.daysUntil >= 0 ? (
+                                      <span className="text-[8px] text-gray-400">
+                                        {nextRelease.date} · In {nextRelease.daysUntil} {nextRelease.daysUntil === 1 ? 'day' : 'days'}
+                                      </span>
+                                    ) : (
+                                      <div className="flex flex-col gap-0.5">
+                                        <span className="text-[8px] text-orange-400 line-through">
+                                          {nextRelease.date}
+                                        </span>
+                                        <span className="text-[8px] text-orange-400">
+                                          Overdue by {Math.abs(nextRelease.daysUntil)} {Math.abs(nextRelease.daysUntil) === 1 ? 'day' : 'days'}
+                                        </span>
+                                      </div>
+                                    )}
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const rect = e.currentTarget.getBoundingClientRect();
+                                        const triggerX = rect.left + (rect.width / 2);
+                                        const triggerY = rect.top + (rect.height / 2);
+                                        setStatsPanelCoords(prev => ({
+                                          ...prev,
+                                          [item.company]: {
+                                            top: triggerY,
+                                            left: triggerX,
+                                            triggerY
+                                          }
+                                        }));
+                                        setClickedCompany(isCompanyClicked ? null : item.company);
+                                      }}
+                                      className="text-[8px] text-gray-500 hover:text-gray-300 underline decoration-dotted underline-offset-1 text-left mt-0.5"
+                                    >
+                                      Release info
+                                    </button>
+                                  </>
+                                );
+                              })()}
                             </div>
 
                             {/* Expected next release - desktop only */}
@@ -987,6 +1000,26 @@ function TimelineContent() {
                                         </span>
                                       </div>
                                     )}
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const rect = e.currentTarget.getBoundingClientRect();
+                                        const triggerX = rect.left + (rect.width / 2);
+                                        const triggerY = rect.top + (rect.height / 2);
+                                        setStatsPanelCoords(prev => ({
+                                          ...prev,
+                                          [item.company]: {
+                                            top: triggerY,
+                                            left: triggerX,
+                                            triggerY
+                                          }
+                                        }));
+                                        setClickedCompany(isCompanyClicked ? null : item.company);
+                                      }}
+                                      className="text-xs text-gray-500 hover:text-gray-300 underline decoration-dotted underline-offset-2 text-left mt-1"
+                                    >
+                                      Release info
+                                    </button>
                                   </>
                                 );
                               })()}
@@ -999,7 +1032,7 @@ function TimelineContent() {
                           <>
                             {/* Backdrop */}
                             <div
-                              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998] animate-fade-in"
+                              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99998] animate-fade-in"
                               onClick={() => {
                                 setClickedCompany(null);
                               }}
@@ -1007,7 +1040,7 @@ function TimelineContent() {
 
                             {/* Morphing modal */}
                             <div
-                              className="fixed bg-[#151515]/95 backdrop-blur-xl border border-white/20 rounded-2xl p-4 md:p-6 shadow-2xl z-[9999]"
+                              className="fixed bg-[#151515]/95 backdrop-blur-xl border border-white/20 rounded-2xl p-4 md:p-6 shadow-2xl z-[99999]"
                               style={{
                                 left: '50%',
                                 top: '50%',
@@ -1015,6 +1048,8 @@ function TimelineContent() {
                                 width: 'min(90vw, 420px)',
                                 maxHeight: 'min(80vh, 600px)',
                                 animation: 'morphIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+                                willChange: 'transform',
+                                transformOrigin: 'center',
                               }}
                               ref={(el) => {
                                 if (el) statsPanelRefs.current[item.company] = el;
@@ -1035,9 +1070,9 @@ function TimelineContent() {
                               </button>
 
                               {/* Company header */}
-                              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
-                                <div className={`w-3 h-3 rounded-full ${companyInfo.dotColor}`} />
-                                <h3 className="text-xl font-semibold text-white">{companyInfo.name}</h3>
+                              <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-white/10">
+                                <div className={`w-2 h-2 md:w-3 md:h-3 rounded-full ${companyInfo.dotColor}`} />
+                                <h3 className="text-base md:text-xl font-semibold text-white">{companyInfo.name}</h3>
                               </div>
 
                               {/* Scrollable content */}
@@ -1045,10 +1080,10 @@ function TimelineContent() {
                                 <div className="space-y-4 md:space-y-5">
                               <div>
                                 <div className="flex items-center justify-between mb-2">
-                                  <div className="text-sm text-gray-400">Days since last release</div>
+                                  <div className="text-xs md:text-sm text-gray-400">Days since last release</div>
                                   {stats.daysSinceLastRelease > stats.avgDaysBetweenReleases && (
-                                    <div className="flex items-center gap-1 px-2 py-1 bg-orange-500/20 border border-orange-500/30 rounded text-xs text-orange-400 font-medium">
-                                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <div className="flex items-center gap-1 px-1.5 md:px-2 py-0.5 md:py-1 bg-orange-500/20 border border-orange-500/30 rounded text-[10px] md:text-xs text-orange-400 font-medium">
+                                      <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5 md:w-3 md:h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M12 9v4"></path>
                                         <path d="M12 17h.01"></path>
                                         <circle cx="12" cy="12" r="10"></circle>
@@ -1058,11 +1093,11 @@ function TimelineContent() {
                                   )}
                                 </div>
                                 <div className="flex items-center justify-between gap-3">
-                                  <div className={`text-3xl font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400' : 'text-white'}`}>
+                                  <div className={`text-2xl md:text-3xl font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400' : 'text-white'}`}>
                                     {stats.daysSinceLastRelease}
                                   </div>
                                 </div>
-                                <div className="mt-3 h-2 bg-white/5 rounded-full overflow-hidden relative">
+                                <div className="mt-2 md:mt-3 h-2 bg-white/5 rounded-full overflow-hidden relative">
                                   {/* Average marker line - shows where average is */}
                                   {stats.daysSinceLastRelease > stats.avgDaysBetweenReleases && (
                                     <div
@@ -1087,17 +1122,17 @@ function TimelineContent() {
                                     }}
                                   />
                                 </div>
-                                <div className="mt-2 text-sm text-right text-gray-400">
+                                <div className="mt-2 text-xs md:text-sm text-right text-gray-400">
                                   Average: {stats.avgDaysBetweenReleases} days
                                 </div>
                               </div>
 
-                              <div className="pt-4 border-t border-white/10">
+                              <div className="pt-3 md:pt-4 border-t border-white/10">
                                 <div className="flex items-center justify-between mb-2">
-                                  <div className="text-sm text-gray-400">Expected next release</div>
+                                  <div className="text-xs md:text-sm text-gray-400">Expected next release</div>
                                   {stats.daysSinceLastRelease > stats.avgDaysBetweenReleases && (
-                                    <div className="flex items-center gap-1 px-2 py-1 bg-orange-500/20 border border-orange-500/30 rounded text-xs text-orange-400 font-medium">
-                                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <div className="flex items-center gap-1 px-1.5 md:px-2 py-0.5 md:py-1 bg-orange-500/20 border border-orange-500/30 rounded text-[10px] md:text-xs text-orange-400 font-medium">
+                                      <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5 md:w-3 md:h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M12 9v4"></path>
                                         <path d="M12 17h.01"></path>
                                         <circle cx="12" cy="12" r="10"></circle>
@@ -1107,7 +1142,7 @@ function TimelineContent() {
                                   )}
                                 </div>
                                 <div className="flex items-center justify-between gap-3">
-                                  <div className={`text-lg font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-white/60 line-through' : 'text-white'}`}>
+                                  <div className={`text-sm md:text-lg font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-white/60 line-through' : 'text-white'}`}>
                                     {stats.expectedNextReleaseDate}
                                   </div>
                                   {(() => {
@@ -1150,16 +1185,16 @@ function TimelineContent() {
                                 </div>
                               </div>
 
-                              <div className="pt-4 border-t border-white/10">
-                                <div className="text-sm text-gray-400 mb-3">Recent releases</div>
-                                <div className="space-y-3">
+                              <div className="pt-3 md:pt-4 border-t border-white/10">
+                                <div className="text-xs md:text-sm text-gray-400 mb-2 md:mb-3">Recent releases</div>
+                                <div className="space-y-2 md:space-y-3">
                                   {stats.recentReleases.map((release, idx) => (
-                                    <div key={idx} className="flex items-center justify-between gap-3">
+                                    <div key={idx} className="flex items-center justify-between gap-2 md:gap-3">
                                       <div className="flex-1 min-w-0">
-                                        <div className="text-sm text-gray-200 truncate">{release.name}</div>
-                                        <div className="text-xs text-gray-500 mt-0.5">{release.date}</div>
+                                        <div className="text-xs md:text-sm text-gray-200 truncate">{release.name}</div>
+                                        <div className="text-[10px] md:text-xs text-gray-500 mt-0.5">{release.date}</div>
                                       </div>
-                                      <div className="text-sm font-medium text-gray-400 whitespace-nowrap">
+                                      <div className="text-xs md:text-sm font-medium text-gray-400 whitespace-nowrap">
                                         {release.daysSince !== null ? `${release.daysSince} days` : '-'}
                                       </div>
                                     </div>
