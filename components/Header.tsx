@@ -98,6 +98,26 @@ export function Header({ currentPage, latestRelease }: HeaderProps) {
             {/* Latest Release */}
             {latestRelease && <LatestRelease release={latestRelease} />}
 
+            {/* Mobile Burger Menu Button - Two bars */}
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden flex flex-col justify-center items-center w-6 h-6 gap-1.5 p-0.5 rounded-md hover:bg-white/5 transition-colors"
+              aria-label="Toggle menu"
+              aria-expanded={isMobileMenuOpen}
+            >
+              <span
+                className={`block w-4 h-[1px] bg-white transition-all duration-300 ease-out ${
+                  isMobileMenuOpen ? 'rotate-45 translate-y-1' : ''
+                }`}
+              />
+              <span
+                className={`block w-4 h-[1px] bg-white transition-all duration-300 ease-out ${
+                  isMobileMenuOpen ? '-rotate-45 -translate-y-1' : ''
+                }`}
+              />
+            </button>
+
             <SignedOut>
               <SignInButton mode="modal">
                 <button className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium text-gray-500 hover-transition hover:text-gray-300">
@@ -143,26 +163,6 @@ export function Header({ currentPage, latestRelease }: HeaderProps) {
                 </UserButton.MenuItems>
               </UserButton>
             </SignedIn>
-
-            {/* Mobile Burger Menu Button - Two bars */}
-            <button
-              type="button"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden flex flex-col justify-center items-center w-6 h-6 gap-1.5 p-0.5 rounded-md hover:bg-white/5 transition-colors"
-              aria-label="Toggle menu"
-              aria-expanded={isMobileMenuOpen}
-            >
-              <span
-                className={`block w-4 h-[1px] bg-white transition-all duration-300 ease-out ${
-                  isMobileMenuOpen ? 'rotate-45 translate-y-1' : ''
-                }`}
-              />
-              <span
-                className={`block w-4 h-[1px] bg-white transition-all duration-300 ease-out ${
-                  isMobileMenuOpen ? '-rotate-45 -translate-y-1' : ''
-                }`}
-              />
-            </button>
           </div>
         </div>
       </header>
