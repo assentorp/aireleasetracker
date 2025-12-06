@@ -968,7 +968,7 @@ function TimelineContent() {
                                         }));
                                         setClickedCompany(isCompanyClicked ? null : item.company);
                                       }}
-                                      className="text-[8px] text-gray-500 hover:text-gray-300 underline decoration-dotted underline-offset-1 text-left mt-0.5"
+                                      className="text-[10px] text-gray-500 hover:text-gray-300 underline decoration-dotted underline-offset-1 text-left mt-0.5"
                                     >
                                       Release info
                                     </button>
