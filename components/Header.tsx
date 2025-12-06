@@ -46,31 +46,6 @@ export function Header({ currentPage, latestRelease }: HeaderProps) {
         </h1>
         <div className="flex items-center justify-between gap-2 md:gap-8 h-full">
           <div className="flex items-center gap-3 md:flex-row md:items-center md:gap-8">
-            {/* Mobile Burger Menu Button */}
-            <button
-              type="button"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden flex flex-col justify-center items-center w-6 h-6 gap-1 p-0.5 rounded-md hover:bg-white/5 transition-colors"
-              aria-label="Toggle menu"
-              aria-expanded={isMobileMenuOpen}
-            >
-              <span
-                className={`block w-4 h-[1px] bg-white transition-all duration-300 ease-out ${
-                  isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''
-                }`}
-              />
-              <span
-                className={`block w-4 h-[1px] bg-white transition-all duration-300 ease-out ${
-                  isMobileMenuOpen ? 'opacity-0' : ''
-                }`}
-              />
-              <span
-                className={`block w-4 h-[1px] bg-white transition-all duration-300 ease-out ${
-                  isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''
-                }`}
-              />
-            </button>
-
             {/* Left: Logo */}
             <div className="flex-shrink-0 flex flex-col justify-center gap-2 md:gap-3">
               <Link href="/" className="inline-block hover-transition hover:opacity-80" onClick={() => setIsMobileMenuOpen(false)}>
@@ -168,6 +143,26 @@ export function Header({ currentPage, latestRelease }: HeaderProps) {
                 </UserButton.MenuItems>
               </UserButton>
             </SignedIn>
+
+            {/* Mobile Burger Menu Button - Two bars */}
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden flex flex-col justify-center items-center w-6 h-6 gap-1.5 p-0.5 rounded-md hover:bg-white/5 transition-colors"
+              aria-label="Toggle menu"
+              aria-expanded={isMobileMenuOpen}
+            >
+              <span
+                className={`block w-4 h-[1px] bg-white transition-all duration-300 ease-out ${
+                  isMobileMenuOpen ? 'rotate-45 translate-y-1' : ''
+                }`}
+              />
+              <span
+                className={`block w-4 h-[1px] bg-white transition-all duration-300 ease-out ${
+                  isMobileMenuOpen ? '-rotate-45 -translate-y-1' : ''
+                }`}
+              />
+            </button>
           </div>
         </div>
       </header>
