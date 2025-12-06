@@ -100,7 +100,7 @@ export function Header({ currentPage, latestRelease }: HeaderProps) {
 
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium text-gray-500 hover-transition hover:text-gray-300">
+                <button className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium bg-gradient-to-r from-[#1a1a1a] to-[#252525] text-white hover:opacity-90 border border-white/10 rounded-lg transition-opacity">
                   Log in
                 </button>
               </SignInButton>
