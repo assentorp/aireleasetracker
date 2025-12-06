@@ -1012,7 +1012,7 @@ function TimelineContent() {
                           <>
                             {/* Backdrop */}
                             <div
-                              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[10000] animate-fade-in"
+                              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99998] animate-fade-in"
                               onClick={() => {
                                 setClickedCompany(null);
                               }}
@@ -1020,7 +1020,7 @@ function TimelineContent() {
 
                             {/* Morphing modal */}
                             <div
-                              className="fixed bg-[#151515]/95 backdrop-blur-xl border border-white/20 rounded-2xl p-4 md:p-6 shadow-2xl z-[10001]"
+                              className="fixed bg-[#151515]/95 backdrop-blur-xl border border-white/20 rounded-2xl p-4 md:p-6 shadow-2xl z-[99999]"
                               style={{
                                 left: '50%',
                                 top: '50%',
@@ -1050,9 +1050,9 @@ function TimelineContent() {
                               </button>
 
                               {/* Company header */}
-                              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
-                                <div className={`w-3 h-3 rounded-full ${companyInfo.dotColor}`} />
-                                <h3 className="text-xl font-semibold text-white">{companyInfo.name}</h3>
+                              <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-white/10">
+                                <div className={`w-2 h-2 md:w-3 md:h-3 rounded-full ${companyInfo.dotColor}`} />
+                                <h3 className="text-base md:text-xl font-semibold text-white">{companyInfo.name}</h3>
                               </div>
 
                               {/* Scrollable content */}
@@ -1060,10 +1060,10 @@ function TimelineContent() {
                                 <div className="space-y-4 md:space-y-5">
                               <div>
                                 <div className="flex items-center justify-between mb-2">
-                                  <div className="text-sm text-gray-400">Days since last release</div>
+                                  <div className="text-xs md:text-sm text-gray-400">Days since last release</div>
                                   {stats.daysSinceLastRelease > stats.avgDaysBetweenReleases && (
-                                    <div className="flex items-center gap-1 px-2 py-1 bg-orange-500/20 border border-orange-500/30 rounded text-xs text-orange-400 font-medium">
-                                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <div className="flex items-center gap-1 px-1.5 md:px-2 py-0.5 md:py-1 bg-orange-500/20 border border-orange-500/30 rounded text-[10px] md:text-xs text-orange-400 font-medium">
+                                      <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5 md:w-3 md:h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M12 9v4"></path>
                                         <path d="M12 17h.01"></path>
                                         <circle cx="12" cy="12" r="10"></circle>
@@ -1073,11 +1073,11 @@ function TimelineContent() {
                                   )}
                                 </div>
                                 <div className="flex items-center justify-between gap-3">
-                                  <div className={`text-3xl font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400' : 'text-white'}`}>
+                                  <div className={`text-2xl md:text-3xl font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400' : 'text-white'}`}>
                                     {stats.daysSinceLastRelease}
                                   </div>
                                 </div>
-                                <div className="mt-3 h-2 bg-white/5 rounded-full overflow-hidden relative">
+                                <div className="mt-2 md:mt-3 h-2 bg-white/5 rounded-full overflow-hidden relative">
                                   {/* Average marker line - shows where average is */}
                                   {stats.daysSinceLastRelease > stats.avgDaysBetweenReleases && (
                                     <div
@@ -1102,17 +1102,17 @@ function TimelineContent() {
                                     }}
                                   />
                                 </div>
-                                <div className="mt-2 text-sm text-right text-gray-400">
+                                <div className="mt-2 text-xs md:text-sm text-right text-gray-400">
                                   Average: {stats.avgDaysBetweenReleases} days
                                 </div>
                               </div>
 
-                              <div className="pt-4 border-t border-white/10">
+                              <div className="pt-3 md:pt-4 border-t border-white/10">
                                 <div className="flex items-center justify-between mb-2">
-                                  <div className="text-sm text-gray-400">Expected next release</div>
+                                  <div className="text-xs md:text-sm text-gray-400">Expected next release</div>
                                   {stats.daysSinceLastRelease > stats.avgDaysBetweenReleases && (
-                                    <div className="flex items-center gap-1 px-2 py-1 bg-orange-500/20 border border-orange-500/30 rounded text-xs text-orange-400 font-medium">
-                                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <div className="flex items-center gap-1 px-1.5 md:px-2 py-0.5 md:py-1 bg-orange-500/20 border border-orange-500/30 rounded text-[10px] md:text-xs text-orange-400 font-medium">
+                                      <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5 md:w-3 md:h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M12 9v4"></path>
                                         <path d="M12 17h.01"></path>
                                         <circle cx="12" cy="12" r="10"></circle>
@@ -1122,7 +1122,7 @@ function TimelineContent() {
                                   )}
                                 </div>
                                 <div className="flex items-center justify-between gap-3">
-                                  <div className={`text-lg font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-white/60 line-through' : 'text-white'}`}>
+                                  <div className={`text-sm md:text-lg font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-white/60 line-through' : 'text-white'}`}>
                                     {stats.expectedNextReleaseDate}
                                   </div>
                                   {(() => {
@@ -1165,16 +1165,16 @@ function TimelineContent() {
                                 </div>
                               </div>
 
-                              <div className="pt-4 border-t border-white/10">
-                                <div className="text-sm text-gray-400 mb-3">Recent releases</div>
-                                <div className="space-y-3">
+                              <div className="pt-3 md:pt-4 border-t border-white/10">
+                                <div className="text-xs md:text-sm text-gray-400 mb-2 md:mb-3">Recent releases</div>
+                                <div className="space-y-2 md:space-y-3">
                                   {stats.recentReleases.map((release, idx) => (
-                                    <div key={idx} className="flex items-center justify-between gap-3">
+                                    <div key={idx} className="flex items-center justify-between gap-2 md:gap-3">
                                       <div className="flex-1 min-w-0">
-                                        <div className="text-sm text-gray-200 truncate">{release.name}</div>
-                                        <div className="text-xs text-gray-500 mt-0.5">{release.date}</div>
+                                        <div className="text-xs md:text-sm text-gray-200 truncate">{release.name}</div>
+                                        <div className="text-[10px] md:text-xs text-gray-500 mt-0.5">{release.date}</div>
                                       </div>
-                                      <div className="text-sm font-medium text-gray-400 whitespace-nowrap">
+                                      <div className="text-xs md:text-sm font-medium text-gray-400 whitespace-nowrap">
                                         {release.daysSince !== null ? `${release.daysSince} days` : '-'}
                                       </div>
                                     </div>
