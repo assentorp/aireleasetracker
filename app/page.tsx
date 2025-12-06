@@ -868,7 +868,7 @@ function TimelineContent() {
       {/* Timeline container - fixed left column + scrollable right */}
       <section className="flex" aria-label="AI Model Release Timeline">
           {/* Fixed left column for company labels */}
-          <div className="flex-shrink-0 w-[150px] md:w-[240px] border-r border-white/5 bg-[#0A0A0A] z-30 overflow-visible">
+          <div className={`flex-shrink-0 w-[150px] md:w-[240px] border-r border-white/5 bg-[#0A0A0A] overflow-visible ${clickedCompany ? 'z-[100000]' : 'z-30'}`}>
 
             {/* Company labels */}
             <div className={`space-y-8 overflow-visible ${hoveredCompany || clickedCompany ? 'z-[1000] relative' : ''}`}>
@@ -919,32 +919,12 @@ function TimelineContent() {
                       className="pr-2 md:pr-4 w-full relative z-[100]"
                     >
                       <div className="relative z-[100] h-full flex items-center justify-start px-2 md:px-4">
-                        <div
-                          className="cursor-pointer px-2 md:px-3 py-1.5 md:py-2 hover-transition hover:bg-white/[0.02]"
-                            onClick={(e) => {
-                            e.stopPropagation();
-                            const rect = e.currentTarget.getBoundingClientRect();
-
-                            // Store the origin position for the morph animation
-                            const triggerX = rect.left + (rect.width / 2);
-                            const triggerY = rect.top + (rect.height / 2);
-
-                            setStatsPanelCoords(prev => ({
-                              ...prev,
-                              [item.company]: {
-                                top: triggerY,
-                                left: triggerX,
-                                triggerY
-                              }
-                            }));
-                            setClickedCompany(isCompanyClicked ? null : item.company);
-                          }}
-                        >
+                        <div className="px-2 md:px-3 py-1.5 md:py-2">
                           <div className="flex flex-col gap-1">
-                            {/* Company name with clickable indicator */}
+                            {/* Company name */}
                             <div className="flex items-center gap-1 md:gap-2">
                               <div className={`w-1.5 md:w-2 h-1.5 md:h-2 rounded-full ${companyInfo.dotColor}`} />
-                              <span className="text-white text-[10px] md:text-base font-medium hover-transition hover:text-gray-200 underline decoration-white/20 decoration-dotted underline-offset-2 hover:decoration-white/40">
+                              <span className="text-white text-[10px] md:text-base font-medium">
                                 {companyInfo.name}
                               </span>
                             </div>
@@ -972,6 +952,26 @@ function TimelineContent() {
                                         </span>
                                       </div>
                                     )}
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const rect = e.currentTarget.getBoundingClientRect();
+                                        const triggerX = rect.left + (rect.width / 2);
+                                        const triggerY = rect.top + (rect.height / 2);
+                                        setStatsPanelCoords(prev => ({
+                                          ...prev,
+                                          [item.company]: {
+                                            top: triggerY,
+                                            left: triggerX,
+                                            triggerY
+                                          }
+                                        }));
+                                        setClickedCompany(isCompanyClicked ? null : item.company);
+                                      }}
+                                      className="text-[8px] text-gray-500 hover:text-gray-300 underline decoration-dotted underline-offset-1 text-left mt-0.5"
+                                    >
+                                      Release info
+                                    </button>
                                   </>
                                 );
                               })()}
@@ -1000,6 +1000,26 @@ function TimelineContent() {
                                         </span>
                                       </div>
                                     )}
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const rect = e.currentTarget.getBoundingClientRect();
+                                        const triggerX = rect.left + (rect.width / 2);
+                                        const triggerY = rect.top + (rect.height / 2);
+                                        setStatsPanelCoords(prev => ({
+                                          ...prev,
+                                          [item.company]: {
+                                            top: triggerY,
+                                            left: triggerX,
+                                            triggerY
+                                          }
+                                        }));
+                                        setClickedCompany(isCompanyClicked ? null : item.company);
+                                      }}
+                                      className="text-xs text-gray-500 hover:text-gray-300 underline decoration-dotted underline-offset-2 text-left mt-1"
+                                    >
+                                      Release info
+                                    </button>
                                   </>
                                 );
                               })()}
