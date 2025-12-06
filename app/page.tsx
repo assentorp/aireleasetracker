@@ -929,7 +929,7 @@ function TimelineContent() {
                               </span>
                             </div>
 
-                            {/* Expected next release - shown on mobile at 8px, desktop stays the same */}
+                            {/* Expected next release - shown on mobile at 10px, desktop stays the same */}
                             <div className="flex flex-col gap-0.5 md:hidden">
                               {(() => {
                                 const nextRelease = getCompanyNextExpectedRelease(item.company);
@@ -937,17 +937,17 @@ function TimelineContent() {
 
                                 return (
                                   <>
-                                    <span className="text-[8px] text-gray-500">Expected next release</span>
+                                    <span className="text-[10px] text-gray-500">Expected next release</span>
                                     {nextRelease.daysUntil >= 0 ? (
-                                      <span className="text-[8px] text-gray-400">
+                                      <span className="text-[10px] text-gray-400">
                                         {nextRelease.date} · In {nextRelease.daysUntil} {nextRelease.daysUntil === 1 ? 'day' : 'days'}
                                       </span>
                                     ) : (
                                       <div className="flex flex-col gap-0.5">
-                                        <span className="text-[8px] text-orange-400 line-through">
+                                        <span className="text-[10px] text-orange-400 line-through">
                                           {nextRelease.date}
                                         </span>
-                                        <span className="text-[8px] text-orange-400">
+                                        <span className="text-[10px] text-orange-400">
                                           Overdue by {Math.abs(nextRelease.daysUntil)} {Math.abs(nextRelease.daysUntil) === 1 ? 'day' : 'days'}
                                         </span>
                                       </div>
@@ -968,7 +968,7 @@ function TimelineContent() {
                                         }));
                                         setClickedCompany(isCompanyClicked ? null : item.company);
                                       }}
-                                      className="text-[8px] text-gray-500 hover:text-gray-300 underline decoration-dotted underline-offset-1 text-left mt-0.5"
+                                      className="text-[10px] text-gray-500 hover:text-gray-300 underline decoration-dotted underline-offset-1 text-left mt-0.5"
                                     >
                                       Release info
                                     </button>
