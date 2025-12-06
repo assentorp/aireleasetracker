@@ -38,7 +38,7 @@ export function CompanyFilter({ selectedCompanies, onFilterChange }: CompanyFilt
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 text-xs font-medium bg-[#0f0f0f] text-white hover:text-gray-300 rounded-full border border-white/10 transition-colors"
+        className="flex items-center gap-2 px-3 py-2 text-xs font-medium bg-gradient-to-r from-[#1a1a1a] to-[#252525] text-white hover:opacity-90 rounded-full border border-white/10 transition-opacity"
       >
         <span>Companies</span>
         <svg
