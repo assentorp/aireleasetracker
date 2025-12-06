@@ -39,6 +39,7 @@ function TimelineContent() {
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const [hoveredCompany, setHoveredCompany] = useState<string | null>(null);
   const [clickedCompany, setClickedCompany] = useState<string | null>(null);
+  const [isModalClosing, setIsModalClosing] = useState(false);
   const [hoveredRelease, setHoveredRelease] = useState<string | null>(null);
   const [releaseTooltipPosition, setReleaseTooltipPosition] = useState<{ [key: string]: 'above' | 'below' }>({});
   const [releaseTooltipAlign, setReleaseTooltipAlign] = useState<{ [key: string]: 'left' | 'center' | 'right' }>({});
@@ -249,17 +250,35 @@ function TimelineContent() {
     }
   }, [searchParams]);
 
+  // Handle modal closing animation
+  useEffect(() => {
+    if (isModalClosing) {
+      const timer = setTimeout(() => {
+        setClickedCompany(null);
+        setIsModalClosing(false);
+      }, 250); // Match animation duration
+      return () => clearTimeout(timer);
+    }
+  }, [isModalClosing]);
+
+  // Reset closing state when modal opens
+  useEffect(() => {
+    if (clickedCompany) {
+      setIsModalClosing(false);
+    }
+  }, [clickedCompany]);
+
   // Close clicked company stats when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
-      if (clickedCompany) {
-        setClickedCompany(null);
+      if (clickedCompany && !isModalClosing) {
+        setIsModalClosing(true);
       }
     };
 
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
-  }, [clickedCompany]);
+  }, [clickedCompany, isModalClosing]);
 
   // Scroll to end of timeline smoothly on initial page load
   useEffect(() => {
@@ -966,7 +985,11 @@ function TimelineContent() {
                                             triggerY
                                           }
                                         }));
-                                        setClickedCompany(isCompanyClicked ? null : item.company);
+                                        if (isCompanyClicked) {
+                                          setIsModalClosing(true);
+                                        } else {
+                                          setClickedCompany(item.company);
+                                        }
                                       }}
                                       className="text-[10px] text-gray-500 hover:text-gray-300 underline decoration-dotted underline-offset-1 text-left mt-0.5"
                                     >
@@ -1014,7 +1037,11 @@ function TimelineContent() {
                                             triggerY
                                           }
                                         }));
-                                        setClickedCompany(isCompanyClicked ? null : item.company);
+                                        if (isCompanyClicked) {
+                                          setIsModalClosing(true);
+                                        } else {
+                                          setClickedCompany(item.company);
+                                        }
                                       }}
                                       className="text-xs text-gray-500 hover:text-gray-300 underline decoration-dotted underline-offset-2 text-left mt-1"
                                     >
@@ -1032,9 +1059,13 @@ function TimelineContent() {
                           <>
                             {/* Backdrop */}
                             <div
-                              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99998] animate-fade-in"
+                              className={`fixed inset-0 bg-black/60 z-[99998] ${
+                                isModalClosing ? 'animate-fade-out' : 'animate-fade-in'
+                              }`}
                               onClick={() => {
-                                setClickedCompany(null);
+                                if (!isModalClosing) {
+                                  setIsModalClosing(true);
+                                }
                               }}
                             />
 
@@ -1047,7 +1078,9 @@ function TimelineContent() {
                                 transform: 'translate(-50%, -50%)',
                                 width: 'min(90vw, 420px)',
                                 maxHeight: 'min(80vh, 600px)',
-                                animation: 'morphIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+                                animation: isModalClosing
+                                  ? 'morphOut 250ms ease-in forwards'
+                                  : 'morphIn 250ms ease-out forwards',
                                 willChange: 'transform',
                                 transformOrigin: 'center',
                               }}
@@ -1058,9 +1091,11 @@ function TimelineContent() {
                             >
                               {/* Close button */}
                               <button
-                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors"
+                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full transition-colors duration-150 close-button"
                                 onClick={() => {
-                                  setClickedCompany(null);
+                                  if (!isModalClosing) {
+                                    setIsModalClosing(true);
+                                  }
                                 }}
                               >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
@@ -1747,11 +1782,11 @@ function TimelineContent() {
                           return (
                             <div key={data.month} className="flex-1 group relative" style={{ minWidth: '4px' }}>
                               <div
-                                className="w-full bg-blue-500 hover:bg-blue-600 transition-all duration-200"
+                                className="w-full bg-blue-500 transition-colors duration-200 graph-bar"
                                 style={{ height: `${Math.max(height, 0.5)}%` }}
                               >
                                 {/* Tooltip on hover */}
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#1a1a1a] border border-white/20 rounded px-2 py-1 text-xs whitespace-nowrap pointer-events-none z-10">
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 transition-opacity duration-200 tooltip-hover bg-[#1a1a1a] border border-white/20 rounded px-2 py-1 text-xs whitespace-nowrap pointer-events-none z-10">
                                   <div className="font-medium text-white">{data.count} models</div>
                                   <div className="text-gray-400">{data.month}</div>
                                 </div>
@@ -1795,11 +1830,11 @@ function TimelineContent() {
                           return (
                             <div key={data.month} className="flex-1 group relative" style={{ minWidth: '4px' }}>
                               <div
-                                className="w-full bg-green-500 hover:bg-green-600 transition-all duration-200"
+                                className="w-full bg-green-500 transition-colors duration-200 graph-bar-green"
                                 style={{ height: `${Math.max(height, 0.5)}%` }}
                               >
                                 {/* Tooltip on hover */}
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#1a1a1a] border border-white/20 rounded px-2 py-1 text-xs whitespace-nowrap pointer-events-none z-10">
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 transition-opacity duration-200 tooltip-hover bg-[#1a1a1a] border border-white/20 rounded px-2 py-1 text-xs whitespace-nowrap pointer-events-none z-10">
                                   <div className="font-medium text-white">{data.count} releases</div>
                                   <div className="text-gray-400">{data.month}</div>
                                 </div>

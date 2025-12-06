@@ -76,19 +76,26 @@
 @keyframes morphIn {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.1);
-    filter: blur(20px);
-    border-radius: 50%;
-  }
-  50% {
-    opacity: 0.8;
-    filter: blur(5px);
+    transform: translate(-50%, -50%) scale(0.9);
+    filter: blur(10px);
   }
   100% {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
     filter: blur(0px);
-    border-radius: 1rem;
+  }
+}
+
+@keyframes morphOut {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+    filter: blur(10px);
   }
 }
 
@@ -100,6 +107,19 @@
 
 .animate-fade-in {
   animation: fadeIn 200ms ease-out forwards;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.animate-fade-out {
+  animation: fadeOut 250ms ease-in forwards;
 }
 
 /* Button press feedback - apply to buttons without complex transforms */
@@ -124,6 +144,25 @@ button.transform-transition:active {
     transition-property: color, background-color, border-color, opacity;
     transition-duration: 100ms;
     transition-timing-function: ease-in-out;
+  }
+
+  /* Graph bar hover states */
+  .graph-bar:hover {
+    background-color: rgb(37, 99, 235); /* blue-600 */
+  }
+
+  .graph-bar-green:hover {
+    background-color: rgb(22, 163, 74); /* green-600 */
+  }
+
+  /* Tooltip hover visibility */
+  .group:hover .tooltip-hover {
+    opacity: 1;
+  }
+
+  /* Close button hover */
+  .close-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
   }
 }
 
