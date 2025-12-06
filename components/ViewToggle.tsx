@@ -20,7 +20,7 @@ export function ViewToggle({ currentView, onViewChange }: ViewToggleProps) {
 
       <button
         onClick={() => onViewChange('timeline')}
-        className={`relative z-10 flex items-center justify-center px-4 py-1.5 text-xs font-medium rounded-full transition-colors duration-300 ${
+        className={`relative z-10 flex items-center justify-center w-20 py-1.5 text-xs font-medium rounded-full transition-colors duration-300 ${
           currentView === 'timeline'
             ? 'text-white'
             : 'text-white/60 hover:text-white/80'
@@ -30,7 +30,7 @@ export function ViewToggle({ currentView, onViewChange }: ViewToggleProps) {
       </button>
       <button
         onClick={() => onViewChange('list')}
-        className={`relative z-10 flex items-center justify-center px-4 py-1.5 text-xs font-medium rounded-full transition-colors duration-300 ${
+        className={`relative z-10 flex items-center justify-center w-20 py-1.5 text-xs font-medium rounded-full transition-colors duration-300 ${
           currentView === 'list'
             ? 'text-white'
             : 'text-white/60 hover:text-white/80'
