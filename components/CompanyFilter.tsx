@@ -57,44 +57,48 @@ export function CompanyFilter({ selectedCompanies, onFilterChange }: CompanyFilt
         </svg>
       </button>
 
-      {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-48 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl overflow-hidden z-50">
-          <div className="py-2">
-            {companyList.map(([key, company]) => {
-              const isSelected = selectedCompanies.includes(key);
-              return (
-                <button
-                  key={key}
-                  onClick={() => toggleCompany(key)}
-                  className="w-full flex items-center justify-between px-4 py-2 text-sm text-gray-300 hover:bg-white/5 transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${company.dotColor}`} />
-                    <span>{company.name}</span>
-                  </div>
-                  <div className="flex items-center justify-center w-4 h-4 border border-white/40 rounded">
-                    {isSelected && (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+      <div
+        className={`absolute right-0 top-full mt-2 w-48 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl overflow-hidden z-50 transition-all duration-200 origin-top ${
+          isOpen
+            ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
+            : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+        }`}
+      >
+        <div className="py-2">
+          {companyList.map(([key, company]) => {
+            const isSelected = selectedCompanies.includes(key);
+            return (
+              <button
+                key={key}
+                onClick={() => toggleCompany(key)}
+                className="w-full flex items-center justify-between px-4 py-2 text-sm text-gray-300 hover:bg-white/5 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${company.dotColor}`} />
+                  <span>{company.name}</span>
+                </div>
+                <div className="flex items-center justify-center w-4 h-4 border border-white/40 rounded">
+                  {isSelected && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  )}
+                </div>
+              </button>
+            );
+          })}
         </div>
-      )}
+      </div>
     </div>
   );
 }
