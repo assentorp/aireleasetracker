@@ -941,27 +941,40 @@ function TimelineContent() {
                           }}
                         >
                           <div className="flex flex-col gap-1">
-                            {/* Company name and dropdown */}
+                            {/* Company name with clickable indicator */}
                             <div className="flex items-center gap-1 md:gap-2">
                               <div className={`w-1.5 md:w-2 h-1.5 md:h-2 rounded-full ${companyInfo.dotColor}`} />
-                              <span className="text-white text-[10px] md:text-base font-medium hover-transition hover:text-gray-200">
+                              <span className="text-white text-[10px] md:text-base font-medium hover-transition hover:text-gray-200 underline decoration-white/20 decoration-dotted underline-offset-2 hover:decoration-white/40">
                                 {companyInfo.name}
                               </span>
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="10"
-                                height="10"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className={`text-gray-400 hover:text-gray-300 md:w-[14px] md:h-[14px] transition-all duration-200 ease-in-out ${isCompanyClicked ? 'rotate-180' : ''}`}
-                                style={{ transformOrigin: 'center' }}
-                              >
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                              </svg>
+                            </div>
+
+                            {/* Expected next release - shown on mobile at 8px, desktop stays the same */}
+                            <div className="flex flex-col gap-0.5 md:hidden">
+                              {(() => {
+                                const nextRelease = getCompanyNextExpectedRelease(item.company);
+                                if (!nextRelease) return null;
+
+                                return (
+                                  <>
+                                    <span className="text-[8px] text-gray-500">Expected next release</span>
+                                    {nextRelease.daysUntil >= 0 ? (
+                                      <span className="text-[8px] text-gray-400">
+                                        {nextRelease.date} · In {nextRelease.daysUntil} {nextRelease.daysUntil === 1 ? 'day' : 'days'}
+                                      </span>
+                                    ) : (
+                                      <div className="flex flex-col gap-0.5">
+                                        <span className="text-[8px] text-orange-400 line-through">
+                                          {nextRelease.date}
+                                        </span>
+                                        <span className="text-[8px] text-orange-400">
+                                          Overdue by {Math.abs(nextRelease.daysUntil)} {Math.abs(nextRelease.daysUntil) === 1 ? 'day' : 'days'}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </>
+                                );
+                              })()}
                             </div>
 
                             {/* Expected next release - desktop only */}
@@ -1015,6 +1028,8 @@ function TimelineContent() {
                                 width: 'min(90vw, 420px)',
                                 maxHeight: 'min(80vh, 600px)',
                                 animation: 'morphIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+                                willChange: 'transform',
+                                transformOrigin: 'center',
                               }}
                               ref={(el) => {
                                 if (el) statsPanelRefs.current[item.company] = el;
