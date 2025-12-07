@@ -164,6 +164,16 @@ button.transform-transition:active {
   .close-button:hover {
     background-color: rgba(255, 255, 255, 0.1);
   }
+
+  /* Release item hover states - only on non-touch devices */
+  .release-item-hover:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+  }
+
+  .timeline-release-hover:hover {
+    background-color: #1a1a1a;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
 }
 
 /* Transform animations need will-change */
