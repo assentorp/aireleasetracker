@@ -1375,7 +1375,7 @@ function TimelineContent() {
                         return (
                           <div
                             key={idx}
-                            className={`absolute border border-white/10 rounded-md px-1.5 md:px-3 py-1 md:py-2 bg-[#151515] hover-transition hover:bg-[#1a1a1a] hover:border-white/20 cursor-pointer whitespace-nowrap ${
+                            className={`absolute border border-white/10 rounded-md px-1.5 md:px-3 py-1 md:py-2 bg-[#151515] hover-transition timeline-release-hover cursor-pointer whitespace-nowrap ${
                               isReleaseActive ? 'z-[10001]' : 'z-10'
                             }`}
                             style={{
@@ -1684,7 +1684,7 @@ function TimelineContent() {
 
                        return (
                      <div
-                      className={`relative flex items-center gap-3 md:gap-4 py-3 md:py-4 px-3 md:px-4 border-b border-white/5 hover-transition hover:bg-white/[0.02] cursor-pointer ${
+                      className={`relative flex items-center gap-3 md:gap-4 py-3 md:py-4 px-3 md:px-4 border-b border-white/5 hover-transition release-item-hover cursor-pointer ${
                         isListReleaseActive ? 'z-40' : ''
                       }`}
                       onMouseEnter={(e) => {
