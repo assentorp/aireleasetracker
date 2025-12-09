@@ -86,154 +86,6 @@ function TimelineContent() {
     return new Date();
   };
 
-  // Calculate next expected release for a specific company
-  const getCompanyNextExpectedRelease = (companyKey: string): { date: string; daysUntil: number } | null => {
-    const now = new Date();
-    const company = timelineData.find(c => c.company === companyKey);
-    if (!company || company.releases.length === 0) return null;
-
-    // Find the actual latest release by date (don't assume array is sorted)
-    const sortedReleases = [...company.releases].sort((a, b) => {
-      const dateA = parseReleaseDate(a.date);
-      const dateB = parseReleaseDate(b.date);
-      return dateB.getTime() - dateA.getTime(); // Sort newest first
-    });
-    const lastRelease = sortedReleases[0];
-    const lastReleaseDate = parseReleaseDate(lastRelease.date);
-    const daysSinceLastRelease = Math.floor((now.getTime() - lastReleaseDate.getTime()) / (1000 * 60 * 60 * 24));
-
-    // Group releases within 14 days (2 weeks) as a single release event
-    const releaseGroups: Date[] = [];
-    for (let i = 0; i < sortedReleases.length; i++) {
-      const currentDate = parseReleaseDate(sortedReleases[i].date);
-
-      // Check if this release is within 14 days of the last group
-      if (releaseGroups.length === 0) {
-        releaseGroups.push(currentDate);
-      } else {
-        const lastGroupDate = releaseGroups[releaseGroups.length - 1];
-        const daysDiff = Math.floor((lastGroupDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
-
-        // If more than 14 days apart, it's a new group
-        if (daysDiff > 14) {
-          releaseGroups.push(currentDate);
-        }
-        // Otherwise, skip it (part of the same release event)
-      }
-    }
-
-    // Calculate average days between release groups using only the last 5 intervals
-    const intervals: number[] = [];
-    const intervalsToUse = Math.min(5, releaseGroups.length - 1);
-    for (let i = 0; i < intervalsToUse; i++) {
-      const date1 = releaseGroups[i];
-      const date2 = releaseGroups[i + 1];
-      const days = Math.floor((date1.getTime() - date2.getTime()) / (1000 * 60 * 60 * 24));
-      intervals.push(days);
-    }
-    const avgDaysBetweenReleases = intervals.length > 0
-      ? Math.floor(intervals.reduce((a, b) => a + b, 0) / intervals.length)
-      : 0;
-
-    if (avgDaysBetweenReleases === 0) return null;
-
-    // Calculate expected next release date
-    let expectedNextReleaseDate = new Date(lastReleaseDate);
-    expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
-
-    if (daysSinceLastRelease <= avgDaysBetweenReleases) {
-      while (expectedNextReleaseDate <= now && avgDaysBetweenReleases > 0) {
-        expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
-      }
-    }
-
-    // Normalize dates to midnight for accurate day calculation
-    const normalizedExpected = new Date(expectedNextReleaseDate);
-    normalizedExpected.setHours(0, 0, 0, 0);
-    const normalizedNow = new Date(now);
-    normalizedNow.setHours(0, 0, 0, 0);
-    const daysUntil = Math.floor((normalizedExpected.getTime() - normalizedNow.getTime()) / (1000 * 60 * 60 * 24));
-
-    // Format expected date
-    const formatExpectedDate = (date: Date) => {
-      const month = date.toLocaleString('default', { month: 'short' });
-      const day = date.getDate();
-      const year = date.getFullYear();
-      return `${month} ${day}, ${year}`;
-    };
-
-    return {
-      date: formatExpectedDate(expectedNextReleaseDate),
-      daysUntil
-    };
-  };
-
-  // Generate month markers from Nov 2022 to dynamic end date
-  const generateMonthMarkers = () => {
-    const markers = [];
-    const startDate = new Date('2022-11-01');
-
-    // Find the latest date among all releases and expected releases
-    let latestDate = new Date('2025-12-01'); // Default to Dec 2025
-
-    timelineData.forEach((company) => {
-      // Check actual releases
-      company.releases.forEach((release) => {
-        const releaseDate = parseReleaseDate(release.date);
-        if (releaseDate > latestDate) {
-          latestDate = releaseDate;
-        }
-      });
-
-      // Check expected releases
-      const expectedRelease = getCompanyNextExpectedRelease(company.company);
-      if (expectedRelease) {
-        const dateParts = expectedRelease.date.match(/(\w+) (\d+), (\d+)/);
-        if (dateParts) {
-          const monthMap: { [key: string]: number } = {
-            Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
-            Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
-          };
-          const expectedDate = new Date(
-            parseInt(dateParts[3]),
-            monthMap[dateParts[1]],
-            parseInt(dateParts[2])
-          );
-          if (expectedDate > latestDate) {
-            latestDate = expectedDate;
-          }
-        }
-      }
-    });
-
-    // Add 1 extra month padding
-    const endDate = new Date(latestDate);
-    endDate.setMonth(endDate.getMonth() + 1);
-
-    let current = new Date(startDate);
-    let position = 0;
-
-    while (current <= endDate) {
-      const month = current.toLocaleString('default', { month: 'short' });
-      const year = current.getFullYear();
-      const isJanuary = current.getMonth() === 0;
-
-      markers.push({
-        label: isJanuary ? `${month} ${year}` : month,
-        position: position,
-        isJanuary,
-      });
-
-      current.setMonth(current.getMonth() + 1);
-      position++;
-    }
-
-    return markers;
-  };
-
-  const monthMarkers = generateMonthMarkers();
-  const totalMonths = monthMarkers.length;
-
   useEffect(() => {
     setMounted(true);
     // Detect if device supports touch
@@ -333,30 +185,6 @@ function TimelineContent() {
     return () => scrollContainer.removeEventListener('scroll', handleScroll);
   }, [mounted, homeView]);
 
-  // Auto-scroll to latest releases on mobile
-  useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    const monthHeader = monthHeaderRef.current;
-
-    if (!scrollContainer || !monthHeader || homeView !== 'timeline' || !mounted) return;
-
-    // Only auto-scroll on mobile (viewport width < 768px)
-    const isMobile = window.innerWidth < 768;
-    if (!isMobile) return;
-
-    // Calculate scroll position to show recent releases (last ~6 months visible)
-    const timelineWidth = totalMonths * 120;
-    const viewportWidth = scrollContainer.clientWidth;
-    const scrollToPosition = Math.max(0, timelineWidth - viewportWidth - 120 * 3); // Show last 3 months + viewport
-
-    // Smooth scroll to position
-    setTimeout(() => {
-      scrollContainer.scrollTo({
-        left: scrollToPosition,
-        behavior: 'smooth'
-      });
-    }, 100);
-  }, [mounted, homeView, totalMonths]);
 
   // Drag/pan handlers
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -466,40 +294,7 @@ function TimelineContent() {
     const lastReleaseDate = parseReleaseDate(lastRelease.date);
     const daysSinceLastRelease = Math.floor((now.getTime() - lastReleaseDate.getTime()) / (1000 * 60 * 60 * 24));
 
-    // Group releases within 14 days (2 weeks) as a single release event
-    const releaseGroups: Date[] = [];
-    for (let i = 0; i < sortedReleases.length; i++) {
-      const currentDate = parseReleaseDate(sortedReleases[i].date);
-
-      // Check if this release is within 14 days of the last group
-      if (releaseGroups.length === 0) {
-        releaseGroups.push(currentDate);
-      } else {
-        const lastGroupDate = releaseGroups[releaseGroups.length - 1];
-        const daysDiff = Math.floor((lastGroupDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
-
-        // If more than 14 days apart, it's a new group
-        if (daysDiff > 14) {
-          releaseGroups.push(currentDate);
-        }
-        // Otherwise, skip it (part of the same release event)
-      }
-    }
-
-    // Calculate average days between release groups using only the last 5 intervals
-    const intervals: number[] = [];
-    const intervalsToUse = Math.min(5, releaseGroups.length - 1);
-    for (let i = 0; i < intervalsToUse; i++) {
-      const date1 = releaseGroups[i];
-      const date2 = releaseGroups[i + 1];
-      const days = Math.floor((date1.getTime() - date2.getTime()) / (1000 * 60 * 60 * 24));
-      intervals.push(days);
-    }
-    const avgDaysBetweenReleases = intervals.length > 0
-      ? Math.floor(intervals.reduce((a, b) => a + b, 0) / intervals.length)
-      : 0;
-
-    // Get recent releases (last 3 unique dates) - combine releases on same day
+    // Get recent releases (last 5 unique dates) - combine releases on same day
     // Group releases by date
     const dateGroups: { [dateStr: string]: typeof releases } = {};
     releases.forEach(release => {
@@ -516,8 +311,8 @@ function TimelineContent() {
       return posA - posB;
     });
 
-    // Get last 3 date groups and reverse to show newest first
-    const recentDateGroups = sortedDateGroups.slice(-3).reverse();
+    // Get last 6 date groups and reverse to show newest first (need 6 to get 5 intervals, first one filtered out)
+    const recentDateGroups = sortedDateGroups.slice(-6).reverse();
 
     const recentReleases = recentDateGroups.map(([dateStr, sameDateReleases], index) => {
       const releaseDate = parseReleaseDate(dateStr);
@@ -540,21 +335,25 @@ function TimelineContent() {
       };
     });
 
+    // Calculate average days between releases using the intervals from recent releases (last 5)
+    const intervals = recentReleases
+      .filter(r => r.daysSince !== null)
+      .map(r => r.daysSince!)
+      .slice(0, 5); // Use up to 5 intervals
+    const avgDaysBetweenReleases = intervals.length > 0
+      ? Math.floor(intervals.reduce((a, b) => a + b, 0) / intervals.length)
+      : 0;
+
     // Calculate expected next release date
     // Start from last release date + average interval
     let expectedNextReleaseDate = new Date(lastReleaseDate);
     expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
 
-    // If we're overdue (past the first expected date), that date should have already happened
-    // So we keep it as the first expected date (which is in the past) to show when it was expected
-    // If not overdue, keep adding intervals until we get a date in the future
-    if (daysSinceLastRelease <= avgDaysBetweenReleases) {
-      // Not overdue yet - keep adding intervals until we get a date in the future
-      while (expectedNextReleaseDate <= now && avgDaysBetweenReleases > 0) {
-        expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
-      }
+    // Keep adding intervals until we get a date in the future
+    // This ensures the expected date is always ahead, even if we're past the first expected date
+    while (expectedNextReleaseDate <= now && avgDaysBetweenReleases > 0) {
+      expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
     }
-    // If overdue, expectedNextReleaseDate stays as the first expected date (which is in the past)
 
     // Format expected date
     const formatExpectedDate = (date: Date) => {
@@ -581,6 +380,137 @@ function TimelineContent() {
       daysUntilExpected,
     };
   };
+
+  // Calculate next expected release for a specific company
+  const getCompanyNextExpectedRelease = (companyKey: string): { date: string; daysUntil: number } | null => {
+    // Use the same calculation as getCompanyStats for consistency
+    const stats = getCompanyStats(companyKey);
+    if (!stats) return null;
+
+    const now = new Date();
+    const lastReleaseDate = parseReleaseDate(stats.recentReleases[0]?.date || '');
+    if (!lastReleaseDate) return null;
+
+    // Calculate expected next release date using the same logic as getCompanyStats
+    let expectedNextReleaseDate = new Date(lastReleaseDate);
+    expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + stats.avgDaysBetweenReleases);
+
+    // Keep adding intervals until we get a date in the future
+    while (expectedNextReleaseDate <= now && stats.avgDaysBetweenReleases > 0) {
+      expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + stats.avgDaysBetweenReleases);
+    }
+
+    // Normalize dates to midnight for accurate day calculation
+    const normalizedExpected = new Date(expectedNextReleaseDate);
+    normalizedExpected.setHours(0, 0, 0, 0);
+    const normalizedNow = new Date(now);
+    normalizedNow.setHours(0, 0, 0, 0);
+    const daysUntil = Math.floor((normalizedExpected.getTime() - normalizedNow.getTime()) / (1000 * 60 * 60 * 24));
+
+    // Format expected date
+    const formatExpectedDate = (date: Date) => {
+      const month = date.toLocaleString('default', { month: 'short' });
+      const day = date.getDate();
+      const year = date.getFullYear();
+      return `${month} ${day}, ${year}`;
+    };
+
+    return {
+      date: formatExpectedDate(expectedNextReleaseDate),
+      daysUntil
+    };
+  };
+
+  // Generate month markers from Nov 2022 to dynamic end date
+  const generateMonthMarkers = () => {
+    const markers = [];
+    const startDate = new Date('2022-11-01');
+
+    // Find the latest date among all releases and expected releases
+    let latestDate = new Date('2025-12-01'); // Default to Dec 2025
+
+    timelineData.forEach((company) => {
+      // Check actual releases
+      company.releases.forEach((release) => {
+        const releaseDate = parseReleaseDate(release.date);
+        if (releaseDate > latestDate) {
+          latestDate = releaseDate;
+        }
+      });
+
+      // Check expected releases
+      const expectedRelease = getCompanyNextExpectedRelease(company.company);
+      if (expectedRelease) {
+        const dateParts = expectedRelease.date.match(/(\w+) (\d+), (\d+)/);
+        if (dateParts) {
+          const monthMap: { [key: string]: number } = {
+            Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+            Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+          };
+          const expectedDate = new Date(
+            parseInt(dateParts[3]),
+            monthMap[dateParts[1]],
+            parseInt(dateParts[2])
+          );
+          if (expectedDate > latestDate) {
+            latestDate = expectedDate;
+          }
+        }
+      }
+    });
+
+    // Add 1 extra month padding
+    const endDate = new Date(latestDate);
+    endDate.setMonth(endDate.getMonth() + 1);
+
+    let current = new Date(startDate);
+    let position = 0;
+
+    while (current <= endDate) {
+      const month = current.toLocaleString('default', { month: 'short' });
+      const year = current.getFullYear();
+      const isJanuary = current.getMonth() === 0;
+
+      markers.push({
+        label: isJanuary ? `${month} ${year}` : month,
+        position: position,
+        isJanuary,
+      });
+
+      current.setMonth(current.getMonth() + 1);
+      position++;
+    }
+
+    return markers;
+  };
+
+  const monthMarkers = generateMonthMarkers();
+  const totalMonths = monthMarkers.length;
+
+  // Auto-scroll to latest releases on mobile
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    const monthHeader = monthHeaderRef.current;
+
+    if (!scrollContainer || !monthHeader || homeView !== 'timeline' || !mounted) return;
+
+    // Only auto-scroll on mobile (viewport width < 768px)
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile) return;
+
+    // Calculate scroll position to show recent releases (last ~6 months visible)
+    const timelineWidth = totalMonths * 120;
+    const viewportWidth = scrollContainer.clientWidth;
+    const scrollToPosition = Math.max(0, timelineWidth - viewportWidth - 120 * 3); // Show last 3 months + viewport
+
+    // Smooth scroll to position
+    setTimeout(() => {
+      scrollContainer.scrollTo({
+        left: scrollToPosition,
+        behavior: 'smooth'
+      });
+    }, 100);
+  }, [mounted, homeView, totalMonths]);
 
   // Calculate model-specific stats
   const getModelStats = (companyKey: string, releaseIndex: number) => {
@@ -1076,8 +1006,8 @@ function TimelineContent() {
                                 left: '50%',
                                 top: '50%',
                                 transform: 'translate(-50%, -50%)',
-                                width: 'min(90vw, 420px)',
-                                maxHeight: 'min(80vh, 600px)',
+                                width: 'min(90vw, 800px)',
+                                maxHeight: 'min(85vh, 700px)',
                                 animation: isModalClosing
                                   ? 'morphOut 250ms ease-in forwards'
                                   : 'morphIn 250ms ease-out forwards',
@@ -1110,78 +1040,125 @@ function TimelineContent() {
                                 <h3 className="text-base md:text-xl font-semibold text-white">{companyInfo.name}</h3>
                               </div>
 
-                              {/* Scrollable content */}
-                              <div className="overflow-y-auto pr-2" style={{ maxHeight: 'calc(min(80vh, 600px) - 120px)' }}>
+                              {/* Two-column layout on desktop */}
+                              <div className="md:flex md:gap-6">
+                              {/* Left column - Scrollable content */}
+                              <div className="md:flex-1 overflow-y-auto pr-2" style={{ maxHeight: 'calc(min(85vh, 700px) - 120px)' }}>
                                 <div className="space-y-4 md:space-y-5">
-                              <div>
-                                <div className="flex items-center justify-between mb-2">
-                                  <div className="text-xs md:text-sm text-gray-400">Days since last release</div>
-                                  {stats.daysSinceLastRelease > stats.avgDaysBetweenReleases && (
-                                    <div className="flex items-center gap-1 px-1.5 md:px-2 py-0.5 md:py-1 bg-orange-500/20 border border-orange-500/30 rounded text-[10px] md:text-xs text-orange-400 font-medium">
-                                      <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5 md:w-3 md:h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M12 9v4"></path>
-                                        <path d="M12 17h.01"></path>
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                      </svg>
-                                      Over avg
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="flex items-center justify-between gap-3">
-                                  <div className={`text-2xl md:text-3xl font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400' : 'text-white'}`}>
-                                    {stats.daysSinceLastRelease}
-                                  </div>
-                                </div>
-                                <div className="mt-2 md:mt-3 h-2 bg-white/5 rounded-full overflow-hidden relative">
-                                  {/* Average marker line - shows where average is */}
-                                  {stats.daysSinceLastRelease > stats.avgDaysBetweenReleases && (
-                                    <div
-                                      className="absolute top-0 bottom-0 w-0.5 bg-white/50 z-10"
-                                      style={{
-                                        left: `${(stats.avgDaysBetweenReleases / stats.daysSinceLastRelease) * 100}%`
-                                      }}
-                                      title={`Average: ${stats.avgDaysBetweenReleases} days`}
-                                    />
-                                  )}
-                                  {/* Progress bar - shows full width when over average, colored orange */}
-                                  <div
-                                    className={`h-full rounded-full progress-bar ${
-                                      stats.daysSinceLastRelease > stats.avgDaysBetweenReleases
-                                        ? 'bg-orange-500'
-                                        : 'bg-white'
-                                    }`}
-                                    style={{
-                                      width: stats.daysSinceLastRelease > stats.avgDaysBetweenReleases
-                                        ? '100%'
-                                        : `${(stats.daysSinceLastRelease / stats.avgDaysBetweenReleases) * 100}%`
-                                    }}
-                                  />
-                                </div>
-                                <div className="mt-2 text-xs md:text-sm text-right text-gray-400">
-                                  Average: {stats.avgDaysBetweenReleases} days
-                                </div>
-                              </div>
+                              {(() => {
+                                // Calculate max for scaling bars - use separate scales for main bars vs recent releases
+                                const allGaps = stats.recentReleases
+                                  .filter(r => r.daysSince !== null)
+                                  .map(r => r.daysSince!);
 
-                              <div className="pt-3 md:pt-4 border-t border-white/10">
-                                <div className="flex items-center justify-between mb-2">
-                                  <div className="text-xs md:text-sm text-gray-400">Expected next release</div>
-                                  {stats.daysSinceLastRelease > stats.avgDaysBetweenReleases && (
-                                    <div className="flex items-center gap-1 px-1.5 md:px-2 py-0.5 md:py-1 bg-orange-500/20 border border-orange-500/30 rounded text-[10px] md:text-xs text-orange-400 font-medium">
-                                      <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5 md:w-3 md:h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M12 9v4"></path>
-                                        <path d="M12 17h.01"></path>
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                      </svg>
-                                      Outdated
+                                // For average bar: scale based on the longest interval in the last 5 releases
+                                // This shows where the average sits relative to the range of recent intervals
+                                const longestInterval = allGaps.length > 0
+                                  ? Math.max(...allGaps)
+                                  : stats.avgDaysBetweenReleases;
+
+                                // For recent releases bars: use all gaps including outliers for full context
+                                // This allows recent releases to show their full range
+                                const maxDaysForRecent = allGaps.length > 0
+                                  ? Math.max(...allGaps, stats.avgDaysBetweenReleases, stats.daysSinceLastRelease)
+                                  : stats.avgDaysBetweenReleases;
+
+                                // Get last release date for display
+                                const lastReleaseDate = stats.recentReleases[0]?.date;
+                                const lastReleaseDateObj = lastReleaseDate ? parseReleaseDate(lastReleaseDate) : new Date();
+                                const lastReleaseDay = lastReleaseDateObj.getDate();
+                                const lastReleaseMonth = lastReleaseDateObj.toLocaleString('default', { month: 'short' });
+                                const lastReleaseYear = lastReleaseDateObj.getFullYear();
+
+                                return (
+                                  <>
+                                    {/* Days since last release section */}
+                                    <div>
+                                      <div className="text-base md:text-xl font-semibold text-white mb-2">Days since last release</div>
+                                      <div className="text-xs md:text-sm text-gray-400 mb-0.5">{lastReleaseDay} {lastReleaseMonth} {lastReleaseYear}</div>
+                                      <div className="flex items-center gap-3">
+                                        <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden relative">
+                                          {stats.daysSinceLastRelease > stats.avgDaysBetweenReleases && (
+                                            <div
+                                              className="absolute top-0 bottom-0 w-0.5 bg-white/50 z-10"
+                                              style={{ left: '100%' }}
+                                            />
+                                          )}
+                                          <div
+                                            className="h-full rounded-full bg-green-500"
+                                            style={{
+                                              width: `${Math.min((stats.daysSinceLastRelease / stats.avgDaysBetweenReleases) * 100, 100)}%`
+                                            }}
+                                          />
+                                        </div>
+                                        <div className="text-2xl md:text-3xl font-semibold tabular-nums min-w-[60px] text-right text-green-500">
+                                          {stats.daysSinceLastRelease}
+                                        </div>
+                                      </div>
                                     </div>
-                                  )}
-                                </div>
+
+                                    {/* Average section */}
+                                    <div className="pt-3 md:pt-4 border-t border-white/10">
+                                      <div className="text-base md:text-xl font-semibold text-white mb-2">Average</div>
+                                      <div className="flex items-center gap-3">
+                                        <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                                          <div
+                                            className="h-full bg-gray-500 rounded-full"
+                                            style={{
+                                              width: `${longestInterval > 0 ? (stats.avgDaysBetweenReleases / longestInterval) * 100 : 100}%`
+                                            }}
+                                          />
+                                        </div>
+                                        <div className="text-2xl md:text-3xl font-semibold text-white tabular-nums min-w-[60px] text-right">
+                                          {stats.avgDaysBetweenReleases}
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Recent releases section */}
+                                    <div className="pt-3 md:pt-4 border-t border-white/10">
+                                      <div className="text-base md:text-xl font-semibold text-white mb-3">Recent releases</div>
+                                      <div className="space-y-3">
+                                        {stats.recentReleases
+                                          .filter(release => release.daysSince !== null)
+                                          .map((release, idx) => {
+                                            const releaseDate = parseReleaseDate(release.date);
+                                            const day = releaseDate.getDate();
+                                            const month = releaseDate.toLocaleString('default', { month: 'short' });
+                                            const year = releaseDate.getFullYear();
+                                            const barWidth = (release.daysSince! / maxDaysForRecent) * 100;
+
+                                            return (
+                                              <div key={idx}>
+                                                <div className="text-xs md:text-sm text-gray-400">{day} {month} {year}</div>
+                                                <div className="flex items-center gap-3">
+                                                  <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                                                    <div
+                                                      className="h-full bg-gray-500 rounded-full"
+                                                      style={{ width: `${barWidth}%` }}
+                                                    />
+                                                  </div>
+                                                  <div className="text-2xl md:text-3xl font-semibold text-white tabular-nums min-w-[60px] text-right">
+                                                    {release.daysSince}
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                      </div>
+                                    </div>
+                                  </>
+                                );
+                              })()}
+
+                              {/* Expected next release section - Mobile only */}
+                              <div className="md:hidden pt-3 border-t border-white/10">
+                                <div className="text-base font-semibold text-white mb-2">Expected next release</div>
                                 <div className="flex items-center justify-between gap-3">
-                                  <div className={`text-sm md:text-lg font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-white/60 line-through' : 'text-white'}`}>
+                                  <div className={`text-xl font-semibold ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-white/60 line-through' : 'text-white'}`}>
                                     {stats.expectedNextReleaseDate}
                                   </div>
                                   {(() => {
-                                    // Recalculate days from the formatted date to ensure accuracy
                                     const dateParts = stats.expectedNextReleaseDate.match(/(\w+) (\d+), (\d+)/);
                                     if (dateParts) {
                                       const monthMap: { [key: string]: number } = {
@@ -1199,7 +1176,7 @@ function TimelineContent() {
                                       const daysDiff = Math.floor((expectedDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
                                       return (
-                                        <div className={`text-[10px] md:text-xs font-medium ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/60' : daysDiff < 0 ? 'text-gray-500' : daysDiff <= 7 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                                        <div className={`text-sm font-medium ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/60' : daysDiff < 0 ? 'text-gray-500' : daysDiff <= 7 ? 'text-yellow-400' : 'text-gray-400'}`}>
                                           {daysDiff < 0
                                             ? `${Math.abs(daysDiff)} days ago`
                                             : `in ${daysDiff} days`
@@ -1207,9 +1184,8 @@ function TimelineContent() {
                                         </div>
                                       );
                                     }
-                                    // Fallback to original calculation
                                     return (
-                                      <div className={`text-[10px] md:text-xs font-medium ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/60' : stats.daysUntilExpected < 0 ? 'text-gray-500' : stats.daysUntilExpected <= 7 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                                      <div className={`text-sm font-medium ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/60' : stats.daysUntilExpected < 0 ? 'text-gray-500' : stats.daysUntilExpected <= 7 ? 'text-yellow-400' : 'text-gray-400'}`}>
                                         {stats.daysUntilExpected < 0
                                           ? `${Math.abs(stats.daysUntilExpected)} days ago`
                                           : `in ${stats.daysUntilExpected} days`
@@ -1219,25 +1195,62 @@ function TimelineContent() {
                                   })()}
                                 </div>
                               </div>
-
-                              <div className="pt-3 md:pt-4 border-t border-white/10">
-                                <div className="text-xs md:text-sm text-gray-400 mb-2 md:mb-3">Recent releases</div>
-                                <div className="space-y-2 md:space-y-3">
-                                  {stats.recentReleases.map((release, idx) => (
-                                    <div key={idx} className="flex items-center justify-between gap-2 md:gap-3">
-                                      <div className="flex-1 min-w-0">
-                                        <div className="text-xs md:text-sm text-gray-200 truncate">{release.name}</div>
-                                        <div className="text-[10px] md:text-xs text-gray-500 mt-0.5">{release.date}</div>
-                                      </div>
-                                      <div className="text-xs md:text-sm font-medium text-gray-400 whitespace-nowrap">
-                                        {release.daysSince !== null ? `${release.daysSince} days` : '-'}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
                               </div>
                             </div>
+
+                              {/* Right column - Expected next release (Desktop only) */}
+                              <div className="hidden md:block md:w-[300px] md:flex-shrink-0 md:border-l md:border-white/10 md:pl-6">
+                                <div className="text-base md:text-xl font-semibold text-white mb-3">Expected next release</div>
+                                {stats.daysSinceLastRelease > stats.avgDaysBetweenReleases && (
+                                  <div className="inline-flex items-center gap-1 px-2 py-1 bg-orange-500/20 border border-orange-500/30 rounded text-xs text-orange-400 font-medium mb-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M12 9v4"></path>
+                                      <path d="M12 17h.01"></path>
+                                      <circle cx="12" cy="12" r="10"></circle>
+                                    </svg>
+                                    Outdated
+                                  </div>
+                                )}
+                                <div className={`text-2xl font-semibold mb-2 ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-white/60 line-through' : 'text-white'}`}>
+                                  {stats.expectedNextReleaseDate}
+                                </div>
+                                {(() => {
+                                  const dateParts = stats.expectedNextReleaseDate.match(/(\w+) (\d+), (\d+)/);
+                                  if (dateParts) {
+                                    const monthMap: { [key: string]: number } = {
+                                      Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+                                      Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+                                    };
+                                    const expectedDate = new Date(
+                                      parseInt(dateParts[3]),
+                                      monthMap[dateParts[1]],
+                                      parseInt(dateParts[2])
+                                    );
+                                    expectedDate.setHours(0, 0, 0, 0);
+                                    const today = new Date();
+                                    today.setHours(0, 0, 0, 0);
+                                    const daysDiff = Math.floor((expectedDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+                                    return (
+                                      <div className={`text-sm font-medium ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/60' : daysDiff < 0 ? 'text-gray-500' : daysDiff <= 7 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                                        {daysDiff < 0
+                                          ? `${Math.abs(daysDiff)} days ago`
+                                          : `in ${daysDiff} days`
+                                        }
+                                      </div>
+                                    );
+                                  }
+                                  return (
+                                    <div className={`text-sm font-medium ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/60' : stats.daysUntilExpected < 0 ? 'text-gray-500' : stats.daysUntilExpected <= 7 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                                      {stats.daysUntilExpected < 0
+                                        ? `${Math.abs(stats.daysUntilExpected)} days ago`
+                                        : `in ${stats.daysUntilExpected} days`
+                                      }
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+                              </div>
                             </div>
                           </>
                         )}
