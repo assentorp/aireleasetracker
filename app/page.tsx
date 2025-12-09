@@ -346,14 +346,9 @@ function TimelineContent() {
 
     // Calculate expected next release date
     // Start from last release date + average interval
+    // Always show the first expected date based on the average, even if it's in the past
     let expectedNextReleaseDate = new Date(lastReleaseDate);
     expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
-
-    // Keep adding intervals until we get a date in the future
-    // This ensures the expected date is always ahead, even if we're past the first expected date
-    while (expectedNextReleaseDate <= now && avgDaysBetweenReleases > 0) {
-      expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + avgDaysBetweenReleases);
-    }
 
     // Format expected date
     const formatExpectedDate = (date: Date) => {
@@ -392,13 +387,9 @@ function TimelineContent() {
     if (!lastReleaseDate) return null;
 
     // Calculate expected next release date using the same logic as getCompanyStats
+    // Always show the first expected date based on the average, even if it's in the past
     let expectedNextReleaseDate = new Date(lastReleaseDate);
     expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + stats.avgDaysBetweenReleases);
-
-    // Keep adding intervals until we get a date in the future
-    while (expectedNextReleaseDate <= now && stats.avgDaysBetweenReleases > 0) {
-      expectedNextReleaseDate.setDate(expectedNextReleaseDate.getDate() + stats.avgDaysBetweenReleases);
-    }
 
     // Normalize dates to midnight for accurate day calculation
     const normalizedExpected = new Date(expectedNextReleaseDate);
@@ -1085,13 +1076,13 @@ function TimelineContent() {
                                             />
                                           )}
                                           <div
-                                            className="h-full rounded-full bg-green-500"
+                                            className={`h-full rounded-full ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'bg-orange-500' : 'bg-green-500'}`}
                                             style={{
                                               width: `${Math.min((stats.daysSinceLastRelease / stats.avgDaysBetweenReleases) * 100, 100)}%`
                                             }}
                                           />
                                         </div>
-                                        <div className="text-2xl md:text-3xl font-semibold tabular-nums min-w-[60px] text-right text-green-500">
+                                        <div className={`text-2xl md:text-3xl font-semibold tabular-nums min-w-[60px] text-right ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-500' : 'text-green-500'}`}>
                                           {stats.daysSinceLastRelease}
                                         </div>
                                       </div>
