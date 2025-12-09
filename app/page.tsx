@@ -1076,13 +1076,29 @@ function TimelineContent() {
                                             />
                                           )}
                                           <div
-                                            className={`h-full rounded-full ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'bg-orange-500' : 'bg-green-500'}`}
+                                            className={`h-full rounded-full ${
+                                              stats.daysSinceLastRelease > stats.avgDaysBetweenReleases
+                                                ? 'bg-orange-500'
+                                                : stats.daysUntilExpected >= 0 && stats.daysUntilExpected <= 7
+                                                ? 'bg-yellow-500'
+                                                : stats.daysSinceLastRelease <= 14
+                                                ? 'bg-green-500'
+                                                : 'bg-white'
+                                            }`}
                                             style={{
                                               width: `${Math.min((stats.daysSinceLastRelease / stats.avgDaysBetweenReleases) * 100, 100)}%`
                                             }}
                                           />
                                         </div>
-                                        <div className={`text-2xl md:text-3xl font-semibold tabular-nums min-w-[60px] text-right ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-500' : 'text-green-500'}`}>
+                                        <div className={`text-2xl md:text-3xl font-semibold tabular-nums min-w-[60px] text-right ${
+                                          stats.daysSinceLastRelease > stats.avgDaysBetweenReleases
+                                            ? 'text-orange-500'
+                                            : stats.daysUntilExpected >= 0 && stats.daysUntilExpected <= 7
+                                            ? 'text-yellow-500'
+                                            : stats.daysSinceLastRelease <= 14
+                                            ? 'text-green-500'
+                                            : 'text-white'
+                                        }`}>
                                           {stats.daysSinceLastRelease}
                                         </div>
                                       </div>
