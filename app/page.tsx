@@ -1137,7 +1137,7 @@ function TimelineContent() {
 
                                             return (
                                               <div key={idx}>
-                                                <div className="text-xs md:text-sm text-gray-400">{day} {month} {year}</div>
+                                                <div className="text-xs md:text-sm text-gray-400">{day} {month} {year} · {release.name}</div>
                                                 <div className="flex items-center gap-3">
                                                   <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
                                                     <div
