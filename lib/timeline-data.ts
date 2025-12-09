@@ -253,7 +253,9 @@ export const timelineData: TimelineCompany[] = [
       { date: 'Dec 2 2025', name: 'Ministral 3 3B-25-12', position: getMonthPosition('Dec 2 2025') },
       { date: 'Dec 2 2025', name: 'Ministral 3 8B-25-12', position: getMonthPosition('Dec 2 2025') + 0.1 },
       { date: 'Dec 2 2025', name: 'Ministral 3 14B-25-12', position: getMonthPosition('Dec 2 2025') + 0.2 },
-      { date: 'Dec 2 2025', name: 'Mistral Large 3', position: getMonthPosition('Dec 2 2025') + 0.3 }
+      { date: 'Dec 2 2025', name: 'Mistral Large 3', position: getMonthPosition('Dec 2 2025') + 0.3 },
+      { date: 'Dec 9 2025', name: 'Devstral 2 (123B)', position: getMonthPosition('Dec 9 2025') + 0.4 },
+      { date: 'Dec 9 2025', name: 'Devstral Small 2 (24B)', position: getMonthPosition('Dec 9 2025') + 0.5 }
     ]
   }
 ];
