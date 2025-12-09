@@ -132,6 +132,28 @@ function TimelineContent() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [clickedCompany, isModalClosing]);
 
+  // Close modal on Escape key
+  useEffect(() => {
+    const handleEscapeKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && clickedCompany && !isModalClosing) {
+        setIsModalClosing(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscapeKey);
+    return () => document.removeEventListener('keydown', handleEscapeKey);
+  }, [clickedCompany, isModalClosing]);
+
+  // Remove focus from button when modal closes
+  useEffect(() => {
+    if (isModalClosing) {
+      // Blur any currently focused element
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    }
+  }, [isModalClosing]);
+
   // Scroll to end of timeline smoothly on initial page load
   useEffect(() => {
     if (mounted && scrollContainerRef.current && monthHeaderRef.current && !hasScrolledOnLoadRef.current) {
@@ -908,6 +930,7 @@ function TimelineContent() {
                                         }));
                                         if (isCompanyClicked) {
                                           setIsModalClosing(true);
+                                          e.currentTarget.blur();
                                         } else {
                                           setClickedCompany(item.company);
                                         }
@@ -960,6 +983,7 @@ function TimelineContent() {
                                         }));
                                         if (isCompanyClicked) {
                                           setIsModalClosing(true);
+                                          e.currentTarget.blur();
                                         } else {
                                           setClickedCompany(item.company);
                                         }
