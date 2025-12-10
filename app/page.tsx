@@ -1105,7 +1105,9 @@ function TimelineContent() {
                                                 ? 'bg-orange-500'
                                                 : stats.daysSinceLastRelease > stats.avgDaysBetweenReleases
                                                 ? 'bg-orange-500'
-                                                : stats.daysUntilExpected >= 0 && stats.daysUntilExpected <= 7
+                                                : stats.daysUntilExpected === 0
+                                                ? 'bg-orange-500'
+                                                : stats.daysUntilExpected > 0 && stats.daysUntilExpected <= 7
                                                 ? 'bg-yellow-500'
                                                 : stats.daysSinceLastRelease <= 14
                                                 ? 'bg-green-500'
@@ -1121,7 +1123,9 @@ function TimelineContent() {
                                             ? 'text-orange-500'
                                             : stats.daysSinceLastRelease > stats.avgDaysBetweenReleases
                                             ? 'text-orange-500'
-                                            : stats.daysUntilExpected >= 0 && stats.daysUntilExpected <= 7
+                                            : stats.daysUntilExpected === 0
+                                            ? 'text-orange-500'
+                                            : stats.daysUntilExpected > 0 && stats.daysUntilExpected <= 7
                                             ? 'text-yellow-500'
                                             : stats.daysSinceLastRelease <= 14
                                             ? 'text-green-500'
