@@ -1022,7 +1022,7 @@ function TimelineContent() {
                                 top: '50%',
                                 transform: 'translate(-50%, -50%)',
                                 width: 'min(90vw, 800px)',
-                                maxHeight: 'min(85vh, 700px)',
+                                maxHeight: 'min(85vh, 850px)',
                                 animation: isModalClosing
                                   ? 'morphOut 250ms ease-in forwards'
                                   : 'morphIn 250ms ease-out forwards',
@@ -1058,7 +1058,7 @@ function TimelineContent() {
                               {/* Two-column layout on desktop */}
                               <div className="md:flex md:gap-6">
                               {/* Left column - Scrollable content */}
-                              <div className="md:flex-1 overflow-y-auto pr-2" style={{ maxHeight: 'calc(min(85vh, 700px) - 120px)' }}>
+                              <div className="md:flex-1 overflow-y-auto pr-2" style={{ maxHeight: 'calc(min(85vh, 850px) - 120px)' }}>
                                 <div className="space-y-4 md:space-y-5">
                               {(() => {
                                 // Calculate max for scaling bars - use separate scales for main bars vs recent releases
