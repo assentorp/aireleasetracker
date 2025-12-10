@@ -1267,19 +1267,23 @@ function TimelineContent() {
                                     const daysDiff = Math.floor((expectedDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
                                     return (
-                                      <div className={`text-sm font-medium ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/60' : daysDiff < 0 ? 'text-gray-500' : daysDiff <= 7 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                                      <div className={`text-sm font-medium ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/60' : daysDiff === 0 ? 'text-orange-500' : daysDiff < 0 ? 'text-gray-500' : daysDiff <= 7 ? 'text-yellow-400' : 'text-gray-400'}`}>
                                         {daysDiff < 0
                                           ? `${Math.abs(daysDiff)} days ago`
-                                          : `in ${daysDiff} days`
+                                          : daysDiff === 0
+                                            ? 'Today'
+                                            : `in ${daysDiff} days`
                                         }
                                       </div>
                                     );
                                   }
                                   return (
-                                    <div className={`text-sm font-medium ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/60' : stats.daysUntilExpected < 0 ? 'text-gray-500' : stats.daysUntilExpected <= 7 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                                    <div className={`text-sm font-medium ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/60' : stats.daysUntilExpected === 0 ? 'text-orange-500' : stats.daysUntilExpected < 0 ? 'text-gray-500' : stats.daysUntilExpected <= 7 ? 'text-yellow-400' : 'text-gray-400'}`}>
                                       {stats.daysUntilExpected < 0
                                         ? `${Math.abs(stats.daysUntilExpected)} days ago`
-                                        : `in ${stats.daysUntilExpected} days`
+                                        : stats.daysUntilExpected === 0
+                                          ? 'Today'
+                                          : `in ${stats.daysUntilExpected} days`
                                       }
                                     </div>
                                   );
@@ -1646,8 +1650,8 @@ function TimelineContent() {
                           >
                             <div className="flex items-center gap-1 md:gap-2">
                               <div className={`w-1 md:w-1.5 h-1 md:h-1.5 rounded-full ${companyInfo.dotColor} opacity-40`} />
-                              <div className={`text-[10px] md:text-sm font-medium ${isOverdue ? 'text-orange-400/60' : 'text-gray-500'}`}>
-                                Expected
+                              <div className={`text-[10px] md:text-sm font-medium ${isOverdue ? 'text-orange-400/60' : expectedRelease.daysUntil === 0 ? 'text-orange-500' : 'text-gray-500'}`}>
+                                {expectedRelease.daysUntil === 0 ? 'Today' : 'Expected'}
                               </div>
                             </div>
 
@@ -1662,13 +1666,17 @@ function TimelineContent() {
                                   <div className={`${
                                     isOverdue
                                       ? 'text-orange-400'
-                                      : expectedRelease.daysUntil <= 7
-                                        ? 'text-yellow-400'
-                                        : 'text-gray-400'
+                                      : expectedRelease.daysUntil === 0
+                                        ? 'text-orange-500'
+                                        : expectedRelease.daysUntil <= 7
+                                          ? 'text-yellow-400'
+                                          : 'text-gray-400'
                                   }`}>
                                     {isOverdue
                                       ? `Overdue by ${Math.abs(expectedRelease.daysUntil)} days`
-                                      : `In ${expectedRelease.daysUntil} days`
+                                      : expectedRelease.daysUntil === 0
+                                        ? 'Today'
+                                        : `In ${expectedRelease.daysUntil} days`
                                     }
                                   </div>
                                 </div>
