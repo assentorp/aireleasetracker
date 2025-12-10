@@ -1207,19 +1207,23 @@ function TimelineContent() {
                                       const daysDiff = Math.floor((expectedDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
                                       return (
-                                        <div className={`text-sm font-medium ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/60' : daysDiff < 0 ? 'text-gray-500' : daysDiff <= 7 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                                        <div className={`text-sm font-medium ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/60' : daysDiff === 0 ? 'text-orange-500' : daysDiff < 0 ? 'text-gray-500' : daysDiff <= 7 ? 'text-yellow-400' : 'text-gray-400'}`}>
                                           {daysDiff < 0
                                             ? `${Math.abs(daysDiff)} days ago`
-                                            : `in ${daysDiff} days`
+                                            : daysDiff === 0
+                                              ? 'Today'
+                                              : `in ${daysDiff} days`
                                           }
                                         </div>
                                       );
                                     }
                                     return (
-                                      <div className={`text-sm font-medium ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/60' : stats.daysUntilExpected < 0 ? 'text-gray-500' : stats.daysUntilExpected <= 7 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                                      <div className={`text-sm font-medium ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-orange-400/60' : stats.daysUntilExpected === 0 ? 'text-orange-500' : stats.daysUntilExpected < 0 ? 'text-gray-500' : stats.daysUntilExpected <= 7 ? 'text-yellow-400' : 'text-gray-400'}`}>
                                         {stats.daysUntilExpected < 0
                                           ? `${Math.abs(stats.daysUntilExpected)} days ago`
-                                          : `in ${stats.daysUntilExpected} days`
+                                          : stats.daysUntilExpected === 0
+                                            ? 'Today'
+                                            : `in ${stats.daysUntilExpected} days`
                                         }
                                       </div>
                                     );
