@@ -901,8 +901,8 @@ function TimelineContent() {
                                   <>
                                     <span className="text-[10px] text-gray-500">Expected next release</span>
                                     {nextRelease.daysUntil >= 0 ? (
-                                      <span className="text-[10px] text-gray-400">
-                                        {nextRelease.date} · In {nextRelease.daysUntil} {nextRelease.daysUntil === 1 ? 'day' : 'days'}
+                                      <span className={`text-[10px] ${nextRelease.daysUntil === 0 ? 'text-orange-500' : 'text-gray-400'}`}>
+                                        {nextRelease.date} · {nextRelease.daysUntil === 0 ? 'Today' : `In ${nextRelease.daysUntil} ${nextRelease.daysUntil === 1 ? 'day' : 'days'}`}
                                       </span>
                                     ) : (
                                       <div className="flex flex-col gap-0.5">
@@ -954,8 +954,8 @@ function TimelineContent() {
                                   <>
                                     <span className="text-xs text-gray-500">Expected next release</span>
                                     {nextRelease.daysUntil >= 0 ? (
-                                      <span className="text-xs text-gray-400">
-                                        {nextRelease.date} · In {nextRelease.daysUntil} {nextRelease.daysUntil === 1 ? 'day' : 'days'}
+                                      <span className={`text-xs ${nextRelease.daysUntil === 0 ? 'text-orange-500' : 'text-gray-400'}`}>
+                                        {nextRelease.date} · {nextRelease.daysUntil === 0 ? 'Today' : `In ${nextRelease.daysUntil} ${nextRelease.daysUntil === 1 ? 'day' : 'days'}`}
                                       </span>
                                     ) : (
                                       <div className="flex flex-col gap-0.5">
