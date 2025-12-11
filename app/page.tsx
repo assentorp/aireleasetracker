@@ -1102,7 +1102,7 @@ function TimelineContent() {
                                           <div
                                             className={`h-full rounded-full ${
                                               stats.daysSinceLastRelease === 0
-                                                ? 'bg-orange-500'
+                                                ? 'bg-green-500'
                                                 : stats.daysSinceLastRelease > stats.avgDaysBetweenReleases
                                                 ? 'bg-orange-500'
                                                 : stats.daysUntilExpected === 0
@@ -1120,7 +1120,7 @@ function TimelineContent() {
                                         </div>
                                         <div className={`text-2xl md:text-3xl font-semibold tabular-nums min-w-[60px] text-right ${
                                           stats.daysSinceLastRelease === 0
-                                            ? 'text-orange-500'
+                                            ? 'text-green-500'
                                             : stats.daysSinceLastRelease > stats.avgDaysBetweenReleases
                                             ? 'text-orange-500'
                                             : stats.daysUntilExpected === 0
