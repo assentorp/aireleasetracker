@@ -598,6 +598,9 @@ function TimelineContent() {
     contextWindow?: string;
     contextWindowWords?: string;
     type?: string;
+    gpqaDiamond?: string;
+    mmmuPro?: string;
+    sweBenchVerified?: string;
   };
   type ReleaseWithRow = ReleaseItem & { row: number; alignedPosition: number };
 
