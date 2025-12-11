@@ -201,7 +201,8 @@ export const timelineData: TimelineCompany[] = [
       { date: 'Sep 15 2025', name: 'GPT-5-Codex', position: getMonthPosition('Sep 15 2025') },
       { date: 'Nov 8 2025', name: 'GPT-5-Codex-Mini', position: getMonthPosition('Nov 8 2025') },
       { date: 'Nov 12 2025', name: 'GPT-5.1', position: getMonthPosition('Nov 12 2025') },
-      { date: 'Nov 19 2025', name: 'GPT-5.1-Codex-Max', position: getMonthPosition('Nov 19 2025') }
+      { date: 'Nov 19 2025', name: 'GPT-5.1-Codex-Max', position: getMonthPosition('Nov 19 2025') },
+      { date: 'Dec 11 2025', name: 'GPT-5.2', position: getMonthPosition('Dec 11 2025') }
     ]
   },
   {
