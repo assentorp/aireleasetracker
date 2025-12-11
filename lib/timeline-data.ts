@@ -8,6 +8,9 @@ export interface Release {
   contextWindow?: string;
   contextWindowWords?: string;
   type?: string;
+  gpqaDiamond?: string;
+  mmmuPro?: string;
+  sweBenchVerified?: string;
 }
 
 export interface TimelineCompany {
@@ -133,7 +136,7 @@ export const timelineData: TimelineCompany[] = [
       { date: 'May 22 2025', name: 'Claude Sonnet 4', position: getMonthPosition('May 22 2025') + 0.1 },
       { date: 'May 22 2025', name: 'Claude Opus 4', position: getMonthPosition('May 22 2025') + 0.2 },
       { date: 'Aug 5 2025', name: 'Claude Opus 4.1', position: getMonthPosition('Aug 5 2025') },
-      { date: 'Sep 29 2025', name: 'Claude Sonnet 4.5', position: getMonthPosition('Sep 29 2025') },
+      { date: 'Sep 29 2025', name: 'Claude Sonnet 4.5', position: getMonthPosition('Sep 29 2025'), gpqaDiamond: '83.4%', mmmuPro: '68.0%', sweBenchVerified: '77.2%' },
       { date: 'Oct 15 2025', name: 'Claude Haiku 4.5', position: getMonthPosition('Oct 15 2025') },
       { date: 'Nov 24 2025', name: 'Claude Opus 4.5', position: getMonthPosition('Nov 24 2025') }
     ]
@@ -166,11 +169,11 @@ export const timelineData: TimelineCompany[] = [
       { date: 'Jan 30 2025', name: 'Gemini 2.0 Flash', position: getMonthPosition('Jan 30 2025') },
       { date: 'Feb 1 2025', name: 'Gemini 2.0 Flash-Lite', position: getMonthPosition('Feb 1 2025') },
       { date: 'Feb 5 2025', name: 'Gemini 2.0 Pro', position: getMonthPosition('Feb 5 2025') },
-      { date: 'Mar 25 2025', name: 'Gemini 2.5 Pro', position: getMonthPosition('Mar 25 2025') },
+      { date: 'Mar 25 2025', name: 'Gemini 2.5 Pro', position: getMonthPosition('Mar 25 2025'), gpqaDiamond: '86.4%', mmmuPro: '68.0%', sweBenchVerified: '59.6%' },
       { date: 'Apr 17 2025', name: 'Gemini 2.5 Flash', position: getMonthPosition('Apr 17 2025') },
       { date: 'Jun 17 2025', name: 'Gemini 2.5 Flash-Lite', position: getMonthPosition('Jun 17 2025') },
       { date: 'Aug 26 2025', name: 'Gemini 2.5 Flash Image', position: getMonthPosition('Aug 26 2025') },
-      { date: 'Nov 18 2025', name: 'Gemini 3.0 Pro', position: getMonthPosition('Nov 18 2025') },
+      { date: 'Nov 18 2025', name: 'Gemini 3.0 Pro', position: getMonthPosition('Nov 18 2025'), gpqaDiamond: '91.9%', mmmuPro: '81.0%', sweBenchVerified: '76.2%' },
       { date: 'Nov 20 2025', name: 'Gemini 3.0 Pro Image', position: getMonthPosition('Nov 20 2025') }
     ]
   },
@@ -200,7 +203,7 @@ export const timelineData: TimelineCompany[] = [
       { date: 'Aug 7 2025', name: 'GPT-5 mini', position: getMonthPosition('Aug 7 2025') + 0.1 },
       { date: 'Sep 15 2025', name: 'GPT-5-Codex', position: getMonthPosition('Sep 15 2025') },
       { date: 'Nov 8 2025', name: 'GPT-5-Codex-Mini', position: getMonthPosition('Nov 8 2025') },
-      { date: 'Nov 12 2025', name: 'GPT-5.1', position: getMonthPosition('Nov 12 2025') },
+      { date: 'Nov 12 2025', name: 'GPT-5.1', position: getMonthPosition('Nov 12 2025'), gpqaDiamond: '88.1%', mmmuPro: '76.0%', sweBenchVerified: '76.3%' },
       { date: 'Nov 19 2025', name: 'GPT-5.1-Codex-Max', position: getMonthPosition('Nov 19 2025') },
       { date: 'Dec 11 2025', name: 'GPT-5.2', position: getMonthPosition('Dec 11 2025') }
     ]
