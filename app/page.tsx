@@ -598,6 +598,9 @@ function TimelineContent() {
     contextWindow?: string;
     contextWindowWords?: string;
     type?: string;
+    gpqaDiamond?: string;
+    mmmuPro?: string;
+    sweBenchVerified?: string;
   };
   type ReleaseWithRow = ReleaseItem & { row: number; alignedPosition: number };
 
@@ -1544,6 +1547,34 @@ function TimelineContent() {
                                     <div className="flex items-center justify-between">
                                       <span className="text-gray-400">Type</span>
                                       <span className="font-medium text-white">{releaseData.type}</span>
+                                    </div>
+                                  )}
+
+                                  {/* Benchmarks section */}
+                                  {(releaseData?.gpqaDiamond || releaseData?.mmmuPro || releaseData?.sweBenchVerified) && (
+                                    <div className="pt-2 mt-2 border-t border-white/10">
+                                      <div className="text-xs font-medium text-gray-400 mb-2">Benchmarks</div>
+
+                                      {releaseData?.gpqaDiamond && (
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-gray-400">GPQA Diamond</span>
+                                          <span className="font-medium text-white">{releaseData.gpqaDiamond}</span>
+                                        </div>
+                                      )}
+
+                                      {releaseData?.mmmuPro && (
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-gray-400">MMMU-Pro</span>
+                                          <span className="font-medium text-white">{releaseData.mmmuPro}</span>
+                                        </div>
+                                      )}
+
+                                      {releaseData?.sweBenchVerified && (
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-gray-400">SWE-Bench Verified</span>
+                                          <span className="font-medium text-white">{releaseData.sweBenchVerified}</span>
+                                        </div>
+                                      )}
                                     </div>
                                   )}
                                 </div>
