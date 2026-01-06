@@ -4,7 +4,7 @@ import "./globals.css";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 export const metadata: Metadata = {
-  title: "AI Model Release Tracker | Complete Timeline 2022-2025",
+  title: "AI Model Release Tracker | Complete Timeline 2022-2026",
   description: "Track major AI model releases from OpenAI, Anthropic, Google, Meta, xAI, DeepSeek, and Mistral. Interactive timeline showing GPT, Claude, Gemini, LLaMA releases since ChatGPT launch in November 2022.",
   keywords: [
     "AI models",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: "AI Model Release Tracker | Complete Timeline 2022-2025",
+    title: "AI Model Release Tracker | Complete Timeline 2022-2026",
     description: "Track major AI model releases from OpenAI, Anthropic, Google, Meta, xAI, DeepSeek, and Mistral. Interactive timeline since ChatGPT launch.",
     url: 'https://aireleasetracker.com',
     siteName: "AI Release Tracker",
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "AI Model Release Tracker | Complete Timeline 2022-2025",
+    title: "AI Model Release Tracker | Complete Timeline 2022-2026",
     description: "Track major AI model releases from OpenAI, Anthropic, Google, Meta, xAI, DeepSeek, and Mistral.",
     images: ['/ogimage.png'],
   },
