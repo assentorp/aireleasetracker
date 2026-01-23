@@ -16,34 +16,36 @@ const http = require('http');
 const PROVIDERS = {
   openai: {
     name: 'OpenAI',
-    blogUrl: 'https://openai.com/news/',
+    blogUrl: 'https://openai.com/blog',
     rssUrl: 'https://openai.com/blog/rss.xml',
     keywords: ['gpt', 'o1', 'o3', 'o4', 'model', 'release', 'introducing', 'announcing'],
     modelPatterns: [
-      /GPT-[\d.]+[\w\s-]*/gi,
-      /o\d+-?\w*/gi,
-      /ChatGPT[\s-]?[\w\d.]*/gi
+      /GPT-[\d.]+(?:-(?:turbo|mini|nano))?/gi,
+      /\bo[1-9]-(?:mini|preview|pro)\b/gi,
+      /\bo[1-9]\b(?!\s*(?:clock|day|week|month|year|am|pm))/gi
     ]
   },
   anthropic: {
     name: 'Anthropic',
     blogUrl: 'https://www.anthropic.com/news',
-    rssUrl: 'https://www.anthropic.com/rss/news.xml',
+    rssUrl: null, // Anthropic doesn't have a public RSS feed
     keywords: ['claude', 'model', 'release', 'introducing', 'announcing', 'sonnet', 'opus', 'haiku'],
     modelPatterns: [
-      /Claude[\s]?[\d.]+[\s]?(?:Sonnet|Opus|Haiku)?/gi,
-      /Claude[\s]?(?:Sonnet|Opus|Haiku)[\s]?[\d.]*/gi
+      /Claude\s+\d+(?:\.\d+)?\s+(?:Sonnet|Opus|Haiku)/gi,
+      /Claude\s+(?:Sonnet|Opus|Haiku)(?:\s+\d+(?:\.\d+)?)?/gi,
+      /Claude\s+\d+(?:\.\d+)?/gi
     ]
   },
   google: {
     name: 'Google',
     blogUrl: 'https://blog.google/technology/ai/',
     rssUrl: 'https://blog.google/rss/',
-    keywords: ['gemini', 'model', 'release', 'introducing', 'announcing', 'bard', 'palm'],
+    keywords: ['gemini', 'model', 'release', 'introducing', 'announcing'],
     modelPatterns: [
-      /Gemini[\s]?[\d.]+[\s]?(?:Pro|Ultra|Nano|Flash|Flash-Lite)?(?:[\s-]?[\w]*)?/gi,
-      /Bard/gi,
-      /PaLM[\s]?[\d]*/gi
+      /Gemini\s+\d+(?:\.\d+)?\s+(?:Pro|Ultra|Nano|Flash|Flash-Lite)/gi,
+      /Gemini\s+(?:Pro|Ultra|Nano|Flash|Flash-Lite)(?:\s+\d+(?:\.\d+)?)?/gi,
+      /Gemini\s+\d+(?:\.\d+)?/gi,
+      /PaLM\s*\d+/gi
     ]
   },
   meta: {
@@ -52,18 +54,18 @@ const PROVIDERS = {
     rssUrl: null,
     keywords: ['llama', 'model', 'release', 'introducing', 'announcing', 'open source'],
     modelPatterns: [
-      /LLaMA[\s]?[\d.]+[\s]?(?:Scout|Maverick)?/gi,
-      /Llama[\s]?[\d.]+[\s]?(?:Scout|Maverick)?/gi,
-      /Code[\s]?Llama[\s]?[\w\d]*/gi
+      /Llama\s+\d+(?:\.\d+)?(?:\s+(?:Scout|Maverick))?/gi,
+      /Code\s*Llama(?:\s+\d+B)?/gi
     ]
   },
   xai: {
     name: 'xAI',
-    blogUrl: 'https://x.ai/blog',
+    blogUrl: 'https://x.ai/news',
     rssUrl: null,
     keywords: ['grok', 'model', 'release', 'introducing', 'announcing'],
     modelPatterns: [
-      /Grok[\s-]?[\d.]+[\s]?(?:Fast)?/gi
+      /Grok[\s-]+\d+(?:\.\d+)?(?:\s+(?:Fast|Vision))?/gi,
+      /Grok[\s-]+(?:Fast|Vision)(?:\s+\d+(?:\.\d+)?)?/gi
     ]
   },
   deepseek: {
@@ -71,9 +73,12 @@ const PROVIDERS = {
     blogUrl: 'https://www.deepseek.com/',
     rssUrl: null,
     apiUrl: 'https://api-docs.deepseek.com/',
-    keywords: ['deepseek', 'model', 'release', 'introducing', 'v2', 'v3', 'r1', 'coder'],
+    keywords: ['deepseek', 'model', 'release', 'introducing'],
     modelPatterns: [
-      /DeepSeek[\s-]?(?:V[\d.]+|R[\d]+|Coder|LLM|MoE|Math)[\s]?[\w-]*/gi
+      /DeepSeek[\s-]+V\d+(?:\.\d+)?/gi,
+      /DeepSeek[\s-]+R\d+/gi,
+      /DeepSeek[\s-]+Coder(?:\s+V?\d+(?:\.\d+)?)?/gi,
+      /DeepSeek[\s-]+Math/gi
     ]
   },
   mistral: {
@@ -82,14 +87,14 @@ const PROVIDERS = {
     rssUrl: null,
     keywords: ['mistral', 'mixtral', 'codestral', 'model', 'release', 'introducing', 'ministral', 'pixtral'],
     modelPatterns: [
-      /Mistral[\s]?(?:Large|Medium|Small)[\s]?[\d.]*/gi,
-      /Mixtral[\s]?[\d×x\w]*/gi,
-      /Codestral[\s]?[\w\d]*/gi,
-      /Ministral[\s]?[\d]+B?/gi,
-      /Pixtral[\s]?[\w\d.]*/gi,
-      /Mathstral[\s]?[\w\d]*/gi,
-      /Magistral[\s]?[\w]*/gi,
-      /Devstral[\s]?[\w\d]*/gi
+      /Mistral\s+(?:Large|Medium|Small)(?:\s+\d+(?:\.\d+)?)?/gi,
+      /Mixtral\s+\d+x\d+B/gi,
+      /Codestral(?:\s+\d+(?:\.\d+)?)?/gi,
+      /Ministral\s+\d+B/gi,
+      /Pixtral(?:\s+(?:Large|\d+B))?/gi,
+      /Mathstral/gi,
+      /Magistral(?:\s+(?:Small|Medium|Large))?/gi,
+      /Devstral(?:\s+(?:Small|Medium|Large))?/gi
     ]
   }
 };
@@ -181,16 +186,32 @@ function extractModels(text, provider) {
 
   // Extract model names using patterns
   for (const pattern of config.modelPatterns) {
+    // Reset regex state for global patterns
+    pattern.lastIndex = 0;
     const matches = text.match(pattern);
     if (matches) {
       matches.forEach(match => {
         // Clean up the match
-        const cleaned = match.trim()
+        let cleaned = match.trim()
           .replace(/\s+/g, ' ')
-          .replace(/[.,;:!?]$/, '');
-        if (cleaned.length > 2) {
-          models.add(cleaned);
+          .replace(/[.,;:!?'"()[\]{}]$/g, '')
+          .replace(/\s+(is|are|was|were|has|have|had|will|can|could|would|should|the|a|an|and|or|for|to|in|on|at|by|with|from|of|that|this|it|as|be)$/gi, '')
+          .trim();
+
+        // Skip if too short or looks like a partial match
+        if (cleaned.length < 4) return;
+
+        // Skip common false positives
+        const lowerCleaned = cleaned.toLowerCase();
+        if (lowerCleaned.includes('users') ||
+            lowerCleaned.includes('comes') ||
+            lowerCleaned.includes('based') ||
+            lowerCleaned.endsWith(' and') ||
+            /\s+(is|are|was|were)$/i.test(cleaned)) {
+          return;
         }
+
+        models.add(cleaned);
       });
     }
   }
@@ -249,29 +270,38 @@ function readTimelineData() {
   return { content, existingModels };
 }
 
+// Normalize model name for comparison
+function normalizeModelName(name) {
+  return name.toLowerCase()
+    .replace(/[\u2011\u2010\-]/g, '') // Remove all dashes/hyphens
+    .replace(/\s+/g, '')              // Remove all spaces
+    .replace(/[._]/g, '')             // Remove dots and underscores
+    .trim();
+}
+
 // Check if a model already exists (fuzzy matching)
 function modelExists(modelName, existingModels) {
-  const normalized = modelName.toLowerCase()
-    .replace(/[\u2011\u2010-]/g, '-')
-    .replace(/\s+/g, ' ')
-    .trim();
+  const normalized = normalizeModelName(modelName);
 
-  // Direct match
-  if (existingModels.has(normalized)) return true;
-
-  // Check for similar names
+  // Check against all existing models
   for (const [key, value] of existingModels.entries()) {
-    // Remove spaces and compare
-    const keyNoSpace = key.replace(/\s+/g, '');
-    const normalizedNoSpace = normalized.replace(/\s+/g, '');
+    const existingNormalized = normalizeModelName(key);
 
-    if (keyNoSpace === normalizedNoSpace) return true;
+    // Direct match after normalization
+    if (existingNormalized === normalized) return true;
 
-    // Check if one contains the other
-    if (key.includes(normalized) || normalized.includes(key)) {
-      // Only match if they're substantially similar
-      const similarity = Math.min(key.length, normalized.length) / Math.max(key.length, normalized.length);
-      if (similarity > 0.7) return true;
+    // Check if one is a prefix/suffix of the other (handles version suffixes)
+    if (existingNormalized.startsWith(normalized) || normalized.startsWith(existingNormalized)) {
+      // Only match if the base name is substantial (at least 6 chars)
+      const shorterLen = Math.min(existingNormalized.length, normalized.length);
+      if (shorterLen >= 6) return true;
+    }
+
+    // Check for high similarity (handles minor variations)
+    const longerLen = Math.max(existingNormalized.length, normalized.length);
+    const shorterLen = Math.min(existingNormalized.length, normalized.length);
+    if (shorterLen / longerLen > 0.8 && existingNormalized.includes(normalized.slice(0, 6))) {
+      return true;
     }
   }
 
