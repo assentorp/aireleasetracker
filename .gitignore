@@ -41,3 +41,6 @@ next-env.d.ts
 .env.local
 package-lock.json
 yarn.lock
+
+# temporary files from blog checker
+new-models-summary.md
