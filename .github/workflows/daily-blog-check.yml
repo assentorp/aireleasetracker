@@ -1,0 +1,83 @@
+name: Daily Blog Check for AI Releases
+
+on:
+  # Run daily at 10 AM UTC
+  schedule:
+    - cron: '0 10 * * *'
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  check-blogs:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run blog checker
+        id: check
+        run: node scripts/check-blogs.js
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet lib/timeline-data.ts; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'feat: add new AI model releases detected on ${{ github.event.repository.updated_at || github.run_id }}'
+          title: 'New AI Model Releases Detected'
+          body: |
+            ## Automated AI Model Release Detection
+
+            This PR was automatically created by the daily blog checker.
+
+            The following changes were detected by scanning provider blogs and news pages:
+
+            ${{ steps.check.outputs.model_summary || 'See the diff for details.' }}
+
+            ### Review Checklist
+            - [ ] Verify the model names are correct
+            - [ ] Verify the release dates are accurate
+            - [ ] Check for any duplicate entries
+            - [ ] Confirm the models are actual releases (not rumors or previews)
+
+            ---
+            *Automated PR created on: ${{ github.event.repository.updated_at || 'scheduled run' }}*
+          branch: auto/new-model-releases-${{ github.run_number }}
+          delete-branch: true
+          labels: |
+            automated
+            new-release
+
+      - name: Summary
+        run: |
+          echo "## Daily Blog Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.changes.outputs.has_changes }}" == "true" ]; then
+            echo "New model releases were found and a PR has been created." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Models found:** ${{ steps.check.outputs.model_count || 'See PR' }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No new model releases were detected today." >> $GITHUB_STEP_SUMMARY
+          fi
