@@ -203,7 +203,8 @@ export const timelineData: TimelineCompany[] = [
       { date: 'Nov 12 2025', name: 'GPT-5.1', position: getMonthPosition('Nov 12 2025') },
       { date: 'Nov 19 2025', name: 'GPT-5.1-Codex-Max', position: getMonthPosition('Nov 19 2025') },
       { date: 'Dec 11 2025', name: 'GPT-5.2', position: getMonthPosition('Dec 11 2025') }
-    ]
+      { date: 'Feb 5 2026', name: 'GPT-5.3', position: getMonthPosition('Feb 5 2026') },
+      { date: 'Feb 5 2026', name: 'GPT-5.3', position: getMonthPosition('Feb 5 2026') },]
   },
   {
     company: 'deepseek',
