@@ -279,9 +279,22 @@ function normalizeModelName(name) {
     .trim();
 }
 
+// Extract version number from model name
+function extractVersion(name) {
+  const match = name.match(/(\d+(?:\.\d+)?)\s*$/);
+  return match ? match[1] : null;
+}
+
+// Extract base model name (without version)
+function extractBaseName(name) {
+  return name.replace(/\s*\d+(?:\.\d+)?\s*$/, '').trim().toLowerCase();
+}
+
 // Check if a model already exists (fuzzy matching)
 function modelExists(modelName, existingModels) {
   const normalized = normalizeModelName(modelName);
+  const newVersion = extractVersion(modelName);
+  const newBaseName = extractBaseName(modelName);
 
   // Check against all existing models
   for (const [key, value] of existingModels.entries()) {
@@ -290,18 +303,23 @@ function modelExists(modelName, existingModels) {
     // Direct match after normalization
     if (existingNormalized === normalized) return true;
 
-    // Check if one is a prefix/suffix of the other (handles version suffixes)
-    if (existingNormalized.startsWith(normalized) || normalized.startsWith(existingNormalized)) {
-      // Only match if the base name is substantial (at least 6 chars)
-      const shorterLen = Math.min(existingNormalized.length, normalized.length);
-      if (shorterLen >= 6) return true;
+    // If both have version numbers and same base name, compare versions
+    const existingVersion = extractVersion(key);
+    const existingBaseName = extractBaseName(key);
+
+    if (newVersion && existingVersion && newBaseName === existingBaseName) {
+      // Same base name but different versions = different models
+      if (newVersion !== existingVersion) continue;
+      return true;
     }
 
-    // Check for high similarity (handles minor variations)
-    const longerLen = Math.max(existingNormalized.length, normalized.length);
-    const shorterLen = Math.min(existingNormalized.length, normalized.length);
-    if (shorterLen / longerLen > 0.8 && existingNormalized.includes(normalized.slice(0, 6))) {
-      return true;
+    // Check if one is a prefix/suffix of the other (handles version suffixes)
+    // But skip if we're comparing versioned models (handled above)
+    if (!newVersion || !existingVersion) {
+      if (existingNormalized.startsWith(normalized) || normalized.startsWith(existingNormalized)) {
+        const shorterLen = Math.min(existingNormalized.length, normalized.length);
+        if (shorterLen >= 6) return true;
+      }
     }
   }
 
@@ -328,11 +346,17 @@ function addReleaseToFile(provider, modelName, date, fileContent) {
   }
 
   const dateStr = formatDate(date);
-  const newRelease = `\n      { date: '${dateStr}', name: '${modelName}', position: getMonthPosition('${dateStr}') },`;
+  const newRelease = `{ date: '${dateStr}', name: '${modelName}', position: getMonthPosition('${dateStr}') }`;
 
   // Add to the end of releases array
-  const releasesContent = match[2].trimEnd();
-  const updatedReleases = releasesContent + newRelease;
+  let releasesContent = match[2].trimEnd();
+
+  // Ensure previous entry has a trailing comma
+  if (releasesContent && !releasesContent.endsWith(',')) {
+    releasesContent += ',';
+  }
+
+  const updatedReleases = releasesContent + '\n      ' + newRelease;
 
   return fileContent.replace(companySection, `$1${updatedReleases}$3`);
 }
