@@ -211,6 +211,11 @@ function extractModels(text, provider) {
           return;
         }
 
+        // Validate the model name looks legitimate
+        if (!isValidModelName(cleaned)) {
+          return;
+        }
+
         models.add(cleaned);
       });
     }
@@ -279,15 +284,52 @@ function normalizeModelName(name) {
     .trim();
 }
 
-// Extract version number from model name
+// Extract version number from model name and normalize (e.g., "3" -> "3.0")
+// Handles versions at end ("Claude 4.5") or before variant ("Gemini 3 Pro")
 function extractVersion(name) {
-  const match = name.match(/(\d+(?:\.\d+)?)\s*$/);
-  return match ? match[1] : null;
+  // Try version at end first (e.g., "Claude Opus 4.5")
+  let match = name.match(/(\d+(?:\.\d+)?)\s*$/);
+
+  // Try version before variant name (e.g., "Gemini 3 Pro", "Gemini 3.0 Flash")
+  if (!match) {
+    match = name.match(/(\d+(?:\.\d+)?)\s+(?:Pro|Ultra|Nano|Flash|Lite|Mini|Turbo|Max|Image|Vision|Fast)\b/i);
+  }
+
+  if (!match) return null;
+  const version = match[1];
+  // Normalize: "3" -> "3.0" so they compare equal
+  return version.includes('.') ? version : version + '.0';
 }
 
 // Extract base model name (without version)
+// Handles "Gemini 3.0 Pro" -> "gemini pro" and "Claude Opus 4.5" -> "claude opus"
 function extractBaseName(name) {
-  return name.replace(/\s*\d+(?:\.\d+)?\s*$/, '').trim().toLowerCase();
+  return name
+    .replace(/\s*\d+(?:\.\d+)?\s*/g, ' ')  // Remove all version numbers
+    .replace(/\s+/g, ' ')                   // Normalize spaces
+    .trim()
+    .toLowerCase();
+}
+
+// Validate that a model name looks legitimate (not a false positive)
+function isValidModelName(name) {
+  const hasVersion = /\d+(?:\.\d+)?/.test(name);
+  const hasVariant = /\b(?:pro|ultra|nano|flash|lite|mini|turbo|max|sonnet|opus|haiku|scout|maverick|coder|math|vision|image|fast)\b/i.test(name);
+  const words = name.trim().split(/\s+/);
+
+  // Reject very short names (just "GPT-5" or "Gemini 3")
+  // These are usually partial matches; real model names have variants
+  if (words.length <= 2 && !hasVariant) {
+    return false;
+  }
+
+  // Reject if it's just "Brand variant" without a version (like "Gemini pro")
+  if (!hasVersion && hasVariant && words.length <= 2) {
+    return false;
+  }
+
+  // Must have both version and variant, or be a longer descriptive name
+  return (hasVersion && hasVariant) || words.length >= 3;
 }
 
 // Check if a model already exists (fuzzy matching)
