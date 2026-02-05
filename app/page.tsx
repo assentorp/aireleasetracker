@@ -1251,7 +1251,7 @@ function TimelineContent() {
                                       <path d="M12 17h.01"></path>
                                       <circle cx="12" cy="12" r="10"></circle>
                                     </svg>
-                                    Outdated
+                                    Overdue
                                   </div>
                                 )}
                                 <div className={`text-2xl font-semibold mb-2 ${stats.daysSinceLastRelease > stats.avgDaysBetweenReleases ? 'text-white/60 line-through' : 'text-white'}`}>
