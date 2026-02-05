@@ -20,7 +20,7 @@ const PROVIDERS = {
     rssUrl: 'https://openai.com/blog/rss.xml',
     keywords: ['gpt', 'o1', 'o3', 'o4', 'model', 'release', 'introducing', 'announcing'],
     modelPatterns: [
-      /GPT-[\d.]+(?:-(?:turbo|mini|nano))?/gi,
+      /GPT-[\d.]+(?:-(?:turbo|mini|nano|codex|max|pro))?(?:-(?:turbo|mini|nano|codex|max|pro))?/gi,
       /\bo[1-9]-(?:mini|preview|pro)\b/gi,
       /\bo[1-9]\b(?!\s*(?:clock|day|week|month|year|am|pm))/gi
     ]
@@ -314,7 +314,10 @@ function extractBaseName(name) {
 // Validate that a model name looks legitimate (not a false positive)
 function isValidModelName(name) {
   const hasVersion = /\d+(?:\.\d+)?/.test(name);
-  const hasVariant = /\b(?:pro|ultra|nano|flash|lite|mini|turbo|max|sonnet|opus|haiku|scout|maverick|coder|math|vision|image|fast)\b/i.test(name);
+  const hasVariant = /\b(?:pro|ultra|nano|flash|lite|mini|turbo|max|sonnet|opus|haiku|scout|maverick|coder|codex|math|vision|image|fast)\b/i.test(name);
+
+  // GPT models use hyphenated format (GPT-5.3, GPT-5.3-Codex) - treat as valid if matches pattern
+  const isGptModel = /^GPT-\d+(?:\.\d+)?(?:-\w+)?$/i.test(name);
   const words = name.trim().split(/\s+/);
 
   // Reject very short names (just "GPT-5" or "Gemini 3")
@@ -329,7 +332,8 @@ function isValidModelName(name) {
   }
 
   // Must have both version and variant, or be a longer descriptive name
-  return (hasVersion && hasVariant) || words.length >= 3;
+  // Exception for GPT models which use hyphenated format
+  return (hasVersion && hasVariant) || words.length >= 3 || isGptModel;
 }
 
 // Check if a model already exists (fuzzy matching)
