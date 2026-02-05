@@ -172,7 +172,8 @@ export const timelineData: TimelineCompany[] = [
       { date: 'Aug 26 2025', name: 'Gemini 2.5 Flash Image', position: getMonthPosition('Aug 26 2025') },
       { date: 'Nov 18 2025', name: 'Gemini 3.0 Pro', position: getMonthPosition('Nov 18 2025') },
       { date: 'Nov 20 2025', name: 'Gemini 3.0 Pro Image', position: getMonthPosition('Nov 20 2025') },
-      { date: 'Feb 5 2026', name: 'Gemini 3 Flash', position: getMonthPosition('Feb 5 2026') }]
+      { date: 'Dec 17 2025', name: 'Gemini 3.0 Flash', position: getMonthPosition('Dec 17 2025') }
+    ]
   },
   {
     company: 'openai',
@@ -203,8 +204,8 @@ export const timelineData: TimelineCompany[] = [
       { date: 'Nov 12 2025', name: 'GPT-5.1', position: getMonthPosition('Nov 12 2025') },
       { date: 'Nov 19 2025', name: 'GPT-5.1-Codex-Max', position: getMonthPosition('Nov 19 2025') },
       { date: 'Dec 11 2025', name: 'GPT-5.2', position: getMonthPosition('Dec 11 2025') },
-      { date: 'Feb 5 2026', name: 'GPT-5.3-Codex', position: getMonthPosition('Feb 5 2026') },
-      { date: 'Feb 5 2026', name: 'GPT-5.3-Codex', position: getMonthPosition('Feb 5 2026') }]
+      { date: 'Feb 5 2026', name: 'GPT-5.3-Codex', position: getMonthPosition('Feb 5 2026') }
+    ]
   },
   {
     company: 'deepseek',
