@@ -225,6 +225,35 @@ export default function ModelDetailClient({ company, model }: Props) {
           )}
         </div>
 
+        {/* Benchmarks section */}
+        {(modelData.gpqaDiamond || modelData.mmmuPro || modelData.sweBenchVerified) && (
+          <div className="mb-6">
+            <h2 className="text-xl text-white mb-4">Benchmarks</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {modelData.gpqaDiamond && (
+                <div className="bg-[#151515] border border-white/10 rounded-lg p-6">
+                  <div className="text-sm text-gray-500 mb-2">GPQA Diamond</div>
+                  <div className="text-2xl font-semibold text-white">{modelData.gpqaDiamond}</div>
+                </div>
+              )}
+
+              {modelData.mmmuPro && (
+                <div className="bg-[#151515] border border-white/10 rounded-lg p-6">
+                  <div className="text-sm text-gray-500 mb-2">MMMU-Pro</div>
+                  <div className="text-2xl font-semibold text-white">{modelData.mmmuPro}</div>
+                </div>
+              )}
+
+              {modelData.sweBenchVerified && (
+                <div className="bg-[#151515] border border-white/10 rounded-lg p-6">
+                  <div className="text-sm text-gray-500 mb-2">SWE-Bench Verified</div>
+                  <div className="text-2xl font-semibold text-white">{modelData.sweBenchVerified}</div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Placeholder for more content */}
         <div>
           <h2 className="text-xl text-white mb-4">About {modelData.name}</h2>
