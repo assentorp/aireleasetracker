@@ -135,8 +135,8 @@ export const timelineData: TimelineCompany[] = [
       { date: 'Aug 5 2025', name: 'Claude Opus 4.1', position: getMonthPosition('Aug 5 2025') },
       { date: 'Sep 29 2025', name: 'Claude Sonnet 4.5', position: getMonthPosition('Sep 29 2025') },
       { date: 'Oct 15 2025', name: 'Claude Haiku 4.5', position: getMonthPosition('Oct 15 2025') },
-      { date: 'Nov 24 2025', name: 'Claude Opus 4.5', position: getMonthPosition('Nov 24 2025') }
-    ]
+      { date: 'Nov 24 2025', name: 'Claude Opus 4.5', position: getMonthPosition('Nov 24 2025') },
+      { date: 'Feb 5 2026', name: 'Claude Opus 4.6', position: getMonthPosition('Feb 5 2026') }]
   },
   {
     company: 'meta',
@@ -171,8 +171,10 @@ export const timelineData: TimelineCompany[] = [
       { date: 'Jun 17 2025', name: 'Gemini 2.5 Flash-Lite', position: getMonthPosition('Jun 17 2025') },
       { date: 'Aug 26 2025', name: 'Gemini 2.5 Flash Image', position: getMonthPosition('Aug 26 2025') },
       { date: 'Nov 18 2025', name: 'Gemini 3.0 Pro', position: getMonthPosition('Nov 18 2025') },
-      { date: 'Nov 20 2025', name: 'Gemini 3.0 Pro Image', position: getMonthPosition('Nov 20 2025') }
-    ]
+      { date: 'Nov 20 2025', name: 'Gemini 3.0 Pro Image', position: getMonthPosition('Nov 20 2025') },
+      { date: 'Feb 2 2026', name: 'Gemini 3 Pro', position: getMonthPosition('Feb 2 2026') },
+      { date: 'Feb 2 2026', name: 'Gemini pro', position: getMonthPosition('Feb 2 2026') },
+      { date: 'Feb 5 2026', name: 'Gemini 3 Flash', position: getMonthPosition('Feb 5 2026') }]
   },
   {
     company: 'openai',
@@ -202,8 +204,9 @@ export const timelineData: TimelineCompany[] = [
       { date: 'Nov 8 2025', name: 'GPT-5-Codex-Mini', position: getMonthPosition('Nov 8 2025') },
       { date: 'Nov 12 2025', name: 'GPT-5.1', position: getMonthPosition('Nov 12 2025') },
       { date: 'Nov 19 2025', name: 'GPT-5.1-Codex-Max', position: getMonthPosition('Nov 19 2025') },
-      { date: 'Dec 11 2025', name: 'GPT-5.2', position: getMonthPosition('Dec 11 2025') }
-    ]
+      { date: 'Dec 11 2025', name: 'GPT-5.2', position: getMonthPosition('Dec 11 2025') },
+      { date: 'Feb 5 2026', name: 'GPT-5.3', position: getMonthPosition('Feb 5 2026') },
+      { date: 'Feb 5 2026', name: 'GPT-5.3', position: getMonthPosition('Feb 5 2026') }]
   },
   {
     company: 'deepseek',
