@@ -136,7 +136,8 @@ export const timelineData: TimelineCompany[] = [
       { date: 'Sep 29 2025', name: 'Claude Sonnet 4.5', position: getMonthPosition('Sep 29 2025') },
       { date: 'Oct 15 2025', name: 'Claude Haiku 4.5', position: getMonthPosition('Oct 15 2025') },
       { date: 'Nov 24 2025', name: 'Claude Opus 4.5', position: getMonthPosition('Nov 24 2025') },
-      { date: 'Feb 5 2026', name: 'Claude Opus 4.6', position: getMonthPosition('Feb 5 2026') }]
+      { date: 'Feb 5 2026', name: 'Claude Opus 4.6', position: getMonthPosition('Feb 5 2026') },
+      { date: 'Feb 17 2026', name: 'Claude Sonnet 4.6', position: getMonthPosition('Feb 17 2026') }]
   },
   {
     company: 'meta',
