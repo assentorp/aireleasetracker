@@ -20,7 +20,7 @@ const PROVIDERS = {
     rssUrl: 'https://openai.com/blog/rss.xml',
     keywords: ['gpt', 'o1', 'o3', 'o4', 'model', 'release', 'introducing', 'announcing'],
     modelPatterns: [
-      /GPT-[\d.]+(?:-(?:turbo|mini|nano|codex|max|pro))?(?:-(?:turbo|mini|nano|codex|max|pro))?/gi,
+      /GPT-[\d.]+(?:-(?:turbo|mini|nano|codex|max|pro|spark))?(?:-(?:turbo|mini|nano|codex|max|pro|spark))?/gi,
       /\bo[1-9]-(?:mini|preview|pro)\b/gi,
       /\bo[1-9]\b(?!\s*(?:clock|day|week|month|year|am|pm))/gi
     ]
