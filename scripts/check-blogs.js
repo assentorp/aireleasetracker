@@ -317,7 +317,7 @@ function isValidModelName(name) {
   const hasVariant = /\b(?:pro|ultra|nano|flash|lite|mini|turbo|max|sonnet|opus|haiku|scout|maverick|coder|codex|math|vision|image|fast)\b/i.test(name);
 
   // GPT models use hyphenated format (GPT-5.3, GPT-5.3-Codex) - treat as valid if matches pattern
-  const isGptModel = /^GPT-\d+(?:\.\d+)?(?:-\w+)?$/i.test(name);
+  const isGptModel = /^GPT-\d+(?:\.\d+)?(?:-\w+)*$/i.test(name);
   const words = name.trim().split(/\s+/);
 
   // Reject very short names (just "GPT-5" or "Gemini 3")
