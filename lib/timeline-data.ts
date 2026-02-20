@@ -173,8 +173,8 @@ export const timelineData: TimelineCompany[] = [
       { date: 'Aug 26 2025', name: 'Gemini 2.5 Flash Image', position: getMonthPosition('Aug 26 2025') },
       { date: 'Nov 18 2025', name: 'Gemini 3.0 Pro', position: getMonthPosition('Nov 18 2025') },
       { date: 'Nov 20 2025', name: 'Gemini 3.0 Pro Image', position: getMonthPosition('Nov 20 2025') },
-      { date: 'Dec 17 2025', name: 'Gemini 3.0 Flash', position: getMonthPosition('Dec 17 2025') }
-    ]
+      { date: 'Dec 17 2025', name: 'Gemini 3.0 Flash', position: getMonthPosition('Dec 17 2025') },
+      { date: 'Feb 19 2026', name: 'Gemini 3.1 Pro', position: getMonthPosition('Feb 19 2026') }]
   },
   {
     company: 'openai',
